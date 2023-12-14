@@ -1,0 +1,58 @@
+.qaCard {
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.expandedCard {
+  background: #f0f0f0;
+  border-radius: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.toggleIcon {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tabs_label {
+  padding: 0 8px 12px 8px !important;
+}
+
+.qa_tabs {
+  padding: 36px 0 0 0;
+}
+
+.main_tabs {
+  border-bottom: 2px solid #F0F0F0;
+  width: fit-content;
+}
+
+.mobile_main_tabs {
+  width: fit-content;
+}
+
+@media only screen and (max-width: 1024px) {
+  .qa_tabs {
+    padding: 20px 0 0 0;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .qa_tabs {
+    padding: 20px 0 0 0;
+  }
+
+  .expand_icon {
+    font-size: 20px !important;
+  }
+
+  .main_tabs {
+    border: none;
+  }
+
+}

@@ -1,0 +1,203 @@
+.main {
+  display: grid;
+  grid-template-columns: 1fr 532px;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.youtubeVideo {
+  position: relative;
+  height: 454px;
+}
+.videoBackButton {
+  display: flex !important;
+  justify-content: start !important;
+  align-items: center;
+  padding: 20px;
+  border-radius: 50%;
+  position: absolute;
+  cursor: pointer;
+  top: 46.5%;
+  height: 20px;
+}
+.videoNextButton {
+  display: flex !important;
+  justify-content: end !important;
+  align-items: center;
+  padding: 20px;
+  border-radius: 50%;
+  position: absolute;
+  cursor: pointer;
+  top: 46.5%;
+  right: 0px;
+  height: 20px;
+}
+.activeVideoCount {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  border-radius: 40px;
+  padding: 4px 20px;
+  position: absolute;
+  background-color: #00000095;
+  height: 32px;
+  right: 20px;
+  bottom: 10px;
+}
+
+.announcementCards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  height: auto;
+}
+.announcementBox {
+  height: 138px;
+  width: 100%;
+  position: relative;
+}
+.announcementImage {
+  border-radius: 12px;
+  cursor: pointer;
+  height: 100%;
+}
+
+.tabChipItem {
+  padding: 8px 20px 8px 8px !important;
+  gap: 12px;
+  align-items: center;
+  height: 40px !important;
+  border-radius: 100px !important;
+  /* background-color: #ffd443; */
+}
+.tabChipIcon {
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+  padding: 8px;
+  background: #fff;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100px !important;
+}
+.activeTabChipIcon {
+  background-color: #fff3cc !important;
+}
+.activeChip {
+  background-color: #ffd443 !important;
+}
+.availableProfile{
+  max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-top: 40px;
+}
+.filterSection {
+  max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-top: 40px; 
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px
+}
+.cards {
+  display: grid;
+  max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  padding-top: 24px;
+}
+.cards > span {
+  height: 396px;
+}
+
+.cardV3 {
+  max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  scroll-behavior: smooth !important;
+  height: 100% !important;
+  overflow: unset !important;
+}
+
+.cardV3 > div {
+  width: auto !important;
+  position: absolute !important;
+  /* margin: 0px 40px !important; */
+  left: 30px !important;
+  right: 40px !important;
+}
+
+/* @media (max-width: 1600px) {
+  .cards {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+@media (max-width: 1360px) {
+  .cards {
+    grid-template-columns: repeat(5, 1fr);
+  }
+} */
+@media (max-width: 1024px) {
+  .main {
+    grid-template-columns: 1fr 341px;
+  }
+  .youtubeVideo {
+    height: 312px;
+  }
+  .announcementBox {
+    height: 90.67px;
+  }
+  /* .cards {
+    grid-template-columns: repeat(4, 1fr);
+  } */
+}
+/* @media (max-width: 815px) {
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+} */
+@media (max-width: 600px) {
+  .main {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    /* padding: 20px 16px; */
+  }
+  .youtubeVideo {
+    height: 188px;
+  }
+  .announcementCards {
+    gap: 8px;
+    height: 292px;
+  }
+  .announcementBox {
+    height: 92px;
+  }
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .availableProfile {
+    max-width: 375px !important;
+  }
+  .filterSection {
+    max-width: 375px !important;
+  }
+  .cardV3 {
+    max-width: 375px !important;
+    height: 100% !important;
+    overflow: unset !important
+  }
+  .cardV3 > div {
+    left: 10px !important;
+    right: 16px !important;
+   
+  }
+}

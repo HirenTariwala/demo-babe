@@ -1,0 +1,19 @@
+{
+  "header": {
+    "beAbabe": "Be a Babe",
+    "rent": "Rent",
+    "faq": "FAQ",
+    "terms": "Terms",
+    "location": "Location",
+    "contact": "Contact",
+    "login": "Login"
+  },
+  "profile": {
+    "serviceTab": {
+      "emeet": "E-Meet",
+      "meetup": "Meet up",
+      "games": "Games",
+      "sports": "Sports"
+    }
+  }
+}

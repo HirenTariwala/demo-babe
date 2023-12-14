@@ -1,0 +1,21 @@
+{
+
+    "header": {
+      "beAbabe": "申请做babe",
+      "rent":"租用",
+      "faq":"常见问题",
+      "terms":"条款",
+      "location":"地址",
+      "contact":"联系",
+      "login":"登录"
+    },
+    "profile": {
+      "serviceTab": {
+        "emeet": "电约",
+        "meetup": "见面",
+        "games": "游戏",
+        "sports": "运动"
+      }
+    }
+
+}

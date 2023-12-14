@@ -1,0 +1,21 @@
+{
+
+        "header": {
+            "beAbabe": "Be a Babe",
+            "rent":"ค่าเช่า",
+            "faq":"FAQ",
+            "terms":"เงื่อนไข",
+            "location":"ตำแหน่งที่ตั้ง",
+            "contact":"ติดต่อ",
+            "login": "เข้าสู่ระบบ"
+        },
+        "profile": {
+            "serviceTab": {
+              "emeet": "EMeet",
+              "meetup": "Meetup",
+              "games": "Games",
+              "sports": "Sports"
+            }
+          }
+
+}

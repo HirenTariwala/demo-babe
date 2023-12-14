@@ -1,0 +1,32 @@
+ 
+.phoneInput{
+  color: #1A1A1A !important;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.dropdownPhone {
+    background: white;
+    border: 7px solid white;
+}
+
+ .dropdownPhone::-webkit-scrollbar {
+    width: 4px;
+    position: absolute;
+    left:0;
+}
+
+/* Track */
+.dropdownPhone::-webkit-scrollbar-track {
+    
+    border-radius: 10px;
+    margin: 20px;
+  }
+   
+  /* Handle */
+  .dropdownPhone::-webkit-scrollbar-thumb {
+    background: #999999; 
+    border-radius: 10px;
+    background-color: #999999;
+  }
+

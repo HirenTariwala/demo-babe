@@ -1,0 +1,17 @@
+.sendCodeButton {
+	border-radius: 50px !important;
+	font-size: 16px !important;
+	font-weight: 700 !important;
+	padding: 12px 20px !important;
+	text-transform: none !important;
+	width: 100% !important;
+}
+.googleButton {
+	border-radius: 50px !important;
+	font-size: 16px !important;
+	font-weight: 700 !important;
+	padding: 12px 20px !important;
+	text-transform: none !important;
+	width: 100% !important;
+	border-color: #ccc !important;
+}

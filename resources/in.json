@@ -1,0 +1,21 @@
+{
+
+        "header": {
+            "beAbabe": "Jadilah Babe",
+            "rent":"SEWA",
+            "faq":"FAQ",
+            "terms":"TERMA",
+            "location":"LOKASI",
+            "contact":"CONTACT",
+            "login": "Login"
+        },
+        "profile": {
+            "serviceTab": {
+                "emeet": "EMeet",
+                "meetup": "Meetup",
+                "games": "Games",
+                "sports": "Sports"
+            }
+          }
+
+}

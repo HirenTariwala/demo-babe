@@ -1,0 +1,21 @@
+{
+
+        "header": {
+            "beAbabe": "Aplicar",
+            "rent":"ALQUILAR",
+            "faq":"PREGUNTAS",
+            "terms":"TÉRMINOS",
+            "location":"UBICACIONES",
+            "contact":"CONTACTO",
+            "login": "Iniciar sesión"
+        },
+        "profile": {
+            "serviceTab": {
+                "emeet": "EMeet",
+                "meetup": "Reunión",
+                "games": "Juegos",
+                "sports": "Deportes"
+            }
+          }
+
+}
