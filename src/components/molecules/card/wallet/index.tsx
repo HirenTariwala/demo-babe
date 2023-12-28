@@ -7,10 +7,9 @@ import InfoIcon from '@/components/atoms/icons/info';
 import Box from '@/components/atoms/box';
 
 interface IWallet {
-  index: number;
-  amount: number;
+  amount: number | undefined;
   label: string | React.ReactNode;
-  tooltipTitle: string;
+  tooltipTitle: string | React.ReactNode;
   position:
     | 'bottom'
     | 'left'
@@ -26,15 +25,9 @@ interface IWallet {
     | 'top-start'
     | undefined;
   sx: SxProps;
-  onClick: (arg: number) => void;
 }
 
-const Wallet = ({ index, position, amount, label, tooltipTitle, sx, onClick }: IWallet) => {
-  const handleClick = () => {
-    if (onClick) {
-      onClick(index);
-    }
-  };
+const Wallet = ({ position, amount, label, tooltipTitle, sx }: IWallet) => {
   return (
     <Card
       sx={{
@@ -48,22 +41,22 @@ const Wallet = ({ index, position, amount, label, tooltipTitle, sx, onClick }: I
         alignItems: 'center',
         border: '2px solid rgba(0, 0, 0, 0)',
         gap: 4,
-        '&:hover': {
-          border: '2px solid #FFD443',
-          '& $MuiTypography-root': {
-            color: 'red',
-          },
-        },
         ...sx,
       }}
-      onClick={handleClick}
     >
       <CardContent sx={{ p: 0 }}>
         <Box display="flex" alignItems="center">
-          <Typography variant="body2" component="span" fontWeight={500} color="#999">
+          <Typography variant="body2" component="span" fontWeight={500} color={'#1A1A1A'}>
             {label}
           </Typography>
-          <ToolTip title={tooltipTitle} color="#999" placement={position}>
+          <ToolTip
+            title={tooltipTitle}
+            color={'#1A1A1A'}
+            sx={{
+              whiteSpace: 'pre-line',
+            }}
+            placement={position}
+          >
             <InfoIcon />
           </ToolTip>
         </Box>

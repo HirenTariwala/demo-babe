@@ -1,119 +1,121 @@
 import Badge from '@/components/atoms/badge';
 import useRentHook from '../Rent/useRentHook';
 import TransactionTabContent from './components/TransactionTabContent';
-import { useMemo, useState } from 'react';
-import Box from '@/components/atoms/box';
-import Button from '@/components/atoms/button';
+import { useEffect, useMemo, useState } from 'react';
+import { setCurrentUser, useUserStore } from '@/store/reducers/usersReducer';
+import {
+  CREDIT,
+  TRANSACTION,
+  balanceKey,
+  incomeKey,
+  penaltyKey,
+  pendingKey,
+  pointsKey,
+  timeStampKey,
+  uidKeyKey,
+} from '@/keys/firestoreKeys';
+import { db } from '@/credentials/firebase';
+import { DocumentData, QueryDocumentSnapshot, collection, doc, orderBy, query, where } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { useCollectionQuery2 } from '@/hooks/useCollectionQuery2';
+import { useDocumentQuery } from '@/hooks/useDocumentQuery';
+import { useAppDispatch } from '@/store/useReduxHook';
 
 interface ITabs {
   type: string;
   badge: number;
+  content: QueryDocumentSnapshot<DocumentData>[];
 }
+
 const useWalletHook = () => {
   const { isMobile } = useRentHook();
-  const [activeCard, setActiveCard] = useState(0);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const userStore = useUserStore();
+  const currentUser = userStore?.currentUser;
+  const uid = currentUser?.uid;
+  const isVerified = currentUser?.verified || false;
+  const [isOpenWithdraw, setIsOpenWithdraw] = useState(false);
+  // const defaultSize = 150;
+  // const defaultLimitCount = Math.ceil(window.innerHeight / defaultSize);
+  // const [limitCount, setLimitCount] = useState(defaultLimitCount);
+
+  const { data: walletData } = useDocumentQuery(
+    `${uid || ''}-balance-main`,
+    uid ? doc(db, CREDIT, uid ?? 'empty') : undefined
+  );
+
+  const {
+    loading: transactionLoading,
+    data: transactionData,
+    error: transactionError,
+  } = useCollectionQuery2(
+    uid ? `${uid}-order` : undefined,
+    query(
+      collection(db, TRANSACTION),
+      where(uidKeyKey, '==', `${uid || ''}`),
+      orderBy(timeStampKey, 'desc')
+      // limit(limitCount)
+    )
+    // limitCount
+  );
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
-  const types: ITabs[] = useMemo(() => {
-    if (activeCard === 0) {
-      return [
-        {
-          type: 'All',
-          badge: 6,
-        },
-        {
-          type: 'Spent',
-          badge: 2,
-        },
-        {
-          type: 'Bundle Recharge',
-          badge: 2,
-        },
-        {
-          type: 'Custom Recharge',
-          badge: 2,
-        },
-      ];
-    } else if (activeCard === 1) {
-      return [
-        {
-          type: 'All',
-          badge: 4,
-        },
-        {
-          type: 'Withdrawn',
-          badge: 2,
-        },
-        {
-          type: 'Moved from Pending',
-          badge: 2,
-        },
-      ];
-    } else {
-      return [
-        {
-          type: 'All',
-          badge: 4,
-        },
-        {
-          type: 'Refunded',
-          badge: 2,
-        },
-        {
-          type: 'Earned',
-          badge: 2,
-        },
-      ];
-    }
-    return tabs;
-  }, [activeCard]);
-
-  const WithdrawnFooter = (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-      }}
-    >
-      <Button
-        color="primary"
-        onClick={() => {}}
-        size="medium"
-        startIcon={null}
-        sx={{
-          borderRadius: 50,
-          fontSize: '16px',
-          fontWeight: 700,
-          padding: '12px 20px',
-          textTransform: 'none',
-        }}
-        variant="outlined"
-      >
-        Cancel
-      </Button>
-      <Button
-        color="primary"
-        onClick={() => {}}
-        size="medium"
-        startIcon={null}
-        sx={{
-          borderRadius: 50,
-          fontSize: '16px',
-          fontWeight: 700,
-          padding: '12px 20px',
-          textTransform: 'none',
-        }}
-        variant="contained"
-      >
-        {/* eslint-disable-next-line no-constant-condition */}
-        {false ? 'Withdraw' : 'Done'}
-      </Button>
-    </Box>
+  const types: ITabs[] = useMemo(
+    () => [
+      {
+        type: 'All',
+        badge: transactionData ? transactionData?.size : '0',
+        content: transactionData ? transactionData?.docs : [],
+      },
+      {
+        type: 'Refunded',
+        badge: transactionData
+          ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 3)?.length?.toString()
+          : '0',
+        content: transactionData ? [] : [],
+      },
+      {
+        type: 'Earned',
+        badge: '0',
+        content: transactionData ? [] : [],
+      },
+      {
+        type: 'Bundle Recharge',
+        badge: transactionData
+          ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 1)?.length?.toString()
+          : '0',
+        content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 1) : [],
+      },
+      {
+        type: 'Custom Recharge',
+        badge: transactionData
+          ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 0)?.length?.toString()
+          : '0',
+        content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 0) : [],
+      },
+      {
+        type: 'Moved from Pending',
+        badge: '0',
+        content: transactionData ? [] : [],
+      },
+      {
+        type: 'Withdrawn',
+        badge: '0',
+        content: transactionData ? [] : [],
+      },
+      {
+        type: 'Spent',
+        badge: '0',
+        content: transactionData ? [] : [],
+      },
+    ],
+    [transactionData]
   );
 
   const tabs = types?.map((item, index) => ({
-    lable: (
+    lable: (value: number) => (
       <span
         style={{
           display: 'flex',
@@ -123,17 +125,65 @@ const useWalletHook = () => {
       >
         <span>{item?.type}</span>
         <span>
-          <Badge badgeContent={item?.badge} color="primary" />,
+          <Badge badgeContent={item?.badge} color={value === index ? 'primary' : 'secondary'} />,
         </span>
       </span>
     ),
-    content: <TransactionTabContent index={index} />,
+    content: (
+      <TransactionTabContent index={index} data={item?.content} loading={transactionLoading} error={transactionError} />
+    ),
   }));
 
-  const onCardClick = (index: number) => {
-    setActiveCard(index);
+  const onClickRecharge = () => {
+    router.push('/credit');
   };
-  return { isMobile, activeCard, tabs, WithdrawnFooter, onCardClick };
+  useEffect(() => {
+    if (!walletData) {
+      return;
+    }
+
+    if (walletData && walletData.exists()) {
+      const points = (walletData.data()[pointsKey] as number) ?? 0;
+      const balance = (walletData.data()[balanceKey] as number) ?? 0;
+      const penalty = (walletData.data()[penaltyKey] as number) ?? 0;
+      const income = (walletData.data()[incomeKey] as number) ?? 0;
+      const pending = (walletData.data()[pendingKey] as number) ?? 0;
+
+      dispatch(
+        setCurrentUser({
+          points,
+          balance,
+          penaltyCredits: penalty,
+          incomeCredits: income,
+          pendingCredits: pending,
+        })
+      );
+    } else {
+      dispatch(
+        setCurrentUser({
+          points: 0,
+          balance: 0,
+          penaltyCredits: 0,
+          incomeCredits: 0,
+          pendingCredits: 0,
+        })
+      );
+    }
+  }, [walletData]);
+
+  const withdrawModalChanges = () => {
+    setIsOpenWithdraw(!isOpenWithdraw);
+  };
+
+  return {
+    isMobile,
+    tabs,
+    currentUser,
+    isVerified,
+    isOpenWithdraw,
+    withdrawModalChanges,
+    onClickRecharge,
+  };
 };
 
 export default useWalletHook;

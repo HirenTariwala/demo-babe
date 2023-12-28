@@ -11,13 +11,13 @@ const useHeaderHook = () => {
   const [isopen, setOpen] = useState<boolean>(false);
   const isTablet = useMediaQuery('(max-width:1024px)');
   const isMobile = useMediaQuery('(max-width:600px)');
-  const { uid, logOut } = useLoginHook();
+  const { uid, logOut, currentUser } = useLoginHook();
   const [isPending, startTransition] = useTransition();
   const [value, setValue] = useState(useLocale());
+  const [isOpenChat, setIsOpenChat] = useState(false);
 
   const open = Boolean(anchorEl);
-  console.log(isPending);
-  
+
   const handleAnchorElChange = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -31,6 +31,13 @@ const useHeaderHook = () => {
     });
   };
 
+  const goToPremium = () => {
+    router.push(`/subscribe?uid=${uid}`);
+  };
+  const handleChatDrawerChange = () => {
+    setIsOpenChat(!isOpenChat);
+  };
+
   return {
     uid,
     profileImage,
@@ -38,10 +45,15 @@ const useHeaderHook = () => {
     isTablet,
     open,
     isopen,
+    isPending,
     router,
     pathName,
     anchorEl,
     value,
+    currentUser,
+    isOpenChat,
+    handleChatDrawerChange,
+    goToPremium,
     logOut,
     setAnchorEl,
     setOpen,

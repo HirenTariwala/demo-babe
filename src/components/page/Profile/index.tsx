@@ -13,36 +13,55 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CloseIcon from '@/components/atoms/icons/closeIcon';
 import Tabs from '@/components/atoms/tabs';
 import useProfileHook from './useProfileHook';
-import SimpleDialog from '@/components/atoms/modal';
 import Button from '@/components/atoms/button';
 import NextImage from '@/components/atoms/image';
 import BackIcon from '@/components/atoms/icons/backIcon';
 import PlayIcon from '@/components/atoms/icons/playIcon';
 import AudioWavesIcon from '@/components/atoms/icons/audioWavesIcon';
+import SkeletonLine from '@/components/atoms/SkeletonLine';
+import ToolTip from '@/components/atoms/tooltip';
+import ReportModal from './components/reportModal';
+import ShareModal from './components/shareModal';
+import { IconButton } from '@mui/material';
+import { Item } from '@/props/profileProps';
 
-const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
+const Profile = ({
+  uid,
+  babeInfo,
+  onClick,
+  setRequestModalOpen,
+}: {
+  uid?: string | undefined;
+  babeInfo?: Item | undefined;
+  onClick?: () => void;
+  setRequestModalOpen?: (arg: boolean) => void;
+}) => {
   const {
     isMobile,
     item,
     galleryData,
     tabsData,
     url,
+    myUid,
     dateTime,
     open,
     anchorEl,
     shareModalOpen,
     duration,
     isAudioPlaying,
+    reportModalOpen,
+    view,
     voiceOnClick,
     setAnchorEl,
     setShareModalOpen,
     handleClose,
     goBack,
-  } = useProfileHook(uid);
-
+    onResetTab,
+    setReportModalOpen,
+  } = useProfileHook(uid, babeInfo);
   return (
     <>
-      <Box maxWidth={952} width={'100%'} paddingBottom={isMobile ? '100px' : 0} overflow={'hidden'}>
+      <Box width={'100%'} paddingBottom={isMobile ? '100px' : 0} overflow={'hidden'}>
         {isMobile && (
           <Box
             sx={{
@@ -69,24 +88,109 @@ const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
                   height={isMobile ? 60 : 80}
                   style={{ borderRadius: 50, objectFit: 'cover' }}
                   alt=""
+                  skeletonRadius={'100px'}
                 />
+                {!isMobile && item?.voiceUrl && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '80px',
+                      left: '15px',
+                    }}
+                  >
+                    <Button
+                      onClick={voiceOnClick}
+                      sx={{
+                        display: 'flex',
+                        width: 'fit-content',
+                        height: '36px',
+                        padding: '6px 12px 6px 8px',
+                        justifyContent: 'center',
+                        alignItems: 'baseline',
+                        gap: '8px',
+                        borderRadius: '360px',
+                        background: '#FFF',
+                        boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.10)',
+                        ':hover': {
+                          background: '#FFF',
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: '8px',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            background: '#FFD443',
+                            borderRadius: '100px',
+                          }}
+                        >
+                          <PlayIcon />
+                        </Box>
+                        <Box
+                          sx={{
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {!isAudioPlaying ? (
+                            <AudioWavesIcon />
+                          ) : (
+                            <NextImage
+                              src="https://images.rentbabe.com/assets/gif/wave2.gif"
+                              width={20}
+                              height={20}
+                              alt=""
+                            />
+                          )}
+                        </Box>
+                        <Box>{duration}s</Box>
+                      </Box>
+                    </Button>
+                  </Box>
+                )}
               </Box>
 
               <Box display="flex" flexDirection="column" gap={2}>
                 <Box display="flex" flexDirection="column">
-                  <Box display="flex" gap={1} alignItems="center">
-                    <Typography variant="h2">
-                      {item?.nickname || ''}
-                      {`(${item?.dob || ''})`}
-                    </Typography>
-                    {item?.videoVerification && <Verifed size={24} />}
-                    {item?.isgToken && <SocialIcon size={24} />}
-                  </Box>
-                  {item?.time_stamp && (
-                    <Typography variant="subtitle2" color={'#999999'}>
-                      {' '}
-                      {`Last seen ${dateTime} ago`}
-                    </Typography>
+                  {item ? (
+                    <Box display="flex" gap={1} alignItems="center">
+                      <Typography variant="h2" component="span" sx={{ textTransform: 'capitalize' }}>
+                        {item?.nickname || '--'}
+                        {`(${item?.dob || '--'})`}
+                      </Typography>
+                      {item?.videoVerification && (
+                        <ToolTip title="This user has submitted a clear selfie photo of them holding their government issued ID to prove their identity o's new to h and they are not underage.">
+                          <Verifed size={24} />
+                        </ToolTip>
+                      )}
+                      {item?.isgToken && <SocialIcon size={24} />}
+                    </Box>
+                  ) : (
+                    <SkeletonLine height={15} width={150} />
+                  )}
+                  {item ? (
+                    item?.time_stamp && (
+                      <Typography variant="subtitle2" color={'#999999'}>
+                        {' '}
+                        {`Last seen ${dateTime} ago`}
+                      </Typography>
+                    )
+                  ) : (
+                    <Box paddingTop={1}>
+                      <SkeletonLine height={15} width={120} />
+                    </Box>
                   )}
                 </Box>
                 {isMobile && item?.voiceUrl && (
@@ -150,39 +254,55 @@ const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
                     </Button>
                   </Box>
                 )}
+                {/* {item ? ( */}
                 <Box display="flex" gap={2} alignItems="center">
                   <Rating ratingData={item?.ratings} size="small" />
                   <DotIcon />
                   <Typography variant="subtitle1">
-                    1.6k <span>Views</span>
+                    {view} <span>Views</span>
                   </Typography>
                 </Box>
+                {/* ) : (
+                  <SkeletonLine height={15} width={100} />
+                )} */}
                 <Box display="flex" gap={2} flexDirection="column">
-                  <Box display="flex" alignItems="center" gap={2}>
+                  {/* {item ? ( */}
+                  <Box display="flex" alignItems="flex-start" gap={2}>
                     <Typography variant="body1" fontWeight={500}>
                       Availability:
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#999999' }}>
-                      {item?.availability}
+                      {item?.availability || '--'}
                     </Typography>
                   </Box>
+                  {/* ) : (
+                    <SkeletonLine height={15} width={100} />
+                  )} */}
+                  {/* {item ? ( */}
                   <Box display="flex" alignItems="center" gap={2}>
                     <Typography variant="body1" fontWeight={500}>
-                      {item?.race}
+                      {item?.race || '--'}
                     </Typography>
                     <DotIcon />
                     <Typography variant="body1" fontWeight={500}>
-                      {`${item?.mHeight}cm`}
+                      {item?.mHeight ? `${item?.mHeight}cm` : '--'}
                     </Typography>
                   </Box>
+                  {/* ) : (
+                    <SkeletonLine height={15} width={100} />
+                  )} */}
+                  {/* {item ? ( */}
                   <Box display="flex" alignItems="center" gap={2}>
                     <Typography variant="body1" fontWeight={500}>
                       Location at
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#999999' }}>
-                      {item?.state}
+                      {item?.state || '--'}
                     </Typography>
                   </Box>
+                  {/* ) : (
+                    <SkeletonLine height={15} width={100} />
+                  )} */}
                 </Box>
               </Box>
             </Box>
@@ -191,9 +311,14 @@ const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
                 open={open}
                 setAnchorEl={setAnchorEl}
                 onClose={() => setAnchorEl(null)}
-                icon={<MoreVertIcon />}
+                icon={
+                  <IconButton>
+                    <MoreVertIcon />
+                  </IconButton>
+                }
                 anchorEl={anchorEl}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                sx={{ '.MuiPaper-root': { borderRadius: 3 } }}
               >
                 {dummy &&
                   dummy.map((item: any) => (
@@ -202,17 +327,28 @@ const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
                     </MenuItem>
                   ))}
               </Menu>
-              {!isMobile && <CloseIcon onClick={onClick} />}
+              {!isMobile && (
+                <IconButton>
+                  <CloseIcon onClick={onClick} />
+                </IconButton>
+              )}
             </Box>
           </Box>
-          <Box bgcolor="#F9F9F9" padding={4} borderRadius={6} marginLeft={isMobile ? '0px' : '100px'}>
-            <Tabs tabsData={tabsData} />
-          </Box>
+          {item ? (
+            <Box bgcolor="#F9F9F9" padding={4} borderRadius={6} marginLeft={isMobile ? '0px' : '100px'}>
+              <Tabs tabsData={tabsData} onTabChange={onResetTab} />
+            </Box>
+          ) : (
+            <Box padding={4} borderRadius={6} marginLeft={isMobile ? '0px' : '100px'}>
+              <SkeletonLine height={300} width={'100%'} radius={4} />
+            </Box>
+          )}
           <Box marginLeft={isMobile ? '0px' : '100px '}>
             <Tabs tabBottomPadding="24px" tabsData={galleryData} />
           </Box>
         </Box>
       </Box>
+
       {isMobile && (
         <Box
           sx={{
@@ -235,7 +371,11 @@ const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
               background: 'linear-gradient(77deg, #FFED34 11.3%, #FFD144 86.76%)',
             }}
             color="secondary"
-            onClick={onClick}
+            onClick={() => {
+              if (setRequestModalOpen) {
+                setRequestModalOpen(true);
+              }
+            }}
           >
             Request an order
           </Button>
@@ -245,13 +385,13 @@ const Profile = ({ uid, onClick }: { uid: string; onClick?: () => void }) => {
         </Box>
       )}
 
-      <SimpleDialog
-        footer={<Button onClick={() => setShareModalOpen(false)}>Cancel</Button>}
-        open={shareModalOpen}
-        title={'Share Profile'}
-      >
-        this is modal
-      </SimpleDialog>
+      <ShareModal shareModalOpen={shareModalOpen} setShareModalOpen={setShareModalOpen} item={item} imgUrl={url} />
+      <ReportModal
+        reportModalOpen={reportModalOpen}
+        setReportModalOpen={setReportModalOpen}
+        reportBy={myUid}
+        user={item?.uid}
+      />
     </>
   );
 };

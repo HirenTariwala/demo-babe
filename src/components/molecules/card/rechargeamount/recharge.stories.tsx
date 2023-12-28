@@ -20,8 +20,7 @@ type Story = StoryObj<typeof RechargeAmount>;
 
 export const Primary: Story = {
   args: {
-    credit: 4,
-    price: 384.1,
+    amount: 384.1,
     fontSize: 14,
     fontWeight: 500,
     color: '#1A1A1A',

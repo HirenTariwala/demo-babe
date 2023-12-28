@@ -6,7 +6,7 @@ interface IGlobalFixedSizeListProps extends React.ComponentProps<typeof FixedSiz
   component?: any;
 }
 
-const ReactWindowList = ({ ...props }: IGlobalFixedSizeListProps) => {
+const ReactWindowListV2 = ({ ...props }: IGlobalFixedSizeListProps) => {
   const rwindowRef = useRef<any>(null);
 
   const handleListRef = (component: any) => {
@@ -29,4 +29,4 @@ const ReactWindowList = ({ ...props }: IGlobalFixedSizeListProps) => {
   );
 };
 
-export default ReactWindowList;
+export default ReactWindowListV2;

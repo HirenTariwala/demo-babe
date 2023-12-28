@@ -8,7 +8,7 @@ import Menu from '@/components/atoms/popup/menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import MenuItem from '@/components/atoms/popup';
 import Chip from '@/components/atoms/chip';
-import { dummy } from '@/common/utils/data';
+// import { dummy } from '@/common/utils/data';
 
 interface ITransactionCard extends IBox {
   transactionData: any;
@@ -22,7 +22,7 @@ const TransactionCard = ({ transactionData, ...props }: ITransactionCard) => {
     <Card
       sx={{
         p: 4,
-        width: '688px',
+        maxWidth: '688px',
         borderRadius: 4,
       }}
     >
@@ -55,8 +55,22 @@ const TransactionCard = ({ transactionData, ...props }: ITransactionCard) => {
                 onClose={() => setAnchorEl(null)}
                 icon={<MoreVertIcon />}
                 anchorEl={anchorEl}
+                sx={{
+                  '.MuiPaper-root': {
+                    borderRadius: '12px',
+                  },
+                }}
               >
-                {dummy && dummy.map((item: any) => <MenuItem key={item.id}>{item.text}</MenuItem>)}
+                {/* {dummy && dummy.map((item: any) => <MenuItem key={item.id}>{item.text}</MenuItem>)} */}
+                <MenuItem
+                  sx={{
+                    minHeight: 'fit-content !important',
+                  }}
+                  key={0}
+                  className="veer"
+                >
+                  {'Copy Id'}
+                </MenuItem>
               </Menu>
             </Box>
           </Box>

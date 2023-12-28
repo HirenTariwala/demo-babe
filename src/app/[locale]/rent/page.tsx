@@ -1,10 +1,10 @@
-import Rent from '@/components/page/Rent';
 import React from 'react';
+import Rent from '@/components/page/Rent';
 
 const page = () => {
   return (
     <>
-      <Rent />
+    <Rent/>
     </>
   );
 };

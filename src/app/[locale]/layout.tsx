@@ -6,10 +6,11 @@ import ThemeProvider from '@/common/theme';
 import { Providers } from '@/store/provider';
 import Header from '@/components/organisms/header';
 import { notFound, usePathname } from 'next/navigation';
-import { NextIntlClientProvider,useLocale } from 'next-intl';
+import { NextIntlClientProvider, useLocale } from 'next-intl';
 import useMessage from '@/hooks/useMessage';
 import Box from '@/components/atoms/box';
 import Audio from '@/components/atoms/audio';
+import AuthProvider from '@/utility/AuthProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,25 +20,28 @@ const inter = Inter({ subsets: ['latin'] });
 // };
 
 export default function RootLayout({ children, params }: { children: React.ReactNode; params: any }) {
-	const locale = useLocale();
-	if (params.locale !== locale) {
-		notFound();
-	}
-	const pathName = usePathname();
-	const messages = useMessage();
-	return (
-		<html lang={locale}>
-			<body className={inter.className}>
-				<Providers>
-					<ThemeProvider>
-						<NextIntlClientProvider locale={locale} messages={messages}>
-							<Audio/>
-							{!pathName.includes('login') && <Header />}
-							<Box className='children'>{children}</Box>
-						</NextIntlClientProvider>
-					</ThemeProvider>
-				</Providers>
-			</body>
-		</html>
-	);
+  const locale = useLocale();
+  if (params.locale !== locale) {
+    notFound();
+  }
+  const pathName = usePathname();
+
+  const messages = useMessage();
+  return (
+    <html lang={locale}>
+      <body className={inter.className}>
+        <Providers>
+          <AuthProvider pathName={pathName}>
+            <ThemeProvider>
+              <NextIntlClientProvider locale={locale} messages={messages}>
+                <Audio />
+                {!pathName.includes('login') && <Header />}
+                <Box className={!pathName.includes('login') ? 'children' : ''}>{children}</Box>
+              </NextIntlClientProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </Providers>
+      </body>
+    </html>
+  );
 }

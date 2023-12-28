@@ -24,7 +24,6 @@ export const audioSlice = createSlice({
     setCurrentAudio: (state, action: PayloadAction<AudioProps>) => {
       state.currentAudio= action.payload;
     },
-    
   },
  
 });

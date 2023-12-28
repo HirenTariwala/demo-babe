@@ -99,6 +99,10 @@ export const Helper = {
     const endings = last.split('?')[0];
     return endings;
   },
+  getQueryStringValue(key: string) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(key) ?? '';
+  },
 
   randomInt(min: number, max: number) {
     // min and max included
@@ -191,7 +195,7 @@ export const Helper = {
   },
 
   setTodayMidnightHours(midnight: Date) {
-    midnight.setTime(midnight.getTime() + 24 * 60 * 60 * 1000);
+    midnight?.setTime(midnight?.getTime() + 24 * 60 * 60 * 1000);
     // today.setTime( today.getTime() + (2*60*60*1000) );
   },
 
@@ -209,7 +213,7 @@ export const Helper = {
 
       this.setTodayMidnightHours(midnight);
 
-      const endDate = end.toDate();
+      const endDate = end?.toDate();
       if (endDate > today && endDate < midnight) {
         return true;
       }
@@ -306,7 +310,7 @@ export const Helper = {
    * @param {boolean} [addAgo=false] - Whether to add the word 'ago' at the end.
    * @returns {string} - The human-readable time elapsed.
    */
-  timeSince(date: Date | undefined| any, addAgo = false): string {
+  timeSince(date: Date | undefined | any, addAgo = false): string {
     if (!date) return '';
 
     // const now = new Date();
@@ -337,30 +341,30 @@ export const Helper = {
 
     if (interval > 1) {
       const num = Math.floor(interval);
-      return `${num} year${num === 1 ? "" : "s"}${addAgo ? " ago" : ""}`;
+      return `${num} year${num === 1 ? '' : 's'}${addAgo ? ' ago' : ''}`;
     }
     interval = seconds / 2592000;
     if (interval > 1) {
       const num = Math.floor(interval);
-      return `${num} month${num === 1 ? "" : "s"}${addAgo ? " ago" : ""}`;
+      return `${num} month${num === 1 ? '' : 's'}${addAgo ? ' ago' : ''}`;
     }
     interval = seconds / 86400;
     if (interval > 1) {
       const num = Math.floor(interval);
-      return `${num} day${num === 1 ? "" : "s"}${addAgo ? " ago" : ""}`;
+      return `${num} day${num === 1 ? '' : 's'}${addAgo ? ' ago' : ''}`;
     }
     interval = seconds / 3600;
     if (interval > 1) {
       const num = Math.floor(interval);
-      return `${num} hour${num === 1 ? "" : "s"}${addAgo ? " ago" : ""}`;
+      return `${num} hour${num === 1 ? '' : 's'}${addAgo ? ' ago' : ''}`;
     }
     interval = seconds / 60;
     if (interval > 1) {
       const num = Math.floor(interval);
-      return `${num} minute${num === 1 ? "" : "s"}${addAgo ? " ago" : ""}`;
+      return `${num} minute${num === 1 ? '' : 's'}${addAgo ? ' ago' : ''}`;
     }
 
-    return "Recently"; //Math.floor(seconds) + " seconds";
+    return 'Recently'; //Math.floor(seconds) + " seconds";
   },
 
   sortByPricesValue(price: number, ratings: number, numberOfRents: number, epoch: number = Date.now()) {

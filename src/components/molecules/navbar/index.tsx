@@ -21,6 +21,7 @@ const NavBar = ({ pathName, nav }: { pathName: string; nav: TNav[] }) => {
         <Link
           key={index}
           href={item.path}
+          shallow
           style={item.path === pathName ? activeLinkStyle : { textDecoration: 'none', color: '#1A1A1A' }}
         >
           <Typography variant="h4" component="span" fontWeight={500}>

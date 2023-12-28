@@ -6,20 +6,23 @@ import { getColor } from '@/common/utils/getcolor';
 import Typography from '@/components/atoms/typography';
 
 interface IRechargeAmount extends IBox {
-  price: number;
-  credit: number;
+  discount: number;
   fontSize: number;
   fontWeight: number;
+  amount: number;
+  isActive: boolean;
   size?: 'small' | 'large';
 }
 
 const RechargeAmount = ({
-  credit,
   fontSize,
   size,
   fontWeight,
   color,
-  price,
+  discount,
+  amount,
+  isActive,
+  ...props
 }: IRechargeAmount) => {
   return (
     <Box
@@ -28,18 +31,20 @@ const RechargeAmount = ({
       p={size === 'small' ? '24px 20px' : '32px 20px'}
       flexDirection="column"
       gap={6}
-      border="1px solid #CCC"
+      border={isActive ? '3px solid #FFD443' : '1px solid #CCC'}
       borderRadius={4}
-      width={288}
+      width={'100%'}
       sx={{
+        cursor: 'pointer',
         '&:hover': {
-          border: '2px solid #FFD443',
+          border: '3px solid #FFD443',
         },
       }}
+      {...props}
     >
       <Box display="flex" alignItems="center" flexDirection="column" gap={1}>
         <TransactionAmount
-          amount={250}
+          amount={amount}
           flexDirection="row-reverse"
           fontSize={size === 'small' ? 20 : 28}
           fontWeight={500}
@@ -48,20 +53,15 @@ const RechargeAmount = ({
         <StatusTag
           size="small"
           label={
-            <Typography
-              variant="subtitle2"
-              component="span"
-              fontWeight={fontWeight}
-              fontSize={fontSize}
-            >
-              {`+${credit}% Credit`}
+            <Typography variant="subtitle2" component="span" fontWeight={fontWeight} fontSize={fontSize}>
+              {`+${discount * 100}% Credit`}
             </Typography>
           }
           style={getColor('info')}
           sx={{ borderRadius: '100px' }}
         />
       </Box>
-      <Typography component="span">{`$ ${price} USD`}</Typography>
+      <Typography component="span">{`$ ${(((amount ?? 0) / 100) * (1.0 - discount)).toFixed(2)} USD`}</Typography>
     </Box>
   );
 };

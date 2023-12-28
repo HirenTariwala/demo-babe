@@ -28,13 +28,13 @@ const ReviewCard = memo(({ senderId, isAnnon, numberOfStars, reviewData }: IRevi
   const title = serviceTitle ? `Service: ${serviceTitle}` : '';
   const nickName = userData?.get(nicknameKey);
   const comments = reviewData?.cmts || "The user didn't write a review and has left just a rating.";
-  const firstLatter = nickName ? nickName[0] : "-";
+  const firstLatter = nickName ? nickName[0] : '-';
 
   return (
     <Box display={'flex'} gap={'14px'} maxWidth={'552px'}>
       <Box width={40} height={40}>
         {isAnnon ? (
-          <Avatar avatars={[{src: firstLatter, alt: firstLatter}]}/>
+          <Avatar avatars={[{ src: firstLatter, alt: firstLatter }]} />
         ) : (
           <NextImage
             src={isAnnon ? '' : userData?.get(mobileUrlKey)}
@@ -47,10 +47,10 @@ const ReviewCard = memo(({ senderId, isAnnon, numberOfStars, reviewData }: IRevi
       </Box>
       <Box>
         <Typography variant="body2" fontWeight={500} color={'#646464'}>
-          {isAnnon ? 'Anonymous' : nickName|| "-"}
+          {isAnnon ? 'Anonymous' : nickName || '-'}
         </Typography>
         <Box display={'flex'} gap={'8px'} alignItems={'center'}>
-          <Rating readOnly ratingData={numberOfStars} max={5} size="small" />
+          <Rating readOnly ratingData={numberOfStars} value={numberOfStars} max={5} size="small" />
           <DotIcon />
           <Typography variant="body2" color={'#646464'}>
             {date && Helper.timeSince(date, true)}

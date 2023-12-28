@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 
-const FireBlack = ({...props}) => (
+const FireBlack = ({ size = 24, ...props }) => (
   <svg
-    width={24}
-    height={24}
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -12,12 +12,7 @@ const FireBlack = ({...props}) => (
   >
     <rect width={24} height={24} fill="url(#fireblack)" />
     <defs>
-      <pattern
-        id="fireblack"
-        patternContentUnits="objectBoundingBox"
-        width={1}
-        height={1}
-      >
+      <pattern id="fireblack" patternContentUnits="objectBoundingBox" width={1} height={1}>
         <use xlinkHref="#image0_1528_469" transform="scale(0.00625)" />
       </pattern>
       <image

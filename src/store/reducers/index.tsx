@@ -8,7 +8,7 @@ import userStateTransform from '../transforms/userStateTransform';
 import usersReducer, { UserState } from './usersReducer';
 import servicesReducer, { IService } from './serviceReducer';
 import audioReducer, { AudioType } from './audioReducer';
-// import conversationsReducer, { ConversationState } from './conversation-reducer';
+import conversationsReducer, {IcurrentConvo } from './conversationReducer';
 // import clubAdminReducer, { ClubAdminState } from './club-admin-reducer';
 // import audioReducer from './audio-reducer';
 // import selectedUserReducer from './selected-user-reducer';
@@ -32,13 +32,11 @@ const audioPersistConfig = {
 	storage: storage,
 	stateReconciler: autoMergeLevel1,
 };
-// const conversationsPersistConfig = {
-// 	key: 'conversations',
-// 	storage: storage,
-// 	stateReconciler: autoMergeLevel2,
-// 	whitelist: ['currentConversation'],
-// 	transforms: [conversationStateTransform],
-// };
+const conversationsPersistConfig = {
+	key: 'conversations',
+	storage: storage,
+	stateReconciler: autoMergeLevel1,
+};
 // const clubAdminPersistConfig = {
 // 	key: 'clubAdmin',
 // 	storage: storage,
@@ -49,7 +47,7 @@ export const combinedReducer = combineReducers({
 	user: persistReducer<UserState>(userPersistConfig, usersReducer),
 	services: persistReducer<IService>(servicesPersistConfig, servicesReducer),
 	audio: persistReducer<AudioType>(audioPersistConfig, audioReducer),
-	// conversations: persistReducer<ConversationState>(conversationsPersistConfig, conversationsReducer),
+	conversations: persistReducer<IcurrentConvo>(conversationsPersistConfig, conversationsReducer),
 	// clubAdmin: persistReducer<ClubAdminState>(clubAdminPersistConfig, clubAdminReducer),
 	// audio: audioReducer,
 	// selectedUser: selectedUserReducer,

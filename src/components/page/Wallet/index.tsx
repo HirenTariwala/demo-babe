@@ -10,12 +10,15 @@ import WithdrawIcon from '@/components/atoms/icons/withdrawIcon';
 import useWalletHook from './useWalletHook';
 import Chip from '@/components/atoms/chip';
 import InfoIcon from '@/components/atoms/icons/info';
-
 import Tabs from '@/components/atoms/tabs';
 import Withdrawn from './components/Withdrawn';
+import { CalculatorHelper } from '@/utility/calculator';
+import ToolTip from '@/components/atoms/tooltip';
 
 const WalletPage = () => {
-  const { isMobile, activeCard, tabs, WithdrawnFooter, onCardClick } = useWalletHook();
+  const { isMobile, tabs, currentUser, isOpenWithdraw, isVerified, withdrawModalChanges, onClickRecharge } =
+    useWalletHook();
+
   return (
     <Box>
       <Box className={styles.header}>
@@ -25,8 +28,28 @@ const WalletPage = () => {
               Wallet
             </Typography>
             <Chip
-              icon={<InfoIcon />}
-              label="Loyalty points: 12"
+              label={
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color={'#1A1A1A'}
+                    component={'span'}
+                    fontWeight={500}
+                    sx={{ lineHeight: '20px', display: 'flex', alignItems: 'center' }}
+                  >
+                    Loyalty points: {currentUser?.points ? CalculatorHelper?.priceFormat(currentUser?.points / 100) : 0}
+                  </Typography>
+                  <ToolTip title="Our platform give users cashback and other privileges according to the total number of Credits they bought.">
+                    <InfoIcon />
+                  </ToolTip>
+                </Box>
+              }
               variant="outlined"
               sx={{
                 background: 'linear-gradient(77deg, #FFED34 11.3%, #FFD144 86.76%)',
@@ -36,8 +59,6 @@ const WalletPage = () => {
                 lineHeight: '20px',
                 border: 'none',
                 borderRadius: '12px',
-                flexDirection: 'row-reverse',
-                alignItems: 'flex-start',
                 gap: '4px',
                 '.MuiChip-label': {
                   paddingLeft: '0px',
@@ -52,40 +73,43 @@ const WalletPage = () => {
           <Box className={styles.headerCardList}>
             <Box className={styles.headerCard}>
               <Wallet
-                index={0}
-                amount={4000}
+                amount={currentUser?.balance || 0}
                 position="bottom"
                 label="Credit Balance"
-                tooltipTitle="Credit Balance"
                 sx={{
-                  border: activeCard === 0 ? '2px solid #FFD443' : '2px solid rgba(0, 0, 0, 0)',
+                  border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
                 }}
-                onClick={onCardClick}
+                tooltipTitle={`“Credit” is a virtual currency used on RentBabe, it can be used to pay for services and tips. 1.00 Credit = 1.00 SGD
+
+                “Credit balance” is the remaining deposit on your account that could be spent. The money in “Credit balance” is a non-withdrawable currency that can only be spent on the platform.`}
               />
+
               <Wallet
-                index={1}
-                amount={4000}
+                amount={currentUser?.incomeCredits || 0}
                 position="bottom"
                 label="INCOME"
-                tooltipTitle="INCOME"
+                tooltipTitle="“Credit income” refers to the income you have generated through providing services and collecting tips. Income can be withdrawn."
                 sx={{
-                  border: activeCard === 1 ? '2px solid #FFD443' : '2px solid rgba(0, 0, 0, 0)',
+                  border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
                 }}
-                onClick={onCardClick}
               />
               <Wallet
-                index={2}
-                amount={4000}
+                amount={currentUser?.pendingCredits || 0}
                 position="bottom"
                 label="PENDING INCOME"
-                tooltipTitle="PENDING INCOME"
+                tooltipTitle="Pending Credit refers to your Credit income that is within the Security Period (3-7 days). They will be transferred to your account after this period.
+                
+                If you’ve completed less than 3 orders, your Security Period would be 7 days.
+                
+                If you’ve completed 3-9 orders, your Security Period would be 5 days.
+                
+                If you’ve completed over 10 orders, your Security Period would be 3 days."
                 sx={{
-                  border: activeCard === 2 ? '2px solid #FFD443' : '2px solid rgba(0, 0, 0, 0)',
+                  border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
                 }}
-                onClick={onCardClick}
               />
             </Box>
             <Box className={styles.walletBotton}>
@@ -101,6 +125,7 @@ const WalletPage = () => {
                   textTransform: 'none',
                   width: 'auto',
                 }}
+                onClick={onClickRecharge}
                 variant="outlined"
               >
                 Recharge
@@ -117,6 +142,7 @@ const WalletPage = () => {
                   textTransform: 'none',
                   width: 'auto',
                 }}
+                onClick={withdrawModalChanges}
                 variant="outlined"
               >
                 Withdraw
@@ -130,10 +156,24 @@ const WalletPage = () => {
           <Typography variant="h4" fontWeight={500} color="#1A1A1A">
             Transaction history
           </Typography>
-          <Tabs resetTab={activeCard} tabBottomPadding="20px" tabsData={tabs} />
+          <Tabs
+            tabBottomPadding="20px"
+            tabsData={tabs}
+            sx={{
+              '.MuiTabs-scroller': {
+                width: '100%',
+                overflowX: 'auto !important',
+                '::-webkit-scrollbar': {
+                  display: 'none',
+                },
+              },
+            }}
+          />
         </Box>
       </Box>
-      <Withdrawn WithdrawnFooter={WithdrawnFooter} />
+      {isOpenWithdraw && (
+        <Withdrawn isOpen={isOpenWithdraw} withdrawModalChanges={withdrawModalChanges} isVerified={isVerified} />
+      )}
     </Box>
   );
 };

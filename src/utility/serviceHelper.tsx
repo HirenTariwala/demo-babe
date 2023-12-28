@@ -492,26 +492,6 @@ export const ServiceHelper = {
       return undefined;
     }
 
-    // const imageObj: any = {
-    //   // Meals: { alt: 'V', src: <MealsIcon /> },
-    //   // 'E-Meet': { alt: 'H', src: <EmeetIcon /> },
-    //   // Drinks: { alt: 'E', src: <GlassesIcon /> },
-    //   // 'Mobile Legends: Bang Bang': { alt: 'E', src: <RemoteIcon /> },
-    //   // 'Emotional support': { alt: 'C', src: `https://${process.env.NEXT_PUBLIC_IMAGE_PREFIX}/IMAGES/SERVICES/EMEET/support.jpg?` },
-    //   // 'Brawl Stars': { alt: 'V', src: `https://${process.env.NEXT_PUBLIC_IMAGE_PREFIX}/IMAGES/SERVICES/GAMES/brawl.jpg?` },
-    //   // 'League of Legends': { alt: 'V', src: <RemoteIcon /> },
-    //   Karaoke: { alt: 'K', src: 'https://firebasestorage.googleapis.com/v0/b/rb-dev-819c4.appspot.com/o/TestImage%2FKaraoke.png?alt=media&token=a7b54f0c-ac09-4b0c-a5bf-ae99144ee892' },
-    //   'Fine Dining': { alt: 'D', src: 'https://firebasestorage.googleapis.com/v0/b/rb-dev-819c4.appspot.com/o/TestImage%2FFineDining%20.png?alt=media&token=1a37c057-7d3a-4b68-aef7-be4a4852afc9' },
-    //   "Movies": {alt: "M", src:'https://firebasestorage.googleapis.com/v0/b/rb-dev-819c4.appspot.com/o/TestImage%2FMovies.png?alt=media&token=205dffc2-ab0f-4688-bd78-4d70f63042c8'}
-    // };
-    // favouritesV2?.forEach((item: any) => {
-    //   imageObj[`${item?.title}`] = { alt: '', src: item?.image };
-    // });
-
-    // const data = serviceArr.map((key) => imageObj[key]);
-
-    // const data = serviceArr.map((key) => temp[key]);
-
     const data = serviceArr?.map((item) => {
       const singleService = allServicesArr?.find((ser) => ser?.title === item);
       return {

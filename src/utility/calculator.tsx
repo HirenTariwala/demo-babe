@@ -2,11 +2,29 @@ import { StarProps } from '../props/profileProps';
 
 export const CalculatorHelper = {
   priceFormat(price: number): string {
-    return this.numberToAbbreviatedString(price, '');
+    // return this.numberToAbbreviatedString(price, '');
+    if (price >= 1000000) {
+      const p = (price / 1000000).toFixed(2).toString();
+      return p + 'M';
+    } else if (price >= 1000) {
+      const p = (price / 1000).toFixed(2).toString();
+      return p + 'k';
+    } else {
+      return price.toString();
+    }
   },
 
   viewFormat(price: number): string {
-    return this.numberToAbbreviatedString(price, '1');
+    // return this.numberToAbbreviatedString(price, '1');
+    if (price >= 1000000) {
+      const p = (price / 1000000).toFixed(1).toString();
+      return p + 'M';
+    } else if (price >= 1000) {
+      const p = (price / 1000).toFixed(1).toString();
+      return p + 'k';
+    } else {
+      return price.toString();
+    }
   },
 
   numberToAbbreviatedString(num: number, fixedDecimal: string): string {

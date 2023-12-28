@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Drawer } from '@mui/material';
 // import Image from 'next/image';
@@ -31,6 +32,10 @@ const Header = () => {
     router,
     anchorEl,
     value,
+    currentUser,
+    isOpenChat,
+    handleChatDrawerChange,
+    goToPremium,
     logOut,
     setAnchorEl,
     setOpen,
@@ -71,6 +76,7 @@ const Header = () => {
       // position={isMobile ? 'relative' : 'unset'}
       position={'fixed'}
       width={'100%'}
+      maxWidth={'100vw'}
       top={0}
       zIndex={1300}
       bgcolor="#FFF"
@@ -99,7 +105,7 @@ const Header = () => {
             </Button>
           )}
           {uid && (
-            <Button variant="outlined" className={styles.chatIcon}>
+            <Button variant="outlined" className={styles.chatIcon} onClick={handleChatDrawerChange}>
               <ChatIcon />
             </Button>
           )}
@@ -141,7 +147,17 @@ const Header = () => {
                 anchorEl={anchorEl}
                 sx={{ '.MuiMenu-list': { paddingBottom: 0, paddingTop: 0 } }}
               >
-                {<ProfileSideBar icon={<ProfileIcon />} uid={uid} isMobile={isMobile} logOut={logOut} />}
+                {
+                  <ProfileSideBar
+                    icon={<ProfileIcon />}
+                    uid={uid}
+                    isMobile={isMobile}
+                    logOut={logOut}
+                    name={currentUser?.nickname || ''}
+                    email={currentUser?.email || ''}
+                    goToPremium={goToPremium}
+                  />
+                }
               </Menu>
             </Badge>
           )}
@@ -182,12 +198,35 @@ const Header = () => {
                   top: 100,
                 }}
               >
-                {<ProfileSideBar icon={<ProfileIcon />} uid={uid} isMobile={isMobile} logOut={logOut} />}
+                <Box onClick={() => setOpen(!isopen)}>
+                  <ProfileSideBar
+                    icon={<ProfileIcon />}
+                    uid={uid}
+                    isMobile={isMobile}
+                    logOut={logOut}
+                    goToPremium={goToPremium}
+                    name={currentUser?.nickname || ''}
+                    email={currentUser?.email || ''}
+                  />
+                </Box>
               </Drawer>
             </>
           )}
         </Box>
       </Box>
+      <Drawer
+        anchor={'right'}
+        open={isOpenChat}
+        componentsProps={{ backdrop: { style: { display: 'none' } } }}
+        // sx={{
+        //   '.MuiDrawer-paperAnchorTop': { top: 65 },
+        //   'MuiBackdrop-root-MuiModal-backdrop': { display: 'none' },
+        //   top: 100,
+        // }}
+        onClose={handleChatDrawerChange}
+      >
+        Hello Chat
+      </Drawer>
     </Box>
   );
 };

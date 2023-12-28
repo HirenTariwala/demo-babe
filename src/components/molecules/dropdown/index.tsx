@@ -38,6 +38,7 @@ const Dropdown = ({
 						'.MuiOutlinedInput-notchedOutline': {
 							border: background ? 0 : '-moz-initial',
 						},
+						
 					}}
 					displayEmpty
 					// defaultValue={placeholderText}
@@ -45,6 +46,7 @@ const Dropdown = ({
 					IconComponent={(props) => <ExpandMoreIcon {...props} />}
 					style={{ backgroundColor: background ? '#F0F0F0' : 'inherit' }}
 					value={value}
+					MenuProps={{sx:{'.MuiPaper-root': { borderRadius: 3 }}}}
 					onChange={onChange}
 				>
 					{listData.map((item: any) => (

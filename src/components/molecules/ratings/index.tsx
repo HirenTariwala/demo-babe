@@ -8,19 +8,13 @@ interface IRating extends RatingProps {
   ratingData: any;
 }
 
-const Rating = ({
-  size,
-  // value = 1,
-  max = 1,
-  ratingData,
-  ...props
-}: IRating) => {
+const Rating = ({ size, value, max = 1, ratingData, ...props }: IRating) => {
   const rating = CalculatorHelper.weightedAverage(ratingData).split(' ');
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <MuiRating
-        value={parseInt(rating?.[0]) || 1}
+        value={value || parseInt(rating?.[0]) || 1}
         readOnly={max === 1 ? true : false}
         max={max}
         {...props}

@@ -2,6 +2,7 @@ import Box from '@/components/atoms/box';
 import Button from '@/components/atoms/button';
 import Input from '@/components/atoms/input';
 import Typography from '@/components/atoms/typography';
+import '../../../../app/globals.css';
 import { Item } from '@/props/profileProps';
 import {
   Avatar,
@@ -20,8 +21,9 @@ import {
   SelectChangeEvent,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 
 const SearchCard: React.FC<{
   user: Item;
@@ -71,6 +73,7 @@ interface IFilterModal {
   handleGenderChange: (event: SelectChangeEvent) => void;
   handleEthnicityChange: (event: SelectChangeEvent) => void;
   handleApply: () => void;
+  setActiveLocation: (location: string) => void;
 }
 
 const FilterModal = ({
@@ -80,29 +83,52 @@ const FilterModal = ({
   data,
   nickname,
   reset,
-
   handleSearch,
-
   activeLocation,
   activeRecently,
   activePublic,
   activeGender,
   activeCity,
-
   locationData,
   recentlySelectionData,
   publicSelectionData,
   genderSelectionData,
   EthnicityData,
-
   handleLocationChange,
   handleRecentlyChange,
   handlePublicChange,
   handleGenderChange,
   handleEthnicityChange,
-
   handleApply,
+  setActiveLocation,
 }: IFilterModal) => {
+  const placesLibrary = ['places'];
+  const [searchResult, setSearchResult] = useState('');
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_API_KEY,
+    libraries: placesLibrary,
+  } as any);
+
+  const onLoad = (autocomplete: any) => {
+    setSearchResult(autocomplete);
+  };
+
+  const onPlaceChanged = () => {
+    if (searchResult != null) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-expect-error
+      const place = searchResult.getPlace();
+      const name = place.name;
+      setActiveLocation(name);
+    } else {
+      alert('Please enter text');
+    }
+  };
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
   return (
     <Dialog
       open={filterIsOpen}
@@ -161,19 +187,16 @@ const FilterModal = ({
               <Typography variant="body1" fontWeight={500} color={'#1A1A1A'} paddingBottom={3}>
                 Location
               </Typography>
-              <Input
-                fullWidth
-                size="small"
-                placeholder="Enter username"
-                inputProps={{ sx: { padding: '12px 24px' } }}
-                helperText
-                sx={{
-                  paddingBottom: '12px',
-                }}
-              />
+              <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onLoad}>
+                <Input
+                  fullWidth
+                  size="small"
+                  placeholder="Find location"
+                  inputProps={{ sx: { padding: '12px 24px' } }}
+                />
+              </Autocomplete>
               <RadioGroup
                 row
-                aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
                 sx={{
                   '.MuiFormControlLabel-root': {
@@ -215,7 +238,6 @@ const FilterModal = ({
 
               <RadioGroup
                 row
-                aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
                 sx={{
                   '.MuiFormControlLabel-root': {
@@ -254,7 +276,6 @@ const FilterModal = ({
 
               <RadioGroup
                 row
-                aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
                 sx={{
                   '.MuiFormControlLabel-root': {
@@ -293,7 +314,6 @@ const FilterModal = ({
 
               <RadioGroup
                 row
-                aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
                 sx={{
                   '.MuiFormControlLabel-root': {
@@ -332,7 +352,6 @@ const FilterModal = ({
 
               <RadioGroup
                 row
-                aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
                 sx={{
                   '.MuiFormControlLabel-root': {

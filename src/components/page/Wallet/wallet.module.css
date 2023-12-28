@@ -16,7 +16,7 @@
   display: grid;
   grid-template-columns: 717px 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 2px;
   overflow-x: auto;
 }
 
@@ -31,6 +31,7 @@
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
   overflow-x: auto;
+  padding: 10px;
 }
 
 .walletBotton {

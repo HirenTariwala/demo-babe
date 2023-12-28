@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEvent } from 'react';
 import Box from '@/components/atoms/box';
 import Typography from '@/components/atoms/typography';
 import { Card, CardContent, CardProps } from '@mui/material';
@@ -23,6 +23,9 @@ import { useServicesStore } from '@/store/reducers/serviceReducer';
 import NextImage from '@/components/atoms/image';
 // import useVoiceButtom from './VoiceButtom';
 import VoiceButtom from './VoiceButtom';
+import { ServiceTypeEnum } from '@/props/servicesProps';
+import dayjs from 'dayjs';
+import { Item } from '@/props/profileProps';
 
 interface IBabeCard extends CardProps {
   babeData: any;
@@ -32,6 +35,7 @@ interface IBabeCard extends CardProps {
   categoryTitle?: string;
   categoryObj?: any;
   favouritesV2?: any;
+  onClickHandler: (e: MouseEvent, obj: Item) => void;
 }
 
 const BabeCard = ({
@@ -42,29 +46,12 @@ const BabeCard = ({
   categoryTitle,
   categoryObj,
   favouritesV2,
+  onClickHandler,
   ...props
 }: IBabeCard) => {
-  // const {
-  //   // nickname,
-  //   // isOnline,
-  //   videoVerification,
-  //   // visible,
-  //   video_urls,
-  //   voiceUrl,
-  //   ratings,
-  //   price,
-  //   location,
-  //   uid,
-  //   services,
-  //   end,
-  //   isgToken,
-  //   urls,
-  //   // sbyprt,
-  //   mobileUrl,
-  // } = babeData;
   const allServicesArr = useServicesStore();
-  // const {voiceOnClick} = useVoiceButtom()
-  const iAmFreeToday = babeData?.end ? Helper.amIFreeToday(Timestamp.fromDate(babeData?.end)) : false;
+
+  const iAmFreeToday = babeData?.end ? Helper.amIFreeToday(Timestamp?.fromDate(new Date(babeData?.end))) : false;
   const servicesList = ServiceHelper.getServices(
     babeData?.services,
     category,
@@ -87,10 +74,14 @@ const BabeCard = ({
     priceObj.price = ServiceHelper.getFirstServicePrice(babeData?.services) || 0;
   }
 
-  // if(babeData?.nickname === "yokookie") {
+  const fromTime = babeData?.start ? dayjs(babeData?.start)?.format('hh:mm A') : '';
+  const endTime = babeData?.start ? dayjs(babeData?.end)?.format('hh:mm A') : '';
+
+  // if (babeData?.nickname === 'zyxn') {
   //   // const temp1 = Object.values(babeData?.services).map((item: any) => Object.values(item)?.[0]);
-  //   console.log(babeData,servicesList)
+  //   console.log(babeData, iAmFreeToday);
   // }
+  const isLive = process.env.NEXT_PUBLIC_AUTH_DOMAIN === 'rentbabe.com';
 
   return (
     <Card
@@ -105,8 +96,12 @@ const BabeCard = ({
         cursor: 'pointer',
         zIndex: 9,
       }}
+      {...props}
     >
-      <Box sx={{ width: '100%', height: '100%', zIndex: 9, position: 'absolute' }} {...props}></Box>
+      <Box
+        sx={{ width: '100%', height: '100%', zIndex: 9, position: 'absolute' }}
+        onClick={(e) => onClickHandler(e, babeData)}
+      ></Box>
       <CardContent sx={{ p: 0 }}>
         {!isFavourite && (
           <Box
@@ -119,7 +114,12 @@ const BabeCard = ({
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="h4" fontSize={size === 'small' ? 16 : 18}>
+              <Typography
+                variant="h4"
+                component={'span'}
+                sx={{ textTransform: 'capitalize' }}
+                fontSize={size === 'small' ? 16 : 18}
+              >
                 {babeData?.nickname || '-'}
               </Typography>
               {babeData?.isOnline && <StatusDot />}
@@ -132,30 +132,58 @@ const BabeCard = ({
         )}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Box position={'relative'}>
-            {iAmFreeToday && (
-              // || location
-              <Chip
-                label={babeData?.isFavourite ? babeData?.location : 'Available today!'}
-                sx={{
-                  position: 'absolute',
-                  display: 'flex',
-                  top: 8,
-                  left: 8,
-                  p: '0 8px',
-                  backdropFilter: 'blur(10px)',
-                  color: '#FFF',
-                  fontSize: size === 'small' ? 12 : 14,
-                  lineHeight: size === 'small' ? 16 : 20,
-                }}
-                icon={
-                  isFavourite ? (
-                    <LocationIcon size={size === 'small' ? 16 : 20} />
-                  ) : (
-                    <Lighting size={size === 'small' ? 16 : 20} />
-                  )
-                }
-                size={size}
-              />
+            {iAmFreeToday ? (
+              isFavourite ? (
+                <Chip
+                  label={babeData?.gonow_servce === ServiceTypeEnum.meetup ? babeData?.gonow_coming_from : 'Town'}
+                  sx={{
+                    position: 'absolute',
+                    display: 'flex',
+                    top: 8,
+                    left: 8,
+                    p: '0 8px',
+                    backdropFilter: 'blur(10px)',
+                    color: '#FFF',
+                    fontSize: size === 'small' ? 12 : 14,
+                    lineHeight: size === 'small' ? 16 : 20,
+                    zIndex: 1,
+                  }}
+                  icon={
+                    isFavourite ? (
+                      <LocationIcon size={size === 'small' ? 16 : 20} />
+                    ) : (
+                      <Lighting size={size === 'small' ? 16 : 20} />
+                    )
+                  }
+                  size={size}
+                />
+              ) : (
+                <Chip
+                  label={isFavourite ? babeData?.location : 'Available today!'}
+                  sx={{
+                    position: 'absolute',
+                    display: 'flex',
+                    top: 8,
+                    left: 8,
+                    p: '0 8px',
+                    backdropFilter: 'blur(10px)',
+                    color: '#FFF',
+                    fontSize: size === 'small' ? 12 : 14,
+                    lineHeight: size === 'small' ? 16 : 20,
+                    zIndex: 1,
+                  }}
+                  icon={
+                    isFavourite ? (
+                      <LocationIcon size={size === 'small' ? 16 : 20} />
+                    ) : (
+                      <Lighting size={size === 'small' ? 16 : 20} />
+                    )
+                  }
+                  size={size}
+                />
+              )
+            ) : (
+              ''
             )}
             {/* {babeData?.video_urls?.length > 0 ? (
               <video
@@ -176,15 +204,6 @@ const BabeCard = ({
               />
             ) : ( */}
             <Box position="relative" width="100%" height={size === 'small' ? 180 : 240}>
-              {/* <Image
-                  src={babeData?.urls?.[0] || babeData?.mobileUrl}
-                  // layout="fill"
-                  fill
-                  // loading='lazy'
-                  sizes='100%'
-                  style={{ borderRadius: 16, objectFit: 'cover' }}
-                  alt={babeData?.nickname || '-'}
-                /> */}
               <NextImage
                 src={babeData?.urls?.[0] || babeData?.mobileUrl}
                 fill
@@ -211,10 +230,15 @@ const BabeCard = ({
                 sx={{
                   background: '#FFF',
                   boxShadow: '0px 2px 14px 0px rgba(0, 0, 0, 0.10)',
+                  '.MuiAvatar-img': {
+                    width: isLive ? '36px' : '24px',
+                    height: isLive ? '36px' : '24px',
+                    borderRadius: '100px',
+                  },
                 }}
                 renderSurplus={(surplus) => (
                   <span>
-                    <FireBlack />
+                    <FireBlack size={isLive ? 36 : 24} />
                     <Box
                       sx={{
                         background: 'rgba(0, 0, 0, 0.6)',
@@ -237,27 +261,11 @@ const BabeCard = ({
                   </span>
                 )}
               />
-              {babeData?.voiceUrl && (
-                <VoiceButtom voiceUrl={babeData.voiceUrl} />
-                // <IconButton
-                //   onClick={() => {
-                //     console.log('Hello');
-                //     voiceOnClick(babeData?.voiceUrl)
-                //   }}
-                //   sx={{
-                //     background: '#FFD443',
-                //     zIndex: 10,
-                //     border: '2px solid #FFF',
-                //     ':hover': { background: '#FFD443' },
-                //   }}
-                // >
-                //   <VoiceIcon />
-                // </IconButton>
-              )}
+              {babeData?.voiceUrl && <VoiceButtom voiceUrl={babeData.voiceUrl} />}
             </Box>
           </Box>
           <Box p={2} display="flex" alignItems="flex-start" gap={2} flexDirection="column">
-            {isFavourite && <Time from={'10:58 AM'} to={'4:58 PM'} size={size} />}
+            {isFavourite && <Time from={fromTime} to={endTime} size={size} />}
             <Rating ratingData={babeData?.ratings} size={size} />
             {!isFavourite && (
               <Price

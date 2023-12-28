@@ -19,7 +19,7 @@ const FAQPage = () => {
           })}
         </Box>
       ),
-      lable: 'General',
+      lable: () => 'General',
     },
     {
       content: (
@@ -29,7 +29,7 @@ const FAQPage = () => {
           })}
         </Box>
       ),
-      lable: 'How to rent?',
+      lable: () => 'How to rent?',
     },
     {
       content: (
@@ -39,7 +39,7 @@ const FAQPage = () => {
           })}
         </Box>
       ),
-      lable: 'Rules',
+      lable: () => 'Rules',
     },
     {
       content: (
@@ -49,7 +49,7 @@ const FAQPage = () => {
           })}
         </Box>
       ),
-      lable: 'Refund',
+      lable: () => 'Refund',
     },
     {
       content: (
@@ -59,7 +59,7 @@ const FAQPage = () => {
           })}
         </Box>
       ),
-      lable: 'Credit',
+      lable: () => 'Credit',
     },
   ];
 

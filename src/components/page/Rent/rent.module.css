@@ -11,7 +11,7 @@
 }
 .videoBackButton {
   display: flex !important;
-  justify-content: start !important;
+  justify-content: flex-start !important;
   align-items: center;
   padding: 20px;
   border-radius: 50%;
@@ -22,7 +22,7 @@
 }
 .videoNextButton {
   display: flex !important;
-  justify-content: end !important;
+  justify-content: flex-end !important;
   align-items: center;
   padding: 20px;
   border-radius: 50%;
@@ -89,21 +89,36 @@
 .activeChip {
   background-color: #ffd443 !important;
 }
-.availableProfile{
+.favouriteLabel {
+  padding: 0px 40px;
+}
+.availableProfile {
   max-width: 1440px !important;
   margin-left: auto !important;
   margin-right: auto !important;
   padding-top: 40px;
 }
+.sliderBox > div > div {
+  padding: 24px 0px 40px 0px !important;
+  margin: 0px 40px !important;
+}
+.sliderBox > div > div > div {
+  display: flex;
+  gap: 20px;
+}
+.sliderBox > div > div > div > div {
+  width: '100%' !important;
+}
 .filterSection {
   max-width: 1440px !important;
   margin-left: auto !important;
   margin-right: auto !important;
-  padding-top: 40px; 
-  padding-bottom: 8px;
+  /* padding-top: 40px; */
+  padding: 0px 40px 8px 40px;
+  /* padding-bottom: 8px; */
   display: flex;
   flex-direction: column;
-  gap: 24px
+  gap: 24px;
 }
 .cards {
   display: grid;
@@ -186,18 +201,29 @@
   }
   .availableProfile {
     max-width: 375px !important;
+    padding-top: 20px;
   }
   .filterSection {
     max-width: 375px !important;
+    padding: 0px 20px 8px 20px;
   }
   .cardV3 {
     max-width: 375px !important;
     height: 100% !important;
-    overflow: unset !important
+    overflow: unset !important;
   }
   .cardV3 > div {
     left: 10px !important;
     right: 16px !important;
-   
+  }
+  .favouriteLabel {
+    padding: 0px 20px;
+  }
+  .sliderBox > div > div {
+    /* padding: 20px 16px !important; */
+    margin: 0px 20px !important;
+  }
+  .sliderBox > div > div > div {
+    gap: 12px;
   }
 }

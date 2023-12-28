@@ -6,15 +6,23 @@ import SuccessIcon from '@/components/atoms/icons/successIcon';
 
 interface IToast extends SnackbarProps {
   alertMessage: string;
+  vertical?: 'top' | 'bottom';
+  horizontal?: 'center' | 'left' | 'right';
 }
 
 const ToastMessage = forwardRef<HTMLDivElement, AlertProps>(function AlertComp(props, ref) {
   return <Alert {...props} ref={ref} />;
 });
 
-const Toast = ({ alertMessage, autoHideDuration = 5000, ...props }: IToast) => {
+const Toast = ({
+  alertMessage,
+  autoHideDuration = 3000,
+  vertical = 'bottom',
+  horizontal = 'center',
+  ...props
+}: IToast) => {
   return (
-    <Snackbar {...props} autoHideDuration={autoHideDuration}>
+    <Snackbar {...props} anchorOrigin={{ vertical, horizontal }} autoHideDuration={autoHideDuration}>
       <div>
         <ToastMessage
           sx={{

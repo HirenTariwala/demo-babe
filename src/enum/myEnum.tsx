@@ -40,7 +40,7 @@ export enum ProfileEnum {
   gamer = 3,
 }
 
-export enum MeetupEnum {
+export enum meetupEnum {
   meals,
   hiking,
   dining,

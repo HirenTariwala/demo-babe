@@ -29,7 +29,7 @@ const SimpleDialog = ({ title, open, footer, modelWidth, isDeleteModel, children
               : {}
           }
         >
-          <DialogActions>{footer}</DialogActions>
+          <DialogActions sx={{ padding: isMobile ? '16px' : '24px' }} >{footer}</DialogActions>
         </Box>
       </Dialog>
     </>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Box from '@/components/atoms/box';
 import Button from '@/components/atoms/button';
 import Typography from '@/components/atoms/typography';
@@ -8,12 +8,13 @@ import AddIcon from '@mui/icons-material/Add';
 interface IStepper {
   size?: 'small' | 'large';
   text?: string;
+  count: number ;
+  setCount:(arg: number)=>void
 }
 
-const Stepper = ({ text, size }: IStepper) => {
-  const [count, setCount] = useState(0);
+const Stepper = ({ text, size,count,setCount }: IStepper) => {
   return (
-    <Box display="flex" alignItems="center" flexDirection="column" gap={2}>
+    <Box display="flex" alignItems="center" flexDirection="column" gap={2} maxWidth={124}>
       <Box
         display="flex"
         alignItems="center"
@@ -27,8 +28,9 @@ const Stepper = ({ text, size }: IStepper) => {
         <Button
           size="small"
           variant="text"
+          disabled={count <= 2}
           sx={{ p: 0, minWidth: 'inherit', color: '#646464' }}
-          onClick={() => setCount(count - 1)}
+          onClick={()=>setCount(count - 1)}
         >
           <RemoveIcon fontSize="small" />
         </Button>

@@ -11,6 +11,7 @@ interface ITab extends TabsOwnProps {
   tabsLabel?: string;
   tabBottomPadding?: any;
   resetTab?: number | string;
+  onTabChange?: (arg?: number) => void;
 }
 
 type TabContentPanelProps = {
@@ -34,10 +35,13 @@ function TabContentPanel(props: TabContentPanelProps) {
   );
 }
 
-const Tabs = ({ tabsData, tabBottomPadding, resetTab, mainClass, tabsLabel, ...props }: ITab) => {
+const Tabs = ({ tabsData, tabBottomPadding, resetTab, mainClass, tabsLabel, onTabChange, ...props }: ITab) => {
   const [value, setValue] = useState(0);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+    if (onTabChange) {
+      onTabChange(newValue);
+    }
   };
   useEffect(() => {
     setValue(0);
@@ -66,7 +70,7 @@ const Tabs = ({ tabsData, tabBottomPadding, resetTab, mainClass, tabsLabel, ...p
               textTransform: 'none',
               fontFamily: `'Helvetica Neue', sans-serif`,
             }}
-            label={tab.lable}
+            label={tab.lable(value)}
             className={tabsLabel ? styles[tabsLabel] : ''}
           />
         ))}

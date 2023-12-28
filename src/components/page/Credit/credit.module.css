@@ -1,0 +1,101 @@
+.creditBox {
+  padding: 58px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 76px);
+  background: linear-gradient(293deg, rgba(255, 242, 194, 0.17) 0%, #fff7f2 100%, rgba(255, 247, 242, 0.72) 100%);
+}
+.creditCard {
+  backdrop-filter: blur(20px) !important;
+  width: 100%;
+  max-width: 960px;
+  padding: 40px 32px 36px 32px;
+  height: 100%;
+  padding: 2;
+  border-radius: 24px !important;
+  box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  overflow: auto !important;
+}
+.cardHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+.cardSubHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.GoPremiumCard {
+  display: flex;
+  min-height: 56px;
+  padding: 16px 20px;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+  justify-content: space-between;
+  border-radius: 16px;
+  text-wrap: nowrap;
+  background: linear-gradient(77deg, #ffed34 11.3%, #ffd144 86.76%);
+  box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.1);
+}
+.rechargeCard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.paymentSection {
+  display: flex;
+  gap: 24px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.selectPay {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 60px;
+  border-radius: 12px;
+  width: fit-content;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.rechargeButton {
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px 20px;
+  text-transform: none;
+}
+@media (max-width: 600px) {
+  .creditBox {
+    padding: 24px 16px;
+  }
+  .creditCard {
+    padding: 24px 16px;
+  }
+  .rechargeCard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .GoPremiumCard {
+    flex-direction: column;
+    text-wrap: wrap;
+  }
+  .footer {
+    flex-direction: column;
+  }
+  .rechargeButton {
+    display: flex;
+    width: 100% !important;
+  }
+}

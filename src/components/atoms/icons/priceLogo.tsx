@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ISvgIcon } from './types';
 
-const PriceLogo = ({ size, ...props }:ISvgIcon) => {
+const PriceLogo = ({ size=24, ...props }:ISvgIcon) => {
   return (
     <svg
     width={size}

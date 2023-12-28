@@ -17,7 +17,7 @@ import React from 'react';
 
 const arr = [
   { icon: <WalletIcon />, text: 'Wallet', to: '/wallet' },
-  { icon: <OrderIcon />, text: 'Order', to: '#' },
+  { icon: <OrderIcon />, text: 'Order', to: '/order' },
   { icon: <LastViewIcon />, text: 'Last Viewed', to: '#' },
 ];
 
@@ -45,9 +45,12 @@ interface IProfileSideBar {
   uid: string | undefined | null;
   isMobile: boolean;
   logOut: () => void;
+  goToPremium: () => void;
+  name: string;
+  email: string;
 }
 
-const ProfileSideBar = ({ isMobile, uid, icon, logOut }: IProfileSideBar) => {
+const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium }: IProfileSideBar) => {
   const router = useRouter();
 
   return (
@@ -67,9 +70,11 @@ const ProfileSideBar = ({ isMobile, uid, icon, logOut }: IProfileSideBar) => {
                   <Avatar avatars={[{ alt: 'H', src: icon }]} />
                   <Box display="flex" flexDirection="column">
                     <Typography variant="body1" fontWeight={500}>
-                      {'Michael Scott'}
+                      {name || '--'}
                     </Typography>
-                    <Typography variant="subtitle2" color={'#999999'}>{`msscott@gmail.com`}</Typography>
+                    <Typography variant="subtitle2" color={'#999999'}>
+                      {email || '--'}
+                    </Typography>
                   </Box>
                 </Box>
 
@@ -92,6 +97,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, logOut }: IProfileSideBar) => {
                   background: 'linear-gradient(77deg, #FFED34 11.3%, #FFD144 86.76%)',
                 }}
                 color="secondary"
+                onClick={goToPremium}
               >
                 Upgrade to Premium
               </Button>
@@ -133,7 +139,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, logOut }: IProfileSideBar) => {
         {uid && (
           <Box display="flex" justifyContent="space-around">
             {arr &&
-              arr.map((item: any, index: number) => (
+              arr?.map((item: any, index: number) => (
                 <Box
                   key={index}
                   display="flex"
@@ -158,7 +164,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, logOut }: IProfileSideBar) => {
         )}
         <Divider sx={{ marginBottom: '4px', margin: '0 15px' }} />
         <Box p="8px 16px" display="flex" gap={3} flexDirection="column">
-          <Link href="/rent" style={{ textDecoration: 'none', color: '#1A1A1A' }}>
+          <Link href="/rent" shallow style={{ textDecoration: 'none', color: '#1A1A1A' }}>
             <Typography variant="subtitle2" component="span" fontWeight={500}>
               Rent
             </Typography>
@@ -167,7 +173,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, logOut }: IProfileSideBar) => {
         </Box>
         <Box display="flex" gap={3} flexDirection="column" p="8px 16px">
           {nav.map((item, index: number) => (
-            <Link key={index} href={item.path} style={{ textDecoration: 'none', color: '#1A1A1A' }}>
+            <Link key={index} shallow href={item.path} style={{ textDecoration: 'none', color: '#1A1A1A' }}>
               <Typography variant="subtitle2" component="span" fontWeight={500}>
                 {item.name}
               </Typography>

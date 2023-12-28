@@ -1,31 +1,35 @@
 import { DocumentData, DocumentSnapshot, Timestamp } from 'firebase/firestore';
 
 import {
-  adminKey,
-  APNSTokenKey,
-  clubKey,
+  // adminKey,
+  // APNSTokenKey,
+  // clubKey,
   currencyKey,
   dateOfBirthKey,
   emeetsKey,
   genderKey,
   geoEncodingsKey,
   legalNameKey,
-  nicknameKey,
+  // nicknameKey,
   ratingsKey,
-  rejectReasonAfterKey,
+  // rejectReasonAfterKey,
   servicesKey,
-  stateKey,
-  stripeApprovedKey,
-  stripeConnectAccountKey,
-  teleIdKey,
-  timeStampKey,
+  // stateKey,
+  // stripeApprovedKey,
+  // stripeConnectAccountKey,
+  // teleIdKey,
+  // timeStampKey,
   urlsKey,
-  videoVerificationKey,
+  // videoVerificationKey,
 } from '../keys/firestoreKeys';
-import { ClubProps, EmeetsProps } from '../props/commonProps';
+import { 
+  // ClubProps, 
+  EmeetsProps } from '../props/commonProps';
 import { StarProps } from '../props/profileProps';
 import { ServiceDetailProps, ServicesProps, ServiceTypeEnum } from '../props/servicesProps';
-import { APNSTokenProps } from '../props/userProps';
+import { 
+  // APNSTokenProps, 
+  UserProps } from '../props/userProps';
 import { CalculatorHelper } from './calculator';
 import { StringHelper } from './stringHelper';
 
@@ -57,42 +61,43 @@ export const ProfileHelper = {
   getUserProfile(userData: DocumentSnapshot<DocumentData> | undefined): { [key: string]: any } {
     if (!userData) return {};
 
-    const thisAdmin = userData.get(adminKey) as boolean | undefined;
-    const thisNickname = userData.get(nicknameKey) as string;
-    const thisTeleId = userData.get(teleIdKey) as string;
-    const thisVideoVerification = userData.get(videoVerificationKey) as boolean;
-    const thisStripeConnectAccount = userData.get(stripeConnectAccountKey) as string;
-    const thisStripeApproved = userData.get(stripeApprovedKey) as boolean;
+    // const thisAdmin = userData.get(adminKey) as boolean | undefined;
+    // const thisNickname = userData.get(nicknameKey) as string;
+    // const thisTeleId = userData.get(teleIdKey) as string;
+    // const thisVideoVerification = userData.get(videoVerificationKey) as boolean;
+    // const thisStripeConnectAccount = userData.get(stripeConnectAccountKey) as string;
+    // const thisStripeApproved = userData.get(stripeApprovedKey) as boolean;
     const thisGender = userData.get(genderKey) as number;
     const thisDob = userData.get(dateOfBirthKey) as Timestamp | undefined;
     const thisRatings = userData.get(ratingsKey) as StarProps | undefined;
-    const thisIsActive = !!(userData.get(timeStampKey) as Timestamp);
-    const thisAPNSToken = userData.get(APNSTokenKey) as APNSTokenProps | undefined;
-    const thisMyClub = userData.get(clubKey) as ClubProps | undefined;
-    const thisRejectReasonAfter = userData.get(rejectReasonAfterKey) as string | undefined;
+    // const thisIsActive = !!(userData.get(timeStampKey) as Timestamp);
+    // const thisAPNSToken = userData.get(APNSTokenKey) as APNSTokenProps | undefined;
+    // const thisMyClub = userData.get(clubKey) as ClubProps | undefined;
+    // const thisRejectReasonAfter = userData.get(rejectReasonAfterKey) as string | undefined;
     const thisGeo = userData.get(geoEncodingsKey) as string[] | undefined;
     const thisEmeets = userData.get(emeetsKey) as EmeetsProps | undefined;
     const thisServices = userData.get(servicesKey) as ServicesProps | undefined;
     const thisLegalName = userData.get(legalNameKey) as string | undefined;
     const thisCurrency = userData.get(currencyKey) as string | undefined;
-    const thisState = userData.get(stateKey) as string | undefined;
+    // const thisState = userData.get(stateKey) as string | undefined;
 
-    const map: { [key: string]: any } = {
-      isAdmin: thisAdmin,
-      nickname: thisNickname,
-      teleId: thisTeleId,
-      verified: thisVideoVerification,
-      stripeApproved: thisStripeApproved,
-      stripeConnectAccount: thisStripeConnectAccount,
-      inactive: thisIsActive,
-      APNSToken: thisAPNSToken,
-      club: thisMyClub?.name,
-      clubState: thisMyClub?.state,
-      rejectReasonAfter: thisRejectReasonAfter,
-      services: thisServices,
-      state: thisState,
-    };
+    // const map: { [key: string]: any } = {
+    //   isAdmin: thisAdmin,
+    //   nickname: thisNickname,
+    //   teleId: thisTeleId,
+    //   verified: thisVideoVerification,
+    //   stripeApproved: thisStripeApproved,
+    //   stripeConnectAccount: thisStripeConnectAccount,
+    //   inactive: thisIsActive,
+    //   APNSToken: thisAPNSToken,
+    //   club: thisMyClub?.name,
+    //   clubState: thisMyClub?.state,
+    //   rejectReasonAfter: thisRejectReasonAfter,
+    //   services: thisServices,
+    //   state: thisState,
+    // };
 
+    const map = userData?.data() as UserProps
     if (thisRatings) {
       const weightedValue = CalculatorHelper.weightedAverageValue(thisRatings);
       const numberOfRents = CalculatorHelper.numberOfMeetups(thisRatings);

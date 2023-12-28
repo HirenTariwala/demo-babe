@@ -39,7 +39,7 @@ const Dialog = ({ open,footer, children, ...props }: IDialog) => {
             {children}
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{justifyContent: "center"}}>{footer}</DialogActions>
+        <DialogActions>{footer}</DialogActions>
       </MuiDialog>
     </>
   );

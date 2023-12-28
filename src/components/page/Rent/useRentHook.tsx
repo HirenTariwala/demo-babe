@@ -1,3 +1,4 @@
+'use client';
 import { mediaLinks } from '@/common/utils/data';
 import Typography from '@/components/atoms/typography';
 import BabeCard from '@/components/molecules/card/babe';
@@ -6,7 +7,6 @@ import { useGetFavourites } from '@/hooks/useGetFavouties';
 import {
   USERS,
   adminKey,
-  endKey,
   genderKey,
   geoEncodings,
   lowestKey,
@@ -26,7 +26,6 @@ import {
   DocumentData,
   Query,
   QueryConstraint,
-  Timestamp,
   collection,
   getDocs,
   limit,
@@ -34,7 +33,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { useEffect, useRef, useState, memo } from 'react';
+import { useEffect, useRef, useState, memo, MouseEvent } from 'react';
 import { SkeletonCardView } from './components/SkeletonCardView';
 import { GridChildComponentProps } from 'react-window';
 import { useIPAddress } from '@/hooks/useIpAddress';
@@ -42,6 +41,9 @@ import { ServiceDetailProps } from '@/props/servicesProps';
 import { COLOMBIA, MALAYSIA, PHILIPPINES, SINGAPORE, SOUTH_KOREA } from '@/keys/countries';
 import { areaLocalKey } from '@/keys/localStorageKeys';
 import { useRouter } from 'next/navigation';
+import useHeaderHook from '@/components/organisms/header/useHeaderHook';
+import Box from '@/components/atoms/box';
+import LoadingIcon from '@/components/atoms/icons/loading';
 
 export interface IRenderComponentProps<Item> {
   /**
@@ -185,9 +187,10 @@ const EthnicityData = [
     value: '3',
   },
 ];
-// const GOOGLE_MAPS_API_KEY = 'AIzaSyC3aviU6KHXAjoSnxcw6qbOhjnFctbxPkE';
+sessionStorage.setItem('cardData', '[]');
+sessionStorage.setItem('scrollTo', '0');
 
-let initLoading = true
+let initLoading = true;
 const parPage = 50;
 const useRentHook = () => {
   const router = useRouter();
@@ -204,6 +207,7 @@ const useRentHook = () => {
   ];
 
   const isMobile = useMediaQuery('(max-width:600px)');
+  const { isTablet } = useHeaderHook();
   const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
   const [filterIsOpen, setFilterIsOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<number | undefined>(0);
@@ -212,86 +216,83 @@ const useRentHook = () => {
   const [activePublic, setActivePublic] = useState<string>('0');
   const [activeGender, setActiveGender] = useState<string>('');
   const [activeCity, setActiveCity] = useState<string>('');
-  const [items, setItems] = useState([]);
+  const [isRequestModalOpen, setRequestModalOpen] = useState(false)
+  const cardData = sessionStorage.getItem('cardData');
+  const [items, setItems] = useState(cardData ? JSON.parse(cardData) : []);
 
   const [hasMore, setHasMore] = useState(false);
+
+  // let parpageCount = parPage;
+  // if (cardData) {
+  //   parpageCount = (Math.ceil(JSON.parse(cardData)?.length / 50) || 1) * 50;
+  // }
   const [limitquery, setLimit] = useState(parPage);
-  const [goNow, setGoNow] = useState<Item[]>([]);
-  const [numberOfProfilesTODAY, setNumberOfProfilesTODAY] = useState<number>(NaN);
   const [nickname, setNickname] = useState<string>();
   const [time, setTime] = useState<any>(null);
   const [reset, setReset] = useState(false);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [selectedUid, setSelectedUid] = useState('');
+  const [selectedBabeInfo, setSelectedBabeInfo] = useState<Item>();
   const [cardColumnCount, setCardColumnCount] = useState<number>(isMobile ? 2 : 5);
 
   const [data, setData] = useState<Item | undefined>();
   const sliderRef = useRef(null);
-  const midnight = useRef<Date>(new Date(new Date()));
-  const today = useRef<Date>(new Date(new Date()));
-  const TODAYLimit = Math.ceil(window.innerWidth / (120 + 16)) + 2;
-  const { loadingIPAddress } = useIPAddress()
-  const [getRegionState, setRegionState] = useState<string[]>([])
+  const { loadingIPAddress } = useIPAddress();
+  const [getRegionState, setRegionState] = useState<string[]>([]);
 
-  const categoryObj: ServiceDetailProps | undefined = activeTab ? favouritesV2?.find((item, index) => index === activeTab) : undefined;
+  const categoryObj: ServiceDetailProps | undefined = activeTab
+    ? favouritesV2?.find((item, index) => index === activeTab)
+    : undefined;
   const activeCategoryId = categoryObj?.category || '';
   const categoryTitle = categoryObj?.title;
-
-  
   useEffect(() => {
-    if( !loadingIPAddress){ 
-      console.log(getRegionState, hasMore);
-      
-      setArea()
+    if (!loadingIPAddress) {
+      console.log(getRegionState);
+      setArea();
     }
-    // eslint-disable-next-line 
-  }, [loadingIPAddress])
+    // eslint-disable-next-line
+  }, [loadingIPAddress]);
+
+  useEffect(() => {
+    const scrollTo = sessionStorage.getItem('scrollTo');
+
+    if (scrollTo) {
+      window.scrollTo(0, parseInt(scrollTo));
+    }
+  });
 
   const setArea = () => {
-    const query = sessionStorage.getItem(stateKey)?.toLowerCase()
-    if(query){
-      const currentPageState = Helper.getCurrentPageState()
-      let areaData = undefined
-      if(currentPageState && currentPageState.length > 0){
-        areaData = currentPageState
-        setRegionState(currentPageState)
-      }else{
-        if(query === "ph"){
-          areaData= PHILIPPINES
-          setRegionState(PHILIPPINES)
-        }
-        else if(query === "my"){
-          areaData= MALAYSIA
-          setRegionState(MALAYSIA)
-        }else if (query === "co"){
-          areaData= COLOMBIA
-          setRegionState(COLOMBIA)
-        }
-        else if (query === "kr"){
-          areaData= SOUTH_KOREA
-          setRegionState(SOUTH_KOREA)
-        }
-        else{
-          areaData= SINGAPORE
-          setRegionState(SINGAPORE)
+    const query = sessionStorage.getItem(stateKey)?.toLowerCase();
+    if (query) {
+      const currentPageState = Helper.getCurrentPageState();
+      let areaData = undefined;
+      if (currentPageState && currentPageState.length > 0) {
+        areaData = currentPageState;
+        setRegionState(currentPageState);
+      } else {
+        if (query === 'ph') {
+          areaData = PHILIPPINES;
+          setRegionState(PHILIPPINES);
+        } else if (query === 'my') {
+          areaData = MALAYSIA;
+          setRegionState(MALAYSIA);
+        } else if (query === 'co') {
+          areaData = COLOMBIA;
+          setRegionState(COLOMBIA);
+        } else if (query === 'kr') {
+          areaData = SOUTH_KOREA;
+          setRegionState(SOUTH_KOREA);
+        } else {
+          areaData = SINGAPORE;
+          setRegionState(SINGAPORE);
         }
       }
-      localStorage.setItem(areaLocalKey, areaData.join(", "))
-    }else{
-      // const getState = Helper.getState(phoneNumber)
-      // setRegionState(getState)
-      // localStorage.setItem(area, getState.join(", "))
-      setRegionState(SINGAPORE)
-      localStorage.setItem(areaLocalKey, SINGAPORE.join(", "))
+      localStorage.setItem(areaLocalKey, areaData.join(', '));
+    } else {
+      setRegionState(SINGAPORE);
+      localStorage.setItem(areaLocalKey, SINGAPORE.join(', '));
     }
-   
-    // if(serviceIndex.current?.[ServiceType.meetup] || serviceIndex.current?.[ServiceType.sports] ){
-    //   setAllCountries(false) 
-    // }else{
-    //   setAllCountries(true) 
-    // }
-  }
+  };
   useEffect(() => {
     setCardColumnCount(isMobile ? 2 : 5);
   }, [isMobile]);
@@ -311,9 +312,9 @@ const useRentHook = () => {
     }
     setCurrentVideoIndex((prev) => prev + 1);
   };
-  
-  const handleTabChange = (e: number | undefined) => {
 
+  const handleTabChange = (e: number | undefined) => {
+    setItems([]);
     setLoading(true);
     getDocs(
       getQuery(
@@ -339,7 +340,6 @@ const useRentHook = () => {
 
         setItems(List);
         setLoading(false);
-        if (List?.length === 0) setHasMore(false);
       })
       .catch((err) => {
         console.log('err ==> ', err);
@@ -356,7 +356,6 @@ const useRentHook = () => {
     setActiveLocation(event.target.value);
     if (isMobile) {
       setLoading(true);
-      setHasMore(true);
       getDocs(
         getQuery(
           db,
@@ -382,7 +381,6 @@ const useRentHook = () => {
           });
           setItems(List);
           setLoading(false);
-          if (List?.length === 0) setHasMore(false);
         })
         .catch((err) => {
           console.log('Error ==> ', err);
@@ -467,7 +465,6 @@ const useRentHook = () => {
 
   const handleApply = () => {
     setLoading(true);
-    setHasMore(true);
     getDocs(
       getQuery(
         db,
@@ -495,7 +492,6 @@ const useRentHook = () => {
         setItems(List);
         setFilterIsOpen(false);
         setLoading(false);
-        if (List?.length === 0) setHasMore(false);
       })
       .catch((err) => {
         console.log('Error ==> ', err);
@@ -507,15 +503,14 @@ const useRentHook = () => {
   const fetchMoreData = (props: any, totalItems: number) => {
     const totalRowCount = Math.ceil(totalItems / cardColumnCount);
     const rowHeight = isMobile ? 365 : 420;
-    const isAtBottom = props?.scrollTop > 0.8 * (totalRowCount * rowHeight - 350);
+    // const isAtBottom = props?.scrollTop > 0.8 * (totalRowCount * rowHeight - 350);
+    const isAtBottom = props?.scrollTop > 1 * (totalRowCount * rowHeight - 350);
 
     if (isAtBottom) {
       // setLimit((prev) => prev + parPage);
       setLimit(limitquery + parPage);
     }
   };
-
-  const goNowObj: Item[] = goNow;
 
   const getQuery = (
     db: any,
@@ -528,53 +523,24 @@ const useRentHook = () => {
     recently?: string
   ): Query<DocumentData> => {
     const gIndex = genderIndex;
-    const count = []
+    const count = [];
     const whereAdminTrue = where(adminKey, '==', true);
-    count.push("adminKey");
+    count.push('adminKey');
     const limitBy = limit(limitNumber);
-    count.push("limitBy");
+    count.push('limitBy');
     const queries: QueryConstraint[] = [whereAdminTrue];
     if (recently) {
-      count.push("recently");
+      count.push('recently');
       if (recently === 'Recently Active') {
-        // const d = new Date();
-        // const whereTimestamp = [
-        //   where(applyTimeStampKey, '<', Timestamp.fromDate(new Date(d.setDate(d.getDate() + 10)))),
-        //   orderBy(applyTimeStampKey, 'desc'),
-        // ];
         const whereTimestamp = orderBy(timeStampKey, 'desc');
-        
-      
+
         queries.push(whereTimestamp);
       } else if (recently === 'Highest Ratings') {
         const whereHighestRatings = orderBy(sortByRatingsKey, 'desc');
 
         queries.push(whereHighestRatings);
       } else if (recently === 'Lowest Price') {
-        // const whereLowestPrice = orderBy(sortByPricingKey, 'asc');
-
-        // queries.push(whereLowestPrice);
         const highLow = lowestKey;
-
-        // if(serviceIndex.current){
-
-        //   const keys = Object.keys(serviceIndex.current)
-        //   const values = Object.values(serviceIndex.current)
-
-        //   if(keys.length > 0 && values.length > 0){
-        //     const key = keys[0]
-        //     const value = values[0]
-
-        //     if(value === "-1"){
-        //       return `${sortByPricing}.${highLow}`
-        //     } else if(value === "-2"){
-        //       return `${sortByPricing}.${ServiceType.games}.${highLow}`
-        //     } else return `${services}.${key}.${value}.${sortByPricing}`
-
-        //   }else return `${sortByPricing}.${highLow}`
-
-        // }else
-        // `${sortByPricingKey}.${highLow}`
         const whereLowestPrice = orderBy(`${sortByPricingKey}.${highLow}`, 'asc');
 
         queries.push(whereLowestPrice);
@@ -582,16 +548,16 @@ const useRentHook = () => {
     }
 
     queries.push(limitBy);
-    let isForAllCountry: boolean = true
-    
+    let isForAllCountry: boolean = true;
+
     if (category && parseInt(category) != 0) {
-      count.push("category");
+      count.push('category');
       const currCatObj = favouritesV2?.find((item, index) => index === parseInt(category));
-      if(currCatObj?.serviceType === 1) {
-        isForAllCountry= false
-        setActiveLocation("")
-      } else if(!state) {
-        setActiveLocation("Singapore")
+      if (currCatObj?.serviceType === 1) {
+        isForAllCountry = false;
+        setActiveLocation('');
+      } else if (!state) {
+        setActiveLocation('Singapore');
       }
       const whereCategory = where(
         `${servicesKey}.${currCatObj?.serviceType}.${currCatObj?.category}.id`,
@@ -602,58 +568,32 @@ const useRentHook = () => {
     }
 
     if (!isNaN(gIndex)) {
-      count.push("gIndex");
+      count.push('gIndex');
       const whereGender = where(genderKey, '==', gIndex);
       queries.push(whereGender);
     }
 
     if (isForAllCountry) {
-      count.push("state");
-      const whereRegion = where(geoEncodings, 'array-contains', state || "Singapore");
+      count.push('state');
+      const whereRegion = where(geoEncodings, 'array-contains', state || 'Singapore');
       queries.push(whereRegion);
     }
-    // const whereRegion = where(geoEncodings, "array-contains", state)
 
-    // if(_s){
-    //   const cat = Object.keys(_s)[0]
-    //   if(parseInt(cat) === ServiceTypeEnum.meetup || parseInt(cat) === ServiceTypeEnum.sports){
-    //     queries.push(whereRegion)
-    //   }
-    // }
-    // else if(isNaN(deIndex)){
-    //   queries.push(whereRegion)
-    // }
-
-
-    
     if (!isNaN(privacy)) {
-      count.push("privacy");
+      count.push('privacy');
       const wherePrivacy = where(privacyKey, '==', privacy);
       queries.push(wherePrivacy);
     }
 
     if (!isNaN(raceIndex)) {
-      count.push("raceIndex")
+      count.push('raceIndex');
       const whereRace = where(`${raceKey}2.${raceIndex}`, '==', true);
       queries.push(whereRace);
     }
-    
-    // console.log(count);
-    
 
     const getUserByLatest: Query<DocumentData> = query(collection(db, USERS), ...queries);
     return getUserByLatest;
   };
-
-  const todayRef = query(
-    collection(db, USERS),
-    where(geoEncodings, 'array-contains', activeLocation),
-    where(adminKey, '==', true),
-    where(endKey, '>', Timestamp.fromDate(today.current)),
-    where(endKey, '<', Timestamp.fromDate(midnight.current)),
-    limit(TODAYLimit),
-    orderBy(endKey, 'asc')
-  );
 
   useEffect(() => {
     setHasMore(true);
@@ -680,40 +620,21 @@ const useRentHook = () => {
             itemList.push(newItem);
           }
         });
-        
-        setItems(itemList);
+        if (itemList?.length > items?.length) {
+          sessionStorage.setItem('cardData', JSON.stringify(itemList));
+          setItems(itemList);
+        }
+        if (itemList?.length < limitquery) {
+          setHasMore(false);
+        }
         setLoading(false);
         // setInitLoading(false);
-        initLoading = false
-        if (itemList?.length === 0) setHasMore(false);
+        initLoading = false;
       })
       .catch((error) => {
         console.log('error==> ', error);
 
         setLoading(false);
-      });
-
-    getDocs(todayRef)
-      .then((snap) => {
-        for (const doc of snap.docs) {
-          const item = Helper.createItemFromDocument(doc);
-          goNowObj.push(item as Item);
-        }
-
-        const lastDoc = snap.docs.slice(-1)[0];
-        if (lastDoc) {
-          today.current = (lastDoc.get(endKey) as Timestamp).toDate();
-        }
-        const numberOfProfiles = snap.docs.length;
-        if (numberOfProfiles !== 0) {
-          setGoNow([...goNowObj]);
-          if (TODAYLimit > numberOfProfiles) {
-            setNumberOfProfilesTODAY(goNowObj?.length);
-          }
-        } else setNumberOfProfilesTODAY(goNowObj?.length);
-      })
-      .catch((err) => {
-        console.log('err', err);
       });
   }, [limitquery]);
 
@@ -724,66 +645,79 @@ const useRentHook = () => {
     setFilterIsOpen(false);
   };
 
+  const onClickBabeCard = (e: MouseEvent, babeInfo: any) => {
+    e.preventDefault();
+    if (isMobile) {
+      router.push(`/profile/${babeInfo?.uid}`);
+    } else {
+      setSelectedBabeInfo(babeInfo);
+      setOpen(true);
+    }
+  };
+
   // eslint-disable-next-line react/display-name
   const Column = memo(({ columnIndex, rowIndex, style }: GridChildComponentProps) => {
     const index = rowIndex * cardColumnCount + columnIndex;
     const obj: Item = items[index];
 
     return (
-      <div
-        id={obj?.uid}
-        style={{
-          gap: '20px',
-          paddingLeft: columnIndex === 0 ? (isMobile ? '6px' : '10px') : isMobile ? '6px' : '10px',
-          paddingRight: columnIndex === cardColumnCount ? (isMobile ? '6px' : '12px') : isMobile ? '6px' : '10px',
-          paddingBottom: isMobile ? '12px' : '20px',
-          paddingTop: rowIndex === 0 ? (isMobile ? '12px' : '24px') : isMobile ? '12px' : '20px',
-          ...style,
-        }}
-      >
-        {loading ? (
-          <SkeletonCardView key={index} />
-        ) : obj ? (
-          <BabeCard
-            key={index}
-            id={obj?.uid}
-            babeData={obj}
-            onClick={(e) => {
-              e?.preventDefault()
-              // setSelectedUid((items[0] as any)?.uid);
-              if(isMobile) {
-                router.push(`/profile/${obj?.uid}`)
-              } else {
-                setSelectedUid(obj?.uid);
-                setOpen(true);
-              }
-            }}
-            size={isMobile ? 'small' : 'medium'}
-            category={activeCategoryId}
-            categoryTitle={categoryTitle}
-            categoryObj={categoryObj}
-            favouritesV2={favouritesV2}
-          />
-        ) : (
-          ''
-        )}
-      </div>
+      <>
+        <div
+          id={obj?.uid}
+          style={{
+            gap: '20px',
+            paddingLeft: columnIndex === 0 ? (isMobile ? '6px' : '10px') : isMobile ? '6px' : '10px',
+            paddingRight: columnIndex === cardColumnCount ? (isMobile ? '6px' : '12px') : isMobile ? '6px' : '10px',
+            paddingBottom: isMobile ? '12px' : '20px',
+            paddingTop: rowIndex === 0 ? (isMobile ? '12px' : '24px') : isMobile ? '12px' : '20px',
+            ...style,
+          }}
+        >
+          {!obj && loading ? (
+            <SkeletonCardView key={index} />
+          ) : obj ? (
+            <BabeCard
+              key={index}
+              // id={obj?.uid}
+              babeData={obj}
+              onClickHandler={onClickBabeCard}
+              size={isMobile ? 'small' : 'medium'}
+              category={activeCategoryId}
+              categoryTitle={categoryTitle}
+              categoryObj={categoryObj}
+              favouritesV2={favouritesV2}
+            />
+          ) : (
+            ''
+          )}
+          {index === items?.length - 1 && (
+            <Box
+              sx={{
+                padding: '50px',
+                width: '95vw',
+                textAlign: 'center',
+                color: 'black',
+                position: 'fixed',
+                left: '0%',
+              }}
+            >
+              {hasMore ? <LoadingIcon /> : 'No More Profile'}
+            </Box>
+          )}
+        </div>
+      </>
     );
   });
 
-  const availableProfileLabel = numberOfProfilesTODAY
-    ? numberOfProfilesTODAY == 1
-      ? `${numberOfProfilesTODAY} profile is available TODAY 🔥`
-      : `${numberOfProfilesTODAY} profiles are available TODAY 🔥`
-    : 'Available TODAY 🔥';
-
   return {
     isMobile,
+    isTablet,
     loading,
     initLoading,
     cardColumnCount,
     Column,
     filterIsOpen,
+    limitquery,
     currentVideoIndex,
     mediaLinks,
     activeTab,
@@ -792,7 +726,6 @@ const useRentHook = () => {
     activePublic,
     activeGender,
     activeCity,
-    goNow,
     time,
     locationData,
     recentlySelectionData,
@@ -804,12 +737,13 @@ const useRentHook = () => {
     items,
     reset,
     nickname,
-    // hasMore,
     data,
-    numberOfProfilesTODAY,
-    availableProfileLabel,
+    regionState: activeLocation ? [activeLocation] : getRegionState,
     open,
-    selectedUid,
+    selectedBabeInfo,
+    isRequestModalOpen,
+    setOpen,
+    onClickBabeCard,
     handleClose,
     handleTabChange,
     onOpenFilter,
@@ -827,6 +761,8 @@ const useRentHook = () => {
     handleEthnicityChange,
     backVideoHandler,
     nextVideoHandler,
+    setActiveLocation,
+    setRequestModalOpen
   };
 };
 

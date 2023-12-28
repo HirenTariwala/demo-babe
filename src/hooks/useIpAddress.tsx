@@ -4,9 +4,9 @@ import { setCurrentUser, useUserStore } from '@/store/reducers/usersReducer';
 import { useAppDispatch } from '@/store/useReduxHook';
 import { Helper } from '@/utility/helper';
 import { useEffect, useState } from 'react';
-import { logEvent } from "firebase/analytics";
-import { analytics } from '@/credentials/firebase';
-import { AnalyticsNames } from '@/keys/analyticNames';
+// import { logEvent } from "firebase/analytics";
+// import { analytics } from '@/credentials/firebase';
+// import { AnalyticsNames } from '@/keys/analyticNames';
 import { stateKey } from '@/keys/firestoreKeys';
 
 export const useIPAddress: () => { loadingIPAddress: boolean } = () => {
@@ -61,11 +61,11 @@ export const useIPAddress: () => { loadingIPAddress: boolean } = () => {
             try {
               if (countryName) {
                 console.log(countryName, "Hello");
-                logEvent(analytics, AnalyticsNames.ipaddress, {
-                  country_type: countryName,
-                  content_type: countryName,
-                  item_id: countryName, 
-                })  
+                // logEvent(analytics, AnalyticsNames.ipaddress, {
+                //   country_type: countryName,
+                //   content_type: countryName,
+                //   item_id: countryName, 
+                // })  
               }
             } catch (error) {
               console.log('error ', error);

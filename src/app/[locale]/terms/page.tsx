@@ -1,12 +1,9 @@
-import Terms from '@/components/page/Terms';
 import React from 'react';
+import Terms from '@/components/page/Terms';
 
 const page = () => {
-  return (
-    <>
-      <Terms />
-    </>
-  );
+  return <Terms />
+  
 };
 
 export default page;
