@@ -66,7 +66,7 @@ const Row =
   ) =>
   // eslint-disable-next-line react/display-name
   // ({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | null | undefined>) => {
-  ({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[]>) => {
+  ({ index, style, data }: ListChildComponentProps<any>) => {
     const doc = data?.[index];
     console.log(style);
 
@@ -189,7 +189,7 @@ const Row =
   };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChatView: FC<ChatViewProps> = ({ myBlock, otherBlock, requestNewOrder, onFocus }) => {
+const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }:ChatViewProps) => {
   const clubName = sessionStorage.getItem(clubKey);
   const clubState = sessionStorage.getItem(stateKey);
   const headerSize = clubName && clubState ? 44 : 0;
@@ -337,6 +337,7 @@ const ChatView: FC<ChatViewProps> = ({ myBlock, otherBlock, requestNewOrder, onF
             data={data}
             overScan={4}
             loadNextPage={loadNextPage}
+            //@ts-ignore
             component={Row(
               uid,
               conversation?.id ?? chatRoomID
