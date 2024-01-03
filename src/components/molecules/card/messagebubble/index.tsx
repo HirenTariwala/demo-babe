@@ -25,12 +25,7 @@ interface IMessageBubble extends IBox {
   rate: string;
 }
 
-const MessageBubble = ({
-  rate,
-  services,
-  messageData,
-  ...props
-}: IMessageBubble) => {
+const MessageBubble = ({ rate, services, messageData, ...props }: IMessageBubble) => {
   const [accept, setAccept] = useState<boolean>();
   const { status, date, time, price } = messageData;
   const handleClick = () => {
@@ -50,27 +45,9 @@ const MessageBubble = ({
         }}
       >
         <CardContent sx={{ p: 0 }}>
-          <Box
-            p={3}
-            bgcolor="#F0F0F0"
-            display="flex"
-            justifyContent="center"
-            flexDirection="column"
-            gap={1}
-            {...props}
-          >
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              gap={3}
-            >
-              <Box
-                display="flex"
-                flexDirection="row"
-                gap={3}
-                alignItems="center"
-              >
+          <Box p={3} bgcolor="#F0F0F0" display="flex" justifyContent="center" flexDirection="column" gap={1} {...props}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" gap={3}>
+              <Box display="flex" flexDirection="row" gap={3} alignItems="center">
                 <Box
                   sx={{
                     background: '#FFF',
@@ -86,11 +63,7 @@ const MessageBubble = ({
                   <Typography variant="body1" component="span" fontWeight={500}>
                     {services}
                   </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    component="span"
-                    color="#999999"
-                  >
+                  <Typography variant="subtitle2" component="span" color="#999999">
                     {rate}
                   </Typography>
                 </Box>
@@ -115,13 +88,8 @@ const MessageBubble = ({
           </Box>
           {status === 'expired' ? (
             <Box p={3}>
-              <Typography
-                variant="subtitle2"
-                color={'primary'}
-                fontWeight={500}
-              >
-                Expired! Your client has not make any payment yet. Do not
-                continue
+              <Typography variant="subtitle2" color={'primary'} fontWeight={500}>
+                Expired! Your client has not make any payment yet. Do not continue
               </Typography>
             </Box>
           ) : (
@@ -129,15 +97,8 @@ const MessageBubble = ({
               {['cancelled', 'waitpayment', 'rejected'].includes(status) && (
                 <Box>
                   {status === 'waitpayment' && (
-                    <Typography
-                      variant="subtitle2"
-                      color={'error'}
-                      fontSize={12}
-                      lineHeight={'16px'}
-                      fontWeight={400}
-                    >
-                      This order is NOT confirmed! The order is only confirmed
-                      after your client make the payment.
+                    <Typography variant="subtitle2" color={'error'} fontSize={12} lineHeight={'16px'} fontWeight={400}>
+                      This order is NOT confirmed! The order is only confirmed after your client make the payment.
                     </Typography>
                   )}
                   <Box display="flex" gap={2} alignItems="center">
@@ -146,10 +107,7 @@ const MessageBubble = ({
                       <Typography variant="body2" fontWeight={500}>
                         mscott has cancelled the order.
                       </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        color={'#999999'}
-                      >{`Reason: ${'I dont like it'}.`}</Typography>
+                      <Typography variant="subtitle2" color={'#999999'}>{`Reason: ${'I dont like it'}.`}</Typography>
                     </Box>
                   </Box>
                   <hr
@@ -173,9 +131,7 @@ const MessageBubble = ({
                     {price}
                   </Typography>
                 </Box>
-                {!['expired', 'cancelled', 'completed', 'rejected'].includes(
-                  status
-                ) && (
+                {!['expired', 'cancelled', 'completed', 'rejected'].includes(status) && (
                   <Box display="flex" gap={2} justifyContent="center">
                     <Button
                       variant="outlined"
@@ -185,24 +141,13 @@ const MessageBubble = ({
                     >
                       {accept ? 'Undo' : 'Reject'}
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      sx={{ width: 184 }}
-                      onClick={handleClick}
-                    >
+                    <Button variant="contained" color="primary" sx={{ width: 184 }} onClick={handleClick}>
                       {accept ? 'Confirm' : 'Accept'}
                     </Button>
                   </Box>
                 )}
                 {status === 'waitingpayment' && (
-                  <Typography
-                    variant="subtitle2"
-                    color={'error'}
-                    fontSize={12}
-                    lineHeight={'16px'}
-                    fontWeight={500}
-                  >
+                  <Typography variant="subtitle2" color={'error'} fontSize={12} lineHeight={'16px'} fontWeight={500}>
                     Expires in 10h:25m:02s
                   </Typography>
                 )}

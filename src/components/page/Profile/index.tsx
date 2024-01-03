@@ -23,25 +23,29 @@ import ToolTip from '@/components/atoms/tooltip';
 import ReportModal from './components/reportModal';
 import ShareModal from './components/shareModal';
 import { IconButton } from '@mui/material';
-import { Item } from '@/props/profileProps';
+import { useRouter } from 'next/navigation';
+import RequestOrderModal from './components/requestOrderModal';
+import { setRequestModalOpen, useRequestModal } from '@/store/reducers/serviceReducer';
+import { useAppDispatch } from '@/store/useReduxHook';
+import { useTranslations } from 'next-intl';
 
 const Profile = ({
   uid,
-  babeInfo,
   onClick,
-  setRequestModalOpen,
+  setOpen,
 }: {
   uid?: string | undefined;
-  babeInfo?: Item | undefined;
   onClick?: () => void;
-  setRequestModalOpen?: (arg: boolean) => void;
+  setOpen?: (arg: boolean) => void;
 }) => {
   const {
     isMobile,
     item,
+    nickName,
     galleryData,
     tabsData,
     url,
+    isTablet,
     myUid,
     dateTime,
     open,
@@ -51,6 +55,7 @@ const Profile = ({
     isAudioPlaying,
     reportModalOpen,
     view,
+    isProfilePage,
     voiceOnClick,
     setAnchorEl,
     setShareModalOpen,
@@ -58,11 +63,32 @@ const Profile = ({
     goBack,
     onResetTab,
     setReportModalOpen,
-  } = useProfileHook(uid, babeInfo);
+  } = useProfileHook(uid);
+  const dispatch = useAppDispatch();
+
+  const router = useRouter();
+  const isModalOpen = useRequestModal();
+  const t = useTranslations('profile.modal')
   return (
-    <>
-      <Box width={'100%'} paddingBottom={isMobile ? '100px' : 0} overflow={'hidden'}>
-        {isMobile && (
+    <Box
+      width={'100%'}
+      sx={{
+        background:
+          'linear-gradient(293deg, rgba(255, 242, 194, 0.17) 0%, #fff7f2 100%, rgba(255, 247, 242, 0.72) 100%)',
+      }}
+    >
+      <Box
+        width={'100%'}
+        bgcolor={'#fff'}
+        maxWidth={isProfilePage ? 600 : '100%'}
+        mx={'auto'}
+        paddingBottom={isMobile ? '100px' : 0}
+        overflow={'hidden'}
+        sx={{
+          padding: !isProfilePage || isMobile ? '0px' : '20px',
+        }}
+      >
+        {isProfilePage && (
           <Box
             sx={{
               padding: '20px 16px',
@@ -90,7 +116,7 @@ const Profile = ({
                   alt=""
                   skeletonRadius={'100px'}
                 />
-                {!isMobile && item?.voiceUrl && (
+                {!isProfilePage && item?.voiceUrl && (
                   <Box
                     sx={{
                       position: 'absolute',
@@ -167,7 +193,7 @@ const Profile = ({
                   {item ? (
                     <Box display="flex" gap={1} alignItems="center">
                       <Typography variant="h2" component="span" sx={{ textTransform: 'capitalize' }}>
-                        {item?.nickname || '--'}
+                        {nickName}
                         {`(${item?.dob || '--'})`}
                       </Typography>
                       {item?.videoVerification && (
@@ -193,7 +219,7 @@ const Profile = ({
                     </Box>
                   )}
                 </Box>
-                {isMobile && item?.voiceUrl && (
+                {isProfilePage && item?.voiceUrl && (
                   <Box>
                     <Button
                       onClick={voiceOnClick}
@@ -258,9 +284,11 @@ const Profile = ({
                 <Box display="flex" gap={2} alignItems="center">
                   <Rating ratingData={item?.ratings} size="small" />
                   <DotIcon />
-                  <Typography variant="subtitle1">
-                    {view} <span>Views</span>
-                  </Typography>
+                  {view > '0' && (
+                    <Typography variant="subtitle1">
+                      {view} <span>Views</span>
+                    </Typography>
+                  )}
                 </Box>
                 {/* ) : (
                   <SkeletonLine height={15} width={100} />
@@ -327,7 +355,7 @@ const Profile = ({
                     </MenuItem>
                   ))}
               </Menu>
-              {!isMobile && (
+              {!isProfilePage && !isMobile && (
                 <IconButton>
                   <CloseIcon onClick={onClick} />
                 </IconButton>
@@ -343,13 +371,18 @@ const Profile = ({
               <SkeletonLine height={300} width={'100%'} radius={4} />
             </Box>
           )}
-          <Box marginLeft={isMobile ? '0px' : '100px '}>
+          <Box
+            marginLeft={isMobile ? '0px' : '100px '}
+            sx={{
+              paddingBottom: isProfilePage ? 50 : 0,
+            }}
+          >
             <Tabs tabBottomPadding="24px" tabsData={galleryData} />
           </Box>
         </Box>
       </Box>
 
-      {isMobile && (
+      {isProfilePage && (
         <Box
           sx={{
             display: 'flex',
@@ -372,15 +405,14 @@ const Profile = ({
             }}
             color="secondary"
             onClick={() => {
-              if (setRequestModalOpen) {
-                setRequestModalOpen(true);
-              }
+              if (!myUid) router.push('/login');
+              dispatch(setRequestModalOpen(true));
             }}
           >
-            Request an order
+           {t('requestOrder')}
           </Button>
           <Typography variant="caption" component="span">
-            We only issue refund within 72 hours from the date of purchase
+          {t('requestMessage')}
           </Typography>
         </Box>
       )}
@@ -392,7 +424,8 @@ const Profile = ({
         reportBy={myUid}
         user={item?.uid}
       />
-    </>
+      <RequestOrderModal isMobile={isMobile} isTablet={isTablet} isOpen={isModalOpen} setOpen={setOpen} />
+    </Box>
   );
 };
 

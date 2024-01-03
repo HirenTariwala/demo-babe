@@ -7,39 +7,41 @@ import React, { useEffect } from 'react';
 import Price from '@/components/molecules/price';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import TabChip from '../../Rent/components/favouritechip';
-import { Item } from '@/props/profileProps';
 import NextImage from '@/components/atoms/image';
 import { ServiceHelper } from '@/utility/serviceHelper';
 import { useDispatch } from 'react-redux';
 import { setSelectedServices } from '@/store/reducers/serviceReducer';
+import { useSeletedBabeStore } from '@/store/reducers/babeReducer';
 
 interface ITabContent {
   activeTab: number;
   data: any;
-  babeInfo: Item;
   isMobile: boolean;
   setActiveTab: (arg: number) => void;
 }
 
-const TabContent = ({ activeTab, setActiveTab, data, babeInfo, isMobile }: ITabContent) => {
-  const { emeets } = babeInfo;
-  const dispatch = useDispatch()
-  const servicesKeyId = Object.keys(data);
-  const temp = Object.keys(data).map((key) => data[key]);
+const TabContent = ({ activeTab, setActiveTab, data, isMobile }: ITabContent) => {
+  const { selectedBabe } = useSeletedBabeStore();
+  const emeets = selectedBabe?.emeets;
+  const dispatch = useDispatch();
+  const servicesKeyId = Object?.keys(data)?.filter((item) => item != 'id');
+  console.log(servicesKeyId);
+
+  const temp = servicesKeyId?.map((key) => data[key]);
   const handleTabChange = (e: number) => {
     setActiveTab(e);
-    dispatch(setSelectedServices(temp[e]))
+    dispatch(setSelectedServices(temp[e]));
   };
 
-  const suffix = temp[activeTab]?.suffix ?? ServiceHelper.getDefaultSuffix(parseInt(servicesKeyId[activeTab])) 
+  const suffix = temp[activeTab]?.suffix ?? ServiceHelper.getDefaultSuffix(parseInt(servicesKeyId[activeTab]));
 
-  useEffect(()=>{
-   dispatch(setSelectedServices(temp[0]))
-  },[])
+  useEffect(() => {
+    dispatch(setSelectedServices(temp[0]));
+  }, []);
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
-      {temp?.[activeTab]?.image.includes('EMEET') && (
+      {temp?.[activeTab]?.image?.includes('EMEET') && (
         <Box display="flex" alignItems="center" gap={2}>
           <CheckBox
             label={
@@ -99,7 +101,7 @@ const TabContent = ({ activeTab, setActiveTab, data, babeInfo, isMobile }: ITabC
       <Box
         display={'flex'}
         gap={4}
-        mt={temp?.[activeTab]?.image.includes('EMEET') ? 'unset' : 3}
+        mt={temp?.[activeTab]?.image?.includes('EMEET') ? 'unset' : 3}
         sx={{
           width: '100%',
           overflowX: 'auto',
@@ -164,7 +166,7 @@ const TabContent = ({ activeTab, setActiveTab, data, babeInfo, isMobile }: ITabC
                 price: temp?.[activeTab]?.price,
                 min: temp?.[activeTab]?.price,
                 max: temp?.[activeTab]?.price,
-                hr:  ServiceHelper.convertUnits(suffix),
+                hr: ServiceHelper.convertUnits(suffix),
               }}
               category="1"
             />

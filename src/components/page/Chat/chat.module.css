@@ -1,0 +1,68 @@
+.userListSection {
+  min-width: 300px;
+  max-width: 400px;
+  width: 100%;
+}
+.backArrowHeader {
+  display: flex;
+  padding: 24px 20px 16px 20px;
+  align-items: flex-start;
+  gap: 10px;
+  align-self: stretch;
+}
+
+.backArrowButton {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 360px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.userList {
+  height: auto;
+  display: flex;
+  padding: 16px 20px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  flex: 1 0 0;
+}
+.userListArr {
+  max-height: calc(100vh - 172px);
+  overflow-y: auto;
+}
+.userListArr::-webkit-scrollbar {
+  display: none !important;
+  scroll-behavior: smooth !important;
+}
+.chatBoxSection {
+  border-left: 1px solid #999;
+  min-height: 100%;
+  width: 100%;
+  overflow-y: auto;
+}
+.chatBoxHeaderSection {
+  position: sticky;
+  top: 0;
+  height: 92px;
+  display: flex;
+  min-width: 600px;
+  width: 100%;
+  padding: 24px 20px 16px 20px;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #999;
+}
+.chatBoxBody {
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.chatBodyContent {
+  padding: 20px 24px;
+}

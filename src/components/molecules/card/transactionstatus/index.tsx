@@ -17,6 +17,9 @@ import { infoKey, rejectReasonAfterKey, rejectReasonKey, statusKey, timeStampKey
 import { DateHelper } from '@/utility/dateHelper';
 import { OrderStatusEnum } from '@/enum/orderEnum';
 import { getColor } from '@/common/utils/getcolor';
+import ViewOrderModal from '@/components/page/Order/components/viewOrderModal';
+import ReviewModal from '@/components/page/Order/components/reviewModal';
+import RefundModal from '@/components/page/Order/components/refundModal';
 
 interface ITransactionStatusCard extends IBox {
   transactionStatusData: any;
@@ -28,6 +31,8 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
   const isMobile = useMediaQuery('(max-width:600px)');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState<boolean>(false);
+  const [refundModalOpen, setRefundModalOpen] = useState<boolean>(false);
   const [openDialogType, setOpenDialogType] = useState<string>('');
   const [isLoading, setLoading] = useState<boolean>(false);
   const userStore = useUserStore();
@@ -42,7 +47,7 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
     Cancelled: 'error',
     Expired: 'primary',
     Pending: 'warning',
-    Refunded: 'warning',
+    Refunded: 'error',
     PendingRefund: 'warning',
   };
 
@@ -55,6 +60,7 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
   const statusEnum = doc[statusKey];
 
   return (
+    <>
     <Card
       sx={{
         p: isMobile ? 3 : 4,
@@ -137,13 +143,20 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
                 >
                   {/* {dummy && dummy?.map((item) => <MenuItem key={item?.id}>{item?.text}</MenuItem>)} */}
                   <MenuItem
-                  // onClick={viewOrder}
+                  onClick={()=>{
+                    setIsOpen(true)
+                    setAnchorEl(null)
+                  }
+                  } 
                   >
                     View order
                   </MenuItem>
 
                   <MenuItem
-                  // onClick={leaveReview}
+                  onClick={()=> {
+                    setReviewModalOpen(true)
+                    setAnchorEl(null)
+                  }}
                   >
                     Give review
                   </MenuItem>
@@ -152,11 +165,11 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
                     <MenuItem
                       disabled={isLoading}
                       onClick={() => {
-                        setOpenDialogType('Refund Rejection');
-                        setIsOpen(true);
+                        // setOpenDialogType('Refund Rejection');
+                        setRefundModalOpen(true);
                       }}
                     >
-                      Refund rejected
+                      Refund
                     </MenuItem>
                   )}
 
@@ -203,8 +216,9 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
                     <MenuItem
                       disabled={isLoading}
                       onClick={() => {
-                        setOpenDialogType('Request Refund');
-                        setIsOpen(true);
+                        setAnchorEl(null)
+                        // setOpenDialogType('Request Refund');
+                        setRefundModalOpen(true);
                         // window.open(`/refund?id=${transactionID}&v=${version}`, '_blank');
                       }}
                     >
@@ -227,18 +241,18 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
                 fontSize={12}
                 lineHeight={'16px'}
               >{`Order ID: ${transactionID} `}</Typography>
-              {!['expired', 'cancelled'].includes(status) && !isMobile && <DotIcon />}
+              {statusEnum === OrderStatusEnum.completed && !isMobile && <DotIcon />}
               {!['expired', 'cancelled'].includes(status) && (
                 <>
-                  {status?.toLowerCase() !== 'pending' ? (
+                  {statusEnum === OrderStatusEnum.completed ? (
                     <Typography variant="subtitle2" color={'#999999'} fontSize={12} lineHeight={'16px'}>
                       Paid by credit
                     </Typography>
-                  ) : (
+                  ) : statusEnum === OrderStatusEnum.pending ? (
                     <Typography variant="subtitle2" color={'error'} fontSize={12} lineHeight={'16px'} fontWeight={500}>
                       Make payment in {remainingTime}
                     </Typography>
-                  )}
+                  ): undefined}
                 </>
               )}
               {status === 'Completed' && <CoinsSwapIcon />}
@@ -247,6 +261,10 @@ const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }
         </Box>
       </CardContent>
     </Card>
+    <ViewOrderModal isMobile={isMobile} isTablet={isMobile} isOpen={isOpen} setOpen={setIsOpen} />
+    <ReviewModal isMobile={isMobile} isTablet={isMobile} isOpen={reviewModalOpen} setOpen={setReviewModalOpen}/>
+    <RefundModal isMobile={isMobile} isTablet={isMobile} isOpen={refundModalOpen} setOpen={setRefundModalOpen} />
+    </>
   );
 };
 

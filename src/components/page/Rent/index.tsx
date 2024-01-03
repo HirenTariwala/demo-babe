@@ -19,6 +19,8 @@ import NextImage from '@/components/atoms/image';
 import ProfileModalComponents from '../Profile/components/profileModalComponents';
 import WhoIsFreeTodayView from './components/WhoIsFreeTodayView';
 import RequestOrderModal from '../Profile/components/requestOrderModal';
+import { useRequestModal } from '@/store/reducers/serviceReducer';
+import { useTranslations } from 'next-intl';
 
 const imgs = [
   'https://rentbabe.com/assets/banner/newuser.jpg',
@@ -112,12 +114,12 @@ const Rent = () => {
     reset,
     nickname,
     open,
-    limitquery,
+    // limitquery,
     favouritesV2,
     filterIsOpen,
-    selectedBabeInfo,
     regionState,
-    isRequestModalOpen,
+    showScrollToTop,
+    scrollToTop,
     onClickBabeCard,
     handleTabChange,
     handleSearch,
@@ -132,15 +134,15 @@ const Rent = () => {
     handleEthnicityChange,
     backVideoHandler,
     handleClose,
+    setOpen,
     nextVideoHandler,
     fetchMoreData,
     onOpenFilter,
     onCloseFilter,
-    setOpen,
     setActiveLocation,
-    setRequestModalOpen,
   } = useRentHook();
-
+  const isModalOpen = useRequestModal();
+  const t = useTranslations('rentPage')
   return (
     <Box
       sx={{
@@ -210,7 +212,7 @@ const Rent = () => {
           <SkeletonLine height={30} width={150} />
         ) : ( */}
         <Typography variant={isMobile ? 'h4' : 'h2'} color="#1A1A1A">
-          Favourites
+          {t('favourites')}
         </Typography>
         {/* )} */}
         <Box
@@ -349,7 +351,7 @@ const Rent = () => {
                 cursor: 'pointer',
               }}
             >
-              Apply
+              {t('apply')}
             </Button>
           </Box>
         )}
@@ -359,7 +361,7 @@ const Rent = () => {
         columnCount={cardColumnCount}
         columnWidth={isMobile ? 177 : 276}
         onItemsRendered={() => true}
-        rowCount={Math.ceil((limitquery || 1) / cardColumnCount)}
+        rowCount={Math.ceil((items?.length || 1) / cardColumnCount)}
         rowHeight={isMobile ? 360 : 420}
         width={isMobile ? 375 : 1440}
         height={window.screenTop}
@@ -395,13 +397,18 @@ const Rent = () => {
         </Box>
       </InfiniteScroll> */}
       <ProfileModalComponents
-        babeInfo={selectedBabeInfo}
         isOpen={open}
         onClick={handleClose}
         isMobile={isMobile}
         isTablet={isTablet}
-        setRequestModalOpen={setRequestModalOpen}
+        setOpen={setOpen}
       />
+        {isModalOpen && <RequestOrderModal
+        isMobile={isMobile}
+        isTablet={isTablet}
+        isOpen={isModalOpen}
+        setOpen={setOpen}
+      />}
       <FilterModal
         filterIsOpen={filterIsOpen}
         onCloseFilter={onCloseFilter}
@@ -428,14 +435,35 @@ const Rent = () => {
         handleApply={handleApply}
         setActiveLocation={setActiveLocation}
       />
-      <RequestOrderModal
-        isMobile={isMobile}
-        isTablet={isTablet}
-        isOpen={isRequestModalOpen}
-        babeInfo={selectedBabeInfo}
-        onClick={setRequestModalOpen}
-        setOpen={setOpen}
-      />
+      {showScrollToTop && (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignContent="center"
+          flexDirection="column"
+          position="fixed"
+          right={'calc(1rem + 28px - 16px - 6px)'}
+          bottom={'20px'}
+          onClick={scrollToTop}
+          zIndex={99}
+          bgcolor="black"
+          sx={{
+            transform: 'translate(0, -50%)',
+            cursor: 'pointer',
+            width: 30,
+            height: 30,
+            borderRadius: 999999,
+            padding: '8px',
+          }}
+        >
+          <NextImage
+            width={15}
+            height={15}
+            src={`https://${process.env.NEXT_PUBLIC_IMAGE_PREFIX}/assets/flaticon/gotop.svg`}
+            alt=""
+          />
+        </Box>
+      )}
     </Box>
   );
 };

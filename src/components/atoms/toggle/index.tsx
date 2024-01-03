@@ -1,12 +1,15 @@
 import React from "react";
 import Switch, { SwitchProps } from "@mui/material/Switch";
 import { styled } from "@mui/material/styles";
+import { FormControlLabel } from "@mui/material";
 
-interface IToggle extends SwitchProps {}
+interface IToggle extends SwitchProps {
+  label?: React.ReactNode 
+}
 
 const IOSSwitch = styled((props: SwitchProps) => (
     
-  <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
+<Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
 ))(({ color, theme }) => ({
   width: 42,
   height: 26,
@@ -53,8 +56,11 @@ const IOSSwitch = styled((props: SwitchProps) => (
   },
 }));
 
-const Toggle = ({ ...props }: IToggle) => {
-  return <IOSSwitch  {...props} />;
+const Toggle = ({label, ...props }: IToggle) => {
+  return   <FormControlLabel
+  control={<IOSSwitch {...props}/>}
+  label={label}
+/>
 };
 
 export default Toggle;

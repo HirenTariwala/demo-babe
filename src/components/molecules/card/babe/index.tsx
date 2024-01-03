@@ -120,7 +120,7 @@ const BabeCard = ({
                 sx={{ textTransform: 'capitalize' }}
                 fontSize={size === 'small' ? 16 : 18}
               >
-                {babeData?.nickname || '-'}
+                {babeData?.nickname || babeData?.nick || '-'}
               </Typography>
               {babeData?.isOnline && <StatusDot />}
             </Box>
@@ -209,7 +209,7 @@ const BabeCard = ({
                 fill
                 sizes="100%"
                 style={{ borderRadius: 16, objectFit: 'cover' }}
-                alt={babeData?.nickname || '-'}
+                alt={babeData?.nickname || babeData?.nick || '-'}
               />
             </Box>
             {/* )} */}

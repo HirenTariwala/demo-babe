@@ -94,8 +94,9 @@ export const Helper = {
     const url = new URL(window.location.href);
     return url.searchParams.get(key) ?? '';
   },
-  getURLEnd(location: Location) {
-    const last = decodeURIComponent(location.pathname.split('/').pop() ?? '');
+  getURLEnd() {
+    // const last = decodeURIComponent(location.pathname.split('/').pop() ?? '');
+    const last = decodeURIComponent(location?.pathname.split('/').pop() ?? '');
     const endings = last.split('?')[0];
     return endings;
   },

@@ -27,6 +27,7 @@ export default function RootLayout({ children, params }: { children: React.React
   const pathName = usePathname();
 
   const messages = useMessage();
+
   return (
     <html lang={locale}>
       <body className={inter.className}>
@@ -35,8 +36,10 @@ export default function RootLayout({ children, params }: { children: React.React
             <ThemeProvider>
               <NextIntlClientProvider locale={locale} messages={messages}>
                 <Audio />
-                {!pathName.includes('login') && <Header />}
-                <Box className={!pathName.includes('login') ? 'children' : ''}>{children}</Box>
+                {!pathName.includes('login') && !pathName?.includes('profile') && <Header />}
+                <Box className={!pathName.includes('login') && !pathName?.includes('profile') ? 'children' : ''}>
+                  {children}
+                </Box>
               </NextIntlClientProvider>
             </ThemeProvider>
           </AuthProvider>

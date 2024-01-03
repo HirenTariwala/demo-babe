@@ -1,21 +1,41 @@
 {
-
-        "header": {
-            "beAbabe": "Aplicar",
-            "rent":"ALQUILAR",
-            "faq":"PREGUNTAS",
-            "terms":"TÉRMINOS",
-            "location":"UBICACIONES",
-            "contact":"CONTACTO",
-            "login": "Iniciar sesión"
-        },
-        "profile": {
-            "serviceTab": {
-                "emeet": "EMeet",
-                "meetup": "Reunión",
-                "games": "Juegos",
-                "sports": "Deportes"
-            }
-          }
-
+  "header": {
+    "beAbabe": "Ser un bebe",
+    "rent": "ALQUILAR",
+    "faq": "PREGUNTAS",
+    "terms": "TÉRMINOS",
+    "location": "UBICACIONES",
+    "contact": "CONTACTO",
+    "login": "Iniciar sesión"
+  },
+  "profile": {
+    "serviceTab": {
+      "emeet": "EMeet",
+      "meetup": "Reunión",
+      "games": "Juegos",
+      "sports": "Deportes"
+    },
+    "modal": {
+      "requestOrder": "Solicitar un pedido",
+      "requestMessage": "Solo emitimos reembolsos dentro de las 72 horas desde la fecha de compra."
+    }
+  },
+  "sidebar": {
+    "beAbabe": "ser un bebe",
+    "rent": "ALQUILAR",
+    "faq": "PREGUNTAS",
+    "terms": "TÉRMINOS",
+    "location": "UBICACIONES",
+    "contact": "CONTACTO",
+    "login": "Iniciar sesión",
+    "wallet": "cartera",
+    "signOut": "Cerrar sesión",
+    "order": "Pedido",
+    "lastViwed": "visto por última vez",
+    "upgrade": "Mejorado a Premium"
+  },
+  "rentPage": {
+    "apply": "Aplicar",
+    "favourites":"Favoritos"
+  }
 }

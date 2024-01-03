@@ -14,9 +14,9 @@ const useOrderhook = () => {
   const userStore = useUserStore();
   const currentUser = userStore?.currentUser;
 
-  const [isAdmin] = [currentUser?.isAdmin];
+  const [uid,isAdmin] = [currentUser?.uid,currentUser?.isAdmin];
 
-  const uid = 'nvWQi1KhGuPDnzAIwuJ89DVWz5i1';
+  // const uid = 'nvWQi1KhGuPDnzAIwuJ89DVWz5i1';
 
   const {
     loading: orderLoading,

@@ -4,19 +4,27 @@ import Profile from '..';
 import Box from '@/components/atoms/box';
 import Button from '@/components/atoms/button';
 import Typography from '@/components/atoms/typography';
-import { Item } from '@/props/profileProps';
+import { useUserStore } from '@/store/reducers/usersReducer';
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { setRequestModalOpen } from '@/store/reducers/serviceReducer';
+import { useTranslations } from 'next-intl';
 
 interface IProfileModal {
   uid?: string;
   isOpen: boolean;
   isMobile: boolean;
   isTablet: boolean;
-  babeInfo: Item | undefined;
   onClick: () => void;
-  setRequestModalOpen:(arg: boolean) => void;
+  setOpen:(arg: boolean) => void;
+
 }
 
-const ProfileModalComponents = ({ isOpen, babeInfo,onClick,setRequestModalOpen, isMobile, isTablet }: IProfileModal) => {
+const ProfileModalComponents = ({ isOpen, setOpen,onClick, isMobile, isTablet }: IProfileModal) => {
+  const {currentUser} = useUserStore()
+  const router = useRouter()
+  const dispatch = useDispatch()
+  const t= useTranslations('profile.modal')
   return (
     <>
       <Dialog
@@ -33,14 +41,18 @@ const ProfileModalComponents = ({ isOpen, babeInfo,onClick,setRequestModalOpen, 
                 }}
                 color="secondary"
                 onClick={()=>{
-                  onClick()
-                  setRequestModalOpen(true)
+                  if(!currentUser?.uid) {
+                    router.push("/login")
+                  }else{
+                    setOpen(false)
+                    dispatch(setRequestModalOpen(true))
+                  }
                 }}
               >
-                Request an order
+                {t('requestOrder')}
               </Button>
               <Typography variant="caption" component="span">
-                We only issue refund within 72 hours from the date of purchase
+                {t('requestMessage')}
               </Typography>
             </Box>
           ) : null
@@ -54,13 +66,13 @@ const ProfileModalComponents = ({ isOpen, babeInfo,onClick,setRequestModalOpen, 
           '.MuiDialogContent-root': {
             position: 'relative',
           },
-          '.MuiDialogActions-root':{
+          '.MuiDialogActions-root': {
             justifyContent: 'center',
-          }
+          },
         }}
         open={isOpen}
       >
-        <Profile babeInfo={babeInfo} onClick={onClick} setRequestModalOpen={setRequestModalOpen}/>
+        <Profile onClick={onClick} setOpen={setOpen}/>
       </Dialog>
     </>
   );

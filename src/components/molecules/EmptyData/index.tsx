@@ -16,7 +16,7 @@ const EmptyData = ({ icon, msg, ...props }: IEmptyData) => {
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        gap: '12px',
+        gap: '20px',
       }}
       {...props}
     >

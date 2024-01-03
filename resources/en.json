@@ -14,6 +14,28 @@
       "meetup": "Meet up",
       "games": "Games",
       "sports": "Sports"
+    },
+    "modal": {
+      "requestOrder": "Request an order",
+      "requestMessage": "We only issue refund within 72 hours from the date of purchase"
     }
+  },
+  "sidebar": {
+    "beAbabe": "Be a Babe",
+    "rent": "Rent",
+    "faq": "FAQ",
+    "terms": "Terms",
+    "location": "Location",
+    "contact": "Contact",
+    "login": "Login",
+    "wallet":"Wallet",
+    "signOut": "Sign out",
+    "order": "Order",
+    "lastViwed": "Last Viewed",
+    "upgrade": "Upgrade to premium"
+  },
+  "rentPage": {
+    "apply" : "Apply",
+    "favourites":"Favourites"
   }
 }

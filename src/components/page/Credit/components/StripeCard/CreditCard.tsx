@@ -225,7 +225,7 @@ const CreditCard = ({ functionName, promoMapState }: ICreditCard) => {
             <CheckBox
               onChange={onChangeCheck}
               label={
-                <Typography variant="body2" component="span" color={'#1A1A1A'}>
+                <Typography variant="body2" component="span" color={'#646464'}>
                   I understand that Credit is a non-withdrawable currency.
                 </Typography>
               }

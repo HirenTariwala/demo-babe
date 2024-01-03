@@ -11,16 +11,40 @@ import useWalletHook from './useWalletHook';
 import Chip from '@/components/atoms/chip';
 import InfoIcon from '@/components/atoms/icons/info';
 import Tabs from '@/components/atoms/tabs';
-import Withdrawn from './components/Withdrawn';
 import { CalculatorHelper } from '@/utility/calculator';
 import ToolTip from '@/components/atoms/tooltip';
+import VerifiedModal from './components/Withdrawn/VerifiedModal';
+import UnVerifiedModal from './components/Withdrawn/UnVerifiedModal';
+import Toast from '@/components/molecules/toast';
 
 const WalletPage = () => {
-  const { isMobile, tabs, currentUser, isOpenWithdraw, isVerified, withdrawModalChanges, onClickRecharge } =
-    useWalletHook();
+  const {
+    isMobile,
+    tabs,
+    currentUser,
+    uid,
+    verified,
+    rejectedReasonAfter,
+    // balance,
+    // pending,
+    income,
+    toastMsg,
+    onOpenToastWithMsg,
+    openToast,
+    onCloseToast,
+    // penaltyCredits,
+    // nickname,
+    verifiedWithdrawIsOpen,
+    setVerifiedWithdrawIsOpen,
+    unVerifiedWithdrawIsopen,
+    setUnVerifiedWithdrawIsOpen,
+    onClickRecharge,
+    withdrawButtonClick,
+  } = useWalletHook();
 
   return (
     <Box>
+      <Toast alertMessage={toastMsg} onClose={onCloseToast} open={openToast} />
       <Box className={styles.header}>
         <Box className={styles.headerContent}>
           <Box paddingBottom={'16px'} display={'flex'} alignItems={'center'} gap={4}>
@@ -142,7 +166,7 @@ const WalletPage = () => {
                   textTransform: 'none',
                   width: 'auto',
                 }}
-                onClick={withdrawModalChanges}
+                onClick={withdrawButtonClick}
                 variant="outlined"
               >
                 Withdraw
@@ -171,9 +195,27 @@ const WalletPage = () => {
           />
         </Box>
       </Box>
-      {isOpenWithdraw && (
-        <Withdrawn isOpen={isOpenWithdraw} withdrawModalChanges={withdrawModalChanges} isVerified={isVerified} />
+
+      {/* {isOpenWithdraw && <Withdrawn isOpen={isOpenWithdraw} isVerified={isVerified} />} */}
+      {verifiedWithdrawIsOpen && (
+        <VerifiedModal
+          // penalty={(penaltyCredits ?? 0) / 100}
+          income={(income ?? 0) / 100}
+          open={verifiedWithdrawIsOpen}
+          onClose={() => setVerifiedWithdrawIsOpen(false)}
+          // onOpenToastWithMsg={onOpenToastWithMsg}
+        />
       )}
+
+      <UnVerifiedModal
+        myUID={uid}
+        verified={verified}
+        // verified={undefined}
+        rejectedReasonAfter={rejectedReasonAfter}
+        open={unVerifiedWithdrawIsopen}
+        onClose={() => setUnVerifiedWithdrawIsOpen(false)}
+        onOpenToastWithMsg={onOpenToastWithMsg}
+      />
     </Box>
   );
 };

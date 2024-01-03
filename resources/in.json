@@ -7,7 +7,7 @@
             "terms":"TERMA",
             "location":"LOKASI",
             "contact":"CONTACT",
-            "login": "Login"
+            "login": "MASUK"
         },
         "profile": {
             "serviceTab": {
@@ -15,7 +15,28 @@
                 "meetup": "Meetup",
                 "games": "Games",
                 "sports": "Sports"
+            },
+            "modal": {
+              "requestOrder": "Minta pesanan",
+              "requestMessage": "Kami hanya melakukan pengembalian dana dalam waktu 72 jam sejak tanggal pembelian"
             }
-          }
-
+          },
+          "sidebar": {
+            "beAbabe": "Jadilah Babe",
+            "rent":"Sewa",
+            "faq":"Faq",
+            "terms":"Terma",
+            "location":"Lokasi",
+            "contact":"Contact",
+            "login": "Masuk",
+            "wallet": "Dompet",
+            "signOut":"Log keluar",
+            "order": "Memesan",
+    "lastViwed": "Terakhir dilihat",
+    "upgrade":"Tingkatkan ke premium"
+        },
+        "rentPage": {
+          "apply" : "Mengajukan",
+          "favourites":"Favorit"
+        }
 }

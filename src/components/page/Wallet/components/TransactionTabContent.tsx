@@ -39,6 +39,7 @@ const TransactionTabContent = ({ index, data, loading, error }: ITabContent) => 
   }
 
   const getStatus = (item: number) => {
+    console.log(item)
     switch (item) {
       case OrderItemEnum.custom_recharge: {
         return { status: 'Custom Recharge', color: 'info' };
@@ -50,6 +51,9 @@ const TransactionTabContent = ({ index, data, loading, error }: ITabContent) => 
 
       case OrderItemEnum.refund: {
         return { status: 'Refunded', color: 'primary' };
+      }
+      case OrderItemEnum.credits_movement: {
+        return { status: 'Withdrawn', color: 'error' };
       }
 
       default: {

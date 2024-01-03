@@ -1,21 +1,13 @@
-
-import {
-  Dialog as MuiDialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogProps,
-} from '@mui/material';
+import { Dialog as MuiDialog, DialogActions, DialogContent, DialogContentText, DialogProps } from '@mui/material';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 
 interface IDialog extends DialogProps {
-  footer: React.ReactNode;
+  footer?: React.ReactNode;
   open: boolean;
 }
 
-const Dialog = ({ open,footer, children, ...props }: IDialog) => {
-
+const Dialog = ({ open, footer, children, ...props }: IDialog) => {
   const descriptionElementRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (open) {
@@ -35,11 +27,16 @@ const Dialog = ({ open,footer, children, ...props }: IDialog) => {
         aria-describedby="scroll-dialog-description"
       >
         <DialogContent dividers>
-          <DialogContentText id="scroll-dialog-description" ref={descriptionElementRef} tabIndex={-1} sx={{color:"#1A1A1A"}}>
+          <DialogContentText
+            id="scroll-dialog-description"
+            ref={descriptionElementRef}
+            tabIndex={-1}
+            sx={{ color: '#1A1A1A' }}
+          >
             {children}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>{footer}</DialogActions>
+        {footer && <DialogActions>{footer}</DialogActions>}
       </MuiDialog>
     </>
   );

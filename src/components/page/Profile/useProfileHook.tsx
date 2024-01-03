@@ -1,6 +1,6 @@
 import Box from '@/components/atoms/box';
 import { db } from '@/credentials/firebase';
-import { REVIEWS, USERS, uidKeyKey, completedKey, PUBLIC, viewsKey } from '@/keys/firestoreKeys';
+import { REVIEWS, USERS, uidKey, completedKey, PUBLIC, viewsKey } from '@/keys/firestoreKeys';
 import { Item } from '@/props/profileProps';
 import { ServiceTypeEnum } from '@/props/servicesProps';
 import { Helper } from '@/utility/helper';
@@ -19,6 +19,7 @@ import { CalculatorHelper } from '@/utility/calculator';
 import Slider from 'react-slick';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/reducers/usersReducer';
+import { useSeletedBabeStore } from '@/store/reducers/babeReducer';
 
 const settings = {
   dots: false,
@@ -56,9 +57,12 @@ const settings = {
 };
 
 const initReviewLimit: number = 20;
-const useProfileHook = (uid: string | undefined, babeInfo: any) => {
-  const id = uid || babeInfo?.uid;
+const useProfileHook = (uid: string | undefined) => {
+  const { selectedBabe } = useSeletedBabeStore();
+  const selectedBabeUid = selectedBabe?.uid;
+
   const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:1024px)');
   const [item, setItem] = useState<Item>();
   const [activeTab, setActiveTab] = useState<number>(0);
   const [reviews, setReviews] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
@@ -72,6 +76,7 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const open = Boolean(anchorEl);
   const pathName = usePathname();
+  const isProfilePage = pathName?.includes('profile');
   const router = useRouter();
   const t = useTranslations('profile.serviceTab');
   const cal = CalculatorHelper;
@@ -94,25 +99,17 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
       .sort()
       .map((value) => {
         const data = value[1];
-        delete data['id'];
+
         // const isEmpty = Object.values(data).length === 0;
         const newValue = parseInt(value[0]);
         tabsData.push({
           lable: () => getTitle(newValue),
-          content: (
-            <TabContent
-              setActiveTab={setActiveTab}
-              activeTab={activeTab}
-              data={data}
-              babeInfo={item}
-              isMobile={isMobile}
-            />
-          ),
+          content: <TabContent setActiveTab={setActiveTab} activeTab={activeTab} data={data} isMobile={isMobile} />,
         });
       });
   }
 
-  function getTitle(value: number): string {
+  const getTitle = (value: number): string => {
     switch (value) {
       case ServiceTypeEnum.meetup:
         return `${t('meetup')}`; //"Meetup"
@@ -125,7 +122,7 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
       default:
         return `${t('meetup')}`; // "Meetup"
     }
-  }
+  };
 
   const fetchMoreReview = () => {
     setReviewLimit((prev) => prev + initReviewLimit);
@@ -135,7 +132,7 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
     {
       content:
         item?.urls && item?.urls?.length > 0 ? (
-          isMobile ? (
+          isProfilePage ? (
             <Box display="flex" gap={3} flexWrap="wrap" justifyContent="center">
               {item?.urls.map((url, index) => {
                 return (
@@ -238,7 +235,8 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
 
   const getViewData = async () => {
     // Get View Count
-    const queryUid = id;
+    const queryUid = selectedBabeUid || uid || '';
+
     let newViews = 0;
     const promises = [
       getDocs(collection(db, PUBLIC, queryUid, viewsKey)).then((docs) => {
@@ -255,9 +253,9 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
     Promise.all(promises);
   };
   useEffect(() => {
-    if (pathName.includes('profile') && !babeInfo) {
-      getViewData();
-      getDocs(query(collection(db, USERS), where(uidKeyKey, '==', id)))
+    getViewData();
+    if (pathName.includes('profile') && !selectedBabeUid) {
+      getDocs(query(collection(db, USERS), where(uidKey, '==', uid)))
         .then((snapshot) => {
           if (snapshot.docs.length !== 0) {
             const doc = snapshot.docs[0];
@@ -270,14 +268,19 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
           console.log('user get error: ', error);
         });
     } else {
-      setItem(babeInfo);
+      setItem(selectedBabe);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
-    if (uid || babeInfo.uid) {
+    if (uid || selectedBabeUid) {
       getDocs(
-        query(collection(db, REVIEWS), limit(reviewLimit), where(completedKey, '==', true), where(uidKeyKey, '==', id))
+        query(
+          collection(db, REVIEWS),
+          limit(reviewLimit),
+          where(completedKey, '==', true),
+          where(uidKey, '==', selectedBabeUid || uid)
+        )
       )
         .then((snapshot) => {
           const docs = snapshot.docs;
@@ -298,7 +301,7 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviewLimit, id]);
+  }, [reviewLimit, selectedBabeUid]);
 
   const handleClose = (text: any) => {
     if (text?.props.children === 'Share') {
@@ -321,12 +324,18 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
   const dateTime = Helper.timeSince(new Date(milliseconds))?.toLowerCase();
 
   const goBack = () => {
-    history.back();
+    router.push('/rent');
+    // history.back();
   };
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  const nickName = item?.nickname || item?.nick || '--';
 
   return {
     isMobile,
     item,
+    nickName,
     galleryData,
     tabsData,
     url,
@@ -337,8 +346,11 @@ const useProfileHook = (uid: string | undefined, babeInfo: any) => {
     shareModalOpen,
     duration,
     isAudioPlaying,
+    isTablet,
     reportModalOpen,
     view: cal?.viewFormat(viewCount),
+    router,
+    isProfilePage,
     voiceOnClick,
     setAnchorEl,
     setShareModalOpen,

@@ -11,34 +11,10 @@ import TicktokIcon from '@/components/atoms/icons/tiktokIcon';
 import WalletIcon from '@/components/atoms/icons/walletIcon';
 import Typography from '@/components/atoms/typography';
 import { Card, CardContent, Divider } from '@mui/material';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-
-const arr = [
-  { icon: <WalletIcon />, text: 'Wallet', to: '/wallet' },
-  { icon: <OrderIcon />, text: 'Order', to: '/order' },
-  { icon: <LastViewIcon />, text: 'Last Viewed', to: '#' },
-];
-
-const nav = [
-  {
-    name: 'FAQ',
-    path: '/faq',
-  },
-  {
-    name: 'Terms',
-    path: '/terms',
-  },
-  {
-    name: 'Location',
-    path: '/location',
-  },
-  {
-    name: 'Contact',
-    path: '/contact',
-  },
-];
 
 interface IProfileSideBar {
   icon: React.ReactNode;
@@ -52,6 +28,32 @@ interface IProfileSideBar {
 
 const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium }: IProfileSideBar) => {
   const router = useRouter();
+  const t = useTranslations('sidebar');
+
+  const nav = [
+    {
+      name: t('faq'),
+      path: '/faq',
+    },
+    {
+      name: t('terms'),
+      path: '/terms',
+    },
+    {
+      name: t('location'),
+      path: '/location',
+    },
+    {
+      name: t('contact'),
+      path: '/contact',
+    },
+  ];
+
+  const arr = [
+    { icon: <WalletIcon />, text: t('wallet'), to: '/wallet' },
+    { icon: <OrderIcon />, text: t('order'), to: '/order' },
+    { icon: <LastViewIcon />, text: t('lastViwed'), to: '#' },
+  ];
 
   return (
     <Card
@@ -90,7 +92,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
                   </svg>
                 </Box>
               </Box>
-              <Button
+         {  <Button
                 variant="contained"
                 sx={{
                   width: 'inherit',
@@ -99,8 +101,8 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
                 color="secondary"
                 onClick={goToPremium}
               >
-                Upgrade to Premium
-              </Button>
+                {t('upgrade')}
+              </Button>}
             </Box>
           ) : (
             <Box width={'100%'} display="grid" gridTemplateColumns={'1fr 1fr'} gap={3}>
@@ -117,7 +119,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
                 }}
                 startIcon={<BabeStarIcon />}
               >
-                Be a Babe
+                {t('beAbabe')}
               </Button>
 
               <Button
@@ -131,7 +133,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
                 }}
                 onClick={() => router.push('/login')}
               >
-                Login
+                {t('login')}
               </Button>
             </Box>
           )}
@@ -166,7 +168,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
         <Box p="8px 16px" display="flex" gap={3} flexDirection="column">
           <Link href="/rent" shallow style={{ textDecoration: 'none', color: '#1A1A1A' }}>
             <Typography variant="subtitle2" component="span" fontWeight={500}>
-              Rent
+              {t('rent')}
             </Typography>
           </Link>
           <Divider />
@@ -194,7 +196,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
           >
             {<SignoutIcon />}
             <Typography variant="subtitle2" fontWeight={500}>
-              Sign out
+              {t('signOut')}
             </Typography>
           </Box>
         )}

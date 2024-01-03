@@ -12,7 +12,7 @@ import {
   pendingKey,
   pointsKey,
   timeStampKey,
-  uidKeyKey,
+  uidKey,
 } from '@/keys/firestoreKeys';
 import { db } from '@/credentials/firebase';
 import { DocumentData, QueryDocumentSnapshot, collection, doc, orderBy, query, where } from 'firebase/firestore';
@@ -31,11 +31,32 @@ const useWalletHook = () => {
   const { isMobile } = useRentHook();
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const userStore = useUserStore();
-  const currentUser = userStore?.currentUser;
-  const uid = currentUser?.uid;
-  const isVerified = currentUser?.verified || false;
-  const [isOpenWithdraw, setIsOpenWithdraw] = useState(false);
+  const { currentUser } = useUserStore();
+  const [openToast, setOpenToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const onCloseToast = () => {
+    setOpenToast(false);
+  };
+  const onOpenToastWithMsg = (msg: string) => {
+    setToastMsg(msg);
+    setOpenToast(true);
+  };
+  const [uid, verified, rejectedReasonAfter, balance, pending, income, penaltyCredits, nickname] = [
+    currentUser?.uid,
+    currentUser?.verified,
+    currentUser?.rejectedReasonAfter,
+    currentUser?.balance,
+    currentUser?.pendingCredits,
+    currentUser?.incomeCredits,
+    currentUser?.penaltyCredits,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    currentUser?.nickname || currentUser?.nick || '',
+  ];
+
+  const [verifiedWithdrawIsOpen, setVerifiedWithdrawIsOpen] = useState(false);
+  const [unVerifiedWithdrawIsopen, setUnVerifiedWithdrawIsOpen] = useState(false);
   // const defaultSize = 150;
   // const defaultLimitCount = Math.ceil(window.innerHeight / defaultSize);
   // const [limitCount, setLimitCount] = useState(defaultLimitCount);
@@ -53,7 +74,7 @@ const useWalletHook = () => {
     uid ? `${uid}-order` : undefined,
     query(
       collection(db, TRANSACTION),
-      where(uidKeyKey, '==', `${uid || ''}`),
+      where(uidKey, '==', `${uid || ''}`),
       orderBy(timeStampKey, 'desc')
       // limit(limitCount)
     )
@@ -102,8 +123,10 @@ const useWalletHook = () => {
       },
       {
         type: 'Withdrawn',
-        badge: '0',
-        content: transactionData ? [] : [],
+        badge: transactionData
+        ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 4)?.length?.toString()
+        : '0',
+        content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 4)  : [],
       },
       {
         type: 'Spent',
@@ -171,18 +194,39 @@ const useWalletHook = () => {
     }
   }, [walletData]);
 
-  const withdrawModalChanges = () => {
-    setIsOpenWithdraw(!isOpenWithdraw);
+  const withdrawButtonClick = () => {
+    setVerifiedWithdrawIsOpen(true);
+    // if (!nickname) {
+    //   router.push(`/admin?uid=${uid || ''}`);
+    // } else if (verified) {
+    //   setVerifiedWithdrawIsOpen(true);
+    // } else {
+    //   setUnVerifiedWithdrawIsOpen(true);
+    // }
   };
 
   return {
     isMobile,
     tabs,
     currentUser,
-    isVerified,
-    isOpenWithdraw,
-    withdrawModalChanges,
+    uid,
+    verified,
+    rejectedReasonAfter,
+    balance,
+    pending,
+    income,
+    penaltyCredits,
+    nickname,
+    toastMsg,
+    onOpenToastWithMsg,
+    openToast,
+    onCloseToast,
+    verifiedWithdrawIsOpen,
+    setVerifiedWithdrawIsOpen,
+    unVerifiedWithdrawIsopen,
+    setUnVerifiedWithdrawIsOpen,
     onClickRecharge,
+    withdrawButtonClick,
   };
 };
 

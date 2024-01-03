@@ -5,7 +5,7 @@ import Typography from '@/components/atoms/typography';
 import React, { useState } from 'react';
 
 interface IDragUpload extends IBox {
-  setImage: (arg: string | ArrayBuffer | null) => void;
+  setImage: (arg: File | undefined) => void;
   icon?: React.ReactNode;
   isImageViewAuto?: boolean;
   name?: string;

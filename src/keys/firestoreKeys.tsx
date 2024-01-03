@@ -75,7 +75,7 @@ export const clientUIDKey = 'cuid';
 
 export const lowestKey = 'lowest';
 export const highestKey = 'highest';
-export const uidKeyKey = 'uid'; // user id
+export const uidKey = 'uid'; // user id
 export const emailKey = 'email';
 export const codeKey = 'code'; // user id
 export const otherUidKey = 'ouid';

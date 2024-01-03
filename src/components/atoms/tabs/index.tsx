@@ -70,7 +70,7 @@ const Tabs = ({ tabsData, tabBottomPadding, resetTab, mainClass, tabsLabel, onTa
               textTransform: 'none',
               fontFamily: `'Helvetica Neue', sans-serif`,
             }}
-            label={tab.lable(value)}
+            label={tab?.lable(value)}
             className={tabsLabel ? styles[tabsLabel] : ''}
           />
         ))}

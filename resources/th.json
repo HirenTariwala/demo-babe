@@ -1,21 +1,41 @@
 {
-
-        "header": {
-            "beAbabe": "Be a Babe",
-            "rent":"ค่าเช่า",
-            "faq":"FAQ",
-            "terms":"เงื่อนไข",
-            "location":"ตำแหน่งที่ตั้ง",
-            "contact":"ติดต่อ",
-            "login": "เข้าสู่ระบบ"
-        },
-        "profile": {
-            "serviceTab": {
-              "emeet": "EMeet",
-              "meetup": "Meetup",
-              "games": "Games",
-              "sports": "Sports"
-            }
-          }
-
+  "header": {
+    "beAbabe": "เป็นที่รัก",
+    "rent": "ค่าเช่า",
+    "faq": "FAQ",
+    "terms": "เงื่อนไข",
+    "location": "ตำแหน่งที่ตั้ง",
+    "contact": "ติดต่อ",
+    "login": "เข้าสู่ระบบ"
+  },
+  "profile": {
+    "serviceTab": {
+      "emeet": "EMeet",
+      "meetup": "Meetup",
+      "games": "Games",
+      "sports": "Sports"
+    },
+    "modal": {
+      "requestOrder": "ขอสั่งซื้อ",
+      "requestMessage": "เราจะคืนเงินให้ภายใน 72 ชั่วโมงนับจากวันที่ซื้อเท่านั้น"
+    }
+  },
+  "sidebar": {
+    "beAbabe": "เป็นที่รัก",
+    "rent": "ค่าเช่า",
+    "faq": "FAQ",
+    "terms": "เงื่อนไข",
+    "location": "ตำแหน่งที่ตั้ง",
+    "contact": "ติดต่อ",
+    "login": "เข้าสู่ระบบ",
+    "wallet": "กระเป๋าเงิน",
+    "signOut": "ออกจากระบบ",
+    "order": "คำสั่ง",
+    "lastViwed": "ดูครั้งล่าสุด",
+    "upgrade":"อัพเกรดเป็นพรีเมี่ยม"
+  },
+  "rentPage": {
+    "apply" : "สมัคร",
+    "favourites":"รายการโปรด"
+  }
 }

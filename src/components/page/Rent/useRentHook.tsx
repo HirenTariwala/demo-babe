@@ -44,6 +44,8 @@ import { useRouter } from 'next/navigation';
 import useHeaderHook from '@/components/organisms/header/useHeaderHook';
 import Box from '@/components/atoms/box';
 import LoadingIcon from '@/components/atoms/icons/loading';
+import { useAppDispatch } from '@/store/useReduxHook';
+import { setSelectedBabe } from '@/store/reducers/babeReducer';
 
 export interface IRenderComponentProps<Item> {
   /**
@@ -191,8 +193,12 @@ sessionStorage.setItem('cardData', '[]');
 sessionStorage.setItem('scrollTo', '0');
 
 let initLoading = true;
-const parPage = 50;
+// const parPage = 50;
 const useRentHook = () => {
+  const dispatch = useAppDispatch();
+  const defaultSize = 100;
+  const defaultLimitCount = Math.ceil(window.innerHeight / defaultSize);
+
   const router = useRouter();
   const { favourites } = useGetFavourites();
 
@@ -216,7 +222,6 @@ const useRentHook = () => {
   const [activePublic, setActivePublic] = useState<string>('0');
   const [activeGender, setActiveGender] = useState<string>('');
   const [activeCity, setActiveCity] = useState<string>('');
-  const [isRequestModalOpen, setRequestModalOpen] = useState(false)
   const cardData = sessionStorage.getItem('cardData');
   const [items, setItems] = useState(cardData ? JSON.parse(cardData) : []);
 
@@ -226,19 +231,20 @@ const useRentHook = () => {
   // if (cardData) {
   //   parpageCount = (Math.ceil(JSON.parse(cardData)?.length / 50) || 1) * 50;
   // }
-  const [limitquery, setLimit] = useState(parPage);
+  const [limitquery, setLimit] = useState(defaultLimitCount);
   const [nickname, setNickname] = useState<string>();
   const [time, setTime] = useState<any>(null);
   const [reset, setReset] = useState(false);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [selectedBabeInfo, setSelectedBabeInfo] = useState<Item>();
   const [cardColumnCount, setCardColumnCount] = useState<number>(isMobile ? 2 : 5);
 
   const [data, setData] = useState<Item | undefined>();
   const sliderRef = useRef(null);
   const { loadingIPAddress } = useIPAddress();
   const [getRegionState, setRegionState] = useState<string[]>([]);
+
+  const [showScrollToTop, setShowScrollToTop] = useState<boolean>(false);
 
   const categoryObj: ServiceDetailProps | undefined = activeTab
     ? favouritesV2?.find((item, index) => index === activeTab)
@@ -508,7 +514,17 @@ const useRentHook = () => {
 
     if (isAtBottom) {
       // setLimit((prev) => prev + parPage);
-      setLimit(limitquery + parPage);
+      // setLimit(limitquery + parPage);
+      if (limitquery == items?.length) {
+        const newLimit = limitquery + defaultLimitCount;
+
+        setLimit(newLimit);
+      }
+    }
+    if (window?.scrollY > 2000) {
+      setShowScrollToTop(true);
+    } else {
+      setShowScrollToTop(false);
     }
   };
 
@@ -647,10 +663,10 @@ const useRentHook = () => {
 
   const onClickBabeCard = (e: MouseEvent, babeInfo: any) => {
     e.preventDefault();
+    dispatch(setSelectedBabe(babeInfo));
     if (isMobile) {
       router.push(`/profile/${babeInfo?.uid}`);
     } else {
-      setSelectedBabeInfo(babeInfo);
       setOpen(true);
     }
   };
@@ -694,7 +710,9 @@ const useRentHook = () => {
             <Box
               sx={{
                 padding: '50px',
-                width: '95vw',
+                // width: '95vw',
+                maxWidth: '1440px',
+                width: '100vw',
                 textAlign: 'center',
                 color: 'black',
                 position: 'fixed',
@@ -708,6 +726,10 @@ const useRentHook = () => {
       </>
     );
   });
+
+  const scrollToTop = () => {
+    window?.scrollTo(0, 0);
+  };
 
   return {
     isMobile,
@@ -740,8 +762,8 @@ const useRentHook = () => {
     data,
     regionState: activeLocation ? [activeLocation] : getRegionState,
     open,
-    selectedBabeInfo,
-    isRequestModalOpen,
+    showScrollToTop,
+    scrollToTop,
     setOpen,
     onClickBabeCard,
     handleClose,
@@ -762,7 +784,6 @@ const useRentHook = () => {
     backVideoHandler,
     nextVideoHandler,
     setActiveLocation,
-    setRequestModalOpen
   };
 };
 

@@ -8,18 +8,16 @@ const AuthProvider = ({ pathName, children }: { pathName: string; children: Reac
   const currentUser = userStore?.currentUser;
   const uid = currentUser?.uid;
 
-  if (['/faq', '/terms', '/contact','/rent'].includes(pathName)) {
+  if (['/faq', '/terms', '/contact', '/rent'].includes(pathName)) {
     return children;
   }
-
-  if (!uid && !['/login', '/'].includes(pathName)) {
+  if (!uid && !['/login', '/'].includes(pathName) && !pathName?.includes('profile')) {
     router.push('/login');
     return;
   } else if (uid && ['/login']?.includes(pathName)) {
     router.push('/');
     return;
   }
-
   return children;
 };
 

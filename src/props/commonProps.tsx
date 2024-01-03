@@ -17,7 +17,7 @@ import {
   suffixKey,
   timeStampKey,
   typeKey,
-  uidKeyKey,
+  uidKey,
   urlKey,
   idKey,
   nicknameKey,
@@ -88,7 +88,7 @@ export interface RequestRefundProps {
 export interface HistoryProps {
   [nicknameKey]?: string | undefined;
   [urlKey]?: string | undefined;
-  [uidKeyKey]?: string | undefined;
+  [uidKey]?: string | undefined;
   [timeStampKey]?: Timestamp | FieldValue | undefined;
 }
 

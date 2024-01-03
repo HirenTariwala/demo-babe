@@ -8,7 +8,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { TextareaAutosize } from '@mui/material';
 import styles from '../profile.module.css';
-import { REPORT, reasonKey, senderKey, timeStampKey, uidKeyKey, urlKey } from '@/keys/firestoreKeys';
+import { REPORT, reasonKey, senderKey, timeStampKey, uidKey, urlKey } from '@/keys/firestoreKeys';
 import { db, storage } from '@/credentials/firebase';
 import Toast from '@/components/molecules/toast';
 
@@ -34,7 +34,7 @@ const ReportModal = ({ reportModalOpen, reportBy, user, setReportModalOpen }: IR
     const map: { [key: string]: any } = {
       [reasonKey]: description,
       [timeStampKey]: serverTimestamp(),
-      [uidKeyKey]: user,
+      [uidKey]: user,
       [senderKey]: reportBy,
     };
 
