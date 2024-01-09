@@ -1,8 +1,7 @@
-// import { getColor } from '@/common/utils/getcolor';
-import Box, { IBox } from '@/components/atoms/box';
+import Box from '@/components/atoms/box';
 import Typography from '@/components/atoms/typography';
 import { Card, CardContent, useMediaQuery } from '@mui/material';
-import React, { useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import TransactionAmount from '../../content/transaction';
 import Menu from '@/components/atoms/popup/menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -13,259 +12,337 @@ import CoinsSwapIcon from '@/components/atoms/icons/coinswapIcon';
 import DotIcon from '@/components/atoms/icons/dotIcon';
 import Button from '@/components/atoms/button';
 import { useUserStore } from '@/store/reducers/usersReducer';
-import { infoKey, rejectReasonAfterKey, rejectReasonKey, statusKey, timeStampKey } from '@/keys/firestoreKeys';
+import {
+  babeUIDKey,
+  clientUIDKey,
+  idKey,
+  infoKey,
+  rejectReasonAfterKey,
+  rejectReasonKey,
+  statusKey,
+  timeStampKey,
+} from '@/keys/firestoreKeys';
 import { DateHelper } from '@/utility/dateHelper';
 import { OrderStatusEnum } from '@/enum/orderEnum';
 import { getColor } from '@/common/utils/getcolor';
 import ViewOrderModal from '@/components/page/Order/components/viewOrderModal';
 import ReviewModal from '@/components/page/Order/components/reviewModal';
 import RefundModal from '@/components/page/Order/components/refundModal';
+import { ListChildComponentProps } from 'react-window';
+import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import dayjs from 'dayjs';
+import { Helper } from '@/utility/helper';
+import { VariableWindowListContext } from '@/components/organisms/list/VariableWindowList';
 
-interface ITransactionStatusCard extends IBox {
-  transactionStatusData: any;
-  doc?: any | undefined;
-  isAdmin?: boolean | null;
-}
+const TransactionStatusCard = (isAdmin: boolean | null) =>
+  // eslint-disable-next-line react/display-name
+  memo(({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | undefined>) => {
+    const doc = data?.[index]?.data();
+    let currentObj: any = '';
 
-const TransactionStatusCard = ({ doc, isAdmin, transactionStatusData, ...props }: ITransactionStatusCard) => {
-  const isMobile = useMediaQuery('(max-width:600px)');
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [reviewModalOpen, setReviewModalOpen] = useState<boolean>(false);
-  const [refundModalOpen, setRefundModalOpen] = useState<boolean>(false);
-  const [openDialogType, setOpenDialogType] = useState<string>('');
-  const [isLoading, setLoading] = useState<boolean>(false);
-  const userStore = useUserStore();
-  const currentUser = userStore?.currentUser;
+    const getStatus = (item: number) => {
+      switch (item) {
+        case OrderStatusEnum?.completed: {
+          return { status: 'Completed' };
+        }
+        case OrderStatusEnum?.cancel: {
+          return { status: 'Cancelled' };
+        }
+        case OrderStatusEnum?.error: {
+          return { status: 'Cancelled' };
+        }
+        case OrderStatusEnum?.pending: {
+          return { status: 'Pending' };
+        }
+        case OrderStatusEnum?.pending_refund: {
+          return { status: 'Pending Refunded' };
+        }
+        case OrderStatusEnum?.refund_rejected: {
+          return { status: 'Refund Rejected' };
+        }
+        case OrderStatusEnum?.refunded: {
+          return { status: 'Refunded' };
+        }
+        case OrderStatusEnum?.rejected: {
+          return { status: 'Rejected' };
+        }
+        case OrderStatusEnum?.unsuccessful: {
+          return { status: 'Unsuccessful' };
+        }
+        default: {
+          return { status: 'All', color: 'primary' };
+        }
+      }
+    };
+    if (isAdmin) {
+      currentObj = doc?.inf?.[doc?.[clientUIDKey]];
+    } else {
+      currentObj = doc?.inf?.[doc?.[babeUIDKey]];
+    }
+    const name = currentObj?.nick || '--';
+    const profilePic = currentObj?.u || '';
 
-  const [myUID] = [currentUser?.uid];
-  const open = Boolean(anchorEl);
-  const { profilePic, status, name, time, transactionID, amount, remainingTime } = transactionStatusData;
+    const time = dayjs(Helper?.timeStempToDate(doc?.t)).format('MMM DD, hh:mm A');
+    const statusWithColorObj = getStatus(doc?.st);
+    const price = doc?.services?.details?.price || 0;
+    const isMobile = useMediaQuery('(max-width:600px)');
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [reviewModalOpen, setReviewModalOpen] = useState<boolean>(false);
+    const [refundModalOpen, setRefundModalOpen] = useState<boolean>(false);
+    const [openDialogType, setOpenDialogType] = useState<string>('');
+    const [isLoading, setLoading] = useState<boolean>(false);
+    const userStore = useUserStore();
+    const { size, setSize } = useContext(VariableWindowListContext);
+    useEffect(() => {
+      const root = document.getElementById(index?.toString());
+      const height = root?.getBoundingClientRect().height ?? 0;
 
-  const color: any = {
-    Completed: 'success',
-    Cancelled: 'error',
-    Expired: 'primary',
-    Pending: 'warning',
-    Refunded: 'error',
-    PendingRefund: 'warning',
-  };
+      setSize?.(index, height);
+    }, [size?.width]);
+    const currentUser = userStore?.currentUser;
 
-  const isPaid = status?.toLowerCase() === 'pending' ? false : true;
-  const requestRefundBy = Object.keys(doc[rejectReasonKey] ?? {});
-  const rejectedRefundReason = doc[rejectReasonAfterKey];
-  const timeStamp = doc[timeStampKey];
-  const requestedRefund = doc[rejectReasonKey];
-  const userInfo = doc[infoKey];
-  const statusEnum = doc[statusKey];
+    const [myUID] = [currentUser?.uid];
+    const open = Boolean(anchorEl);
+    // const { profilePic, status, name, time, transactionID, amount, remainingTime } = transactionStatusData;
 
-  return (
-    <>
-    <Card
-      sx={{
-        p: isMobile ? 3 : 4,
-        maxWidth: '688px',
-        borderRadius: 4,
-        minWidth: '343px',
-      }}
-    >
-      <CardContent sx={{ p: 0 }}>
-        <Box display="flex" flexDirection="column" gap={4} {...props}>
-          <Box display="grid" gridTemplateColumns="1fr 1fr" gridTemplateRows="2fr 1fr" gap={4} width="100%">
-            <Box display="flex" flexDirection="column" gap={4} alignItems="start">
-              <Box display="flex" gap={4} alignItems="center">
-                <Avatar
-                  sx={{
-                    width: isMobile ? '36px' : '40px',
-                    height: isMobile ? '36px' : '40px',
-                  }}
-                  avatars={[{ alt: 'H', src: profilePic }]}
-                />
-                <Box display="flex" flexDirection="column" gap={1}>
-                  <Box display="flex" alignItems="center" gap={isMobile ? 1 : 2} flexWrap="wrap">
-                    <Typography variant="subtitle1" fontWeight={500}>
-                      {name}
-                    </Typography>
-                    <Typography variant="subtitle2" color={'#999999'} fontSize={12} lineHeight={'16px'}>
-                      {time}
-                    </Typography>
+    const color: any = {
+      Completed: 'success',
+      Cancelled: 'error',
+      Expired: 'primary',
+      Pending: 'warning',
+      Refunded: 'error',
+      PendingRefund: 'warning',
+    };
+
+    const status = statusWithColorObj?.status;
+    const isPaid = status?.toLowerCase() === 'pending' ? false : true;
+    const requestRefundBy = Object.keys(doc?.[rejectReasonKey] ?? {});
+    const rejectedRefundReason = doc?.[rejectReasonAfterKey];
+    const timeStamp = doc?.[timeStampKey];
+    const requestedRefund = doc?.[rejectReasonKey];
+    const userInfo = doc?.[infoKey];
+    const statusEnum = doc?.[statusKey];
+
+    return (
+      <Box
+        key={index}
+        style={style}
+        sx={{
+          paddingTop: `${index * 20}px`,
+        }}
+      >
+        <Card
+          id={index?.toString()}
+          sx={{
+            p: isMobile ? 3 : 4,
+            maxWidth: '688px',
+            borderRadius: 4,
+            minWidth: '343px',
+          }}
+        >
+          <CardContent sx={{ p: 0 }}>
+            <Box display="flex" flexDirection="column" gap={4}>
+              <Box display="grid" gridTemplateColumns="1fr 1fr" gridTemplateRows="2fr 1fr" gap={4} width="100%">
+                <Box display="flex" flexDirection="column" gap={4} alignItems="start">
+                  <Box display="flex" gap={4} alignItems="center">
+                    <Avatar
+                      sx={{
+                        width: isMobile ? '36px' : '40px',
+                        height: isMobile ? '36px' : '40px',
+                      }}
+                      avatars={[{ alt: 'H', src: profilePic }]}
+                    />
+                    <Box display="flex" flexDirection="column" gap={1}>
+                      <Box display="flex" alignItems="center" gap={isMobile ? 1 : 2} flexWrap="wrap">
+                        <Typography variant="subtitle1" fontWeight={500}>
+                          {name}
+                        </Typography>
+                        <Typography variant="subtitle2" color={'#999999'} fontSize={12} lineHeight={'16px'}>
+                          {time}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={status}
+                        sx={{
+                          color: getColor(color[status]),
+                          padding: '6px 8px',
+                          width: 'fit-content',
+                          paddingLeft: 0,
+                          paddingRight: 0,
+                          borderRadius: 3,
+                          fontSize: 12,
+                          fontWeight: 500,
+                          lineHeight: '16px',
+                          height: 28,
+                        }}
+                        size="small"
+                      />
+                    </Box>
                   </Box>
-                  <Chip
-                    label={status}
-                    sx={{
-                      color: getColor(color[status]),
-                      padding: '6px 8px',
-                      width: 'fit-content',
-                      paddingLeft: 0,
-                      paddingRight: 0,
-                      borderRadius: 3,
-                      fontSize: 12,
-                      fontWeight: 500,
-                      lineHeight: '16px',
-                      height: 28,
-                    }}
-                    size="small"
-                  />
+                </Box>
+                <Box
+                  display="flex"
+                  gap={4}
+                  justifyContent={isMobile && isPaid ? 'center' : isMobile && !isPaid ? 'space-between' : 'flex-end'}
+                  alignItems={isMobile ? 'flex-end' : 'center'}
+                  flexDirection={isMobile ? 'column-reverse' : 'row'}
+                  height={!isMobile ? 52 : 'auto'}
+                  gridRow={isMobile && !isPaid ? 'span 2' : 'unset'}
+                >
+                  {!isPaid && (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      sx={{
+                        fontSize: 14,
+                        lineHeight: '20px',
+                        width: 'fit-content',
+                      }}
+                    >
+                      Pay now
+                    </Button>
+                  )}
+                  <Box display="flex" alignItems="center" gap={4}>
+                    <TransactionAmount amount={price} fontWeight={500} color={'#1A1A1A'} />
+                    <Menu
+                      open={open}
+                      setAnchorEl={setAnchorEl}
+                      onClose={() => setAnchorEl(null)}
+                      icon={<MoreVertIcon />}
+                      anchorEl={anchorEl}
+                      sx={{ '.MuiPaper-root': { borderRadius: 3 } }}
+                    >
+                      {/* {dummy && dummy?.map((item) => <MenuItem key={item?.id}>{item?.text}</MenuItem>)} */}
+                      <MenuItem
+                        onClick={() => {
+                          setIsOpen(true);
+                          setAnchorEl(null);
+                        }}
+                      >
+                        View order
+                      </MenuItem>
+
+                      <MenuItem
+                        onClick={() => {
+                          setReviewModalOpen(true);
+                          setAnchorEl(null);
+                        }}
+                      >
+                        Give review
+                      </MenuItem>
+
+                      {requestRefundBy?.includes(myUID ?? '') && rejectedRefundReason && (
+                        <MenuItem
+                          disabled={isLoading}
+                          onClick={() => {
+                            // setOpenDialogType('Refund Rejection');
+                            setRefundModalOpen(true);
+                          }}
+                        >
+                          Refund
+                        </MenuItem>
+                      )}
+
+                      {isAdmin && (
+                        <MenuItem
+                          // disabled={isLoading}
+                          sx={{ color: DateHelper?.getNumberOfHoursAgo(timeStamp.toDate()) > 72 ? 'red' : 'black' }}
+                          onClick={() => {
+                            setOpenDialogType('Issue Refund');
+                            setIsOpen(true);
+                          }}
+                        >
+                          Issue refund{' '}
+                          {DateHelper.getNumberOfHoursAgo(timeStamp.toDate()) > 72 ? '(more than 72 hours)' : ''}
+                        </MenuItem>
+                      )}
+
+                      {requestedRefund && isAdmin && (
+                        <>
+                          {Object.entries(requestedRefund).map((value, idx) => {
+                            const userUUID = value[0];
+
+                            return (
+                              <MenuItem
+                                key={idx}
+                                disabled={isLoading}
+                                onClick={() => {
+                                  setOpenDialogType('Reject');
+                                  setIsOpen(true);
+                                  // setRejectedWho(userUUID);
+                                  // setRejectDialog(true);
+                                }}
+                              >
+                                Reject {userInfo?.[userUUID]?.nick}
+                              </MenuItem>
+                            );
+                          })}
+                        </>
+                      )}
+
+                      {(statusEnum === OrderStatusEnum.completed ||
+                        statusEnum === OrderStatusEnum.pending_refund ||
+                        statusEnum === OrderStatusEnum.refund_rejected) && (
+                        <MenuItem
+                          disabled={isLoading}
+                          onClick={() => {
+                            setAnchorEl(null);
+                            // setOpenDialogType('Request Refund');
+                            setRefundModalOpen(true);
+                            // window.open(`/refund?id=${transactionID}&v=${version}`, '_blank');
+                          }}
+                        >
+                          Request Refund
+                        </MenuItem>
+                      )}
+                    </Menu>
+                  </Box>
+                </Box>
+                <Box
+                  display="flex"
+                  gap={isMobile ? 1 : 2}
+                  gridColumn={isMobile && isPaid ? '1 / span 2' : 'unset'}
+                  alignItems="center"
+                  flexWrap={isMobile ? 'wrap' : 'nowrap'}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    color={'#999999'}
+                    fontSize={12}
+                    lineHeight={'16px'}
+                  >{`Order ID: ${doc?.[idKey]} `}</Typography>
+                  {statusEnum === OrderStatusEnum.completed && !isMobile && <DotIcon />}
+                  {!['expired', 'cancelled'].includes(status) && (
+                    <>
+                      {statusEnum === OrderStatusEnum.completed ? (
+                        <Typography variant="subtitle2" color={'#999999'} fontSize={12} lineHeight={'16px'}>
+                          Paid by credit
+                        </Typography>
+                      ) : statusEnum === OrderStatusEnum.pending ? (
+                        <Typography
+                          variant="subtitle2"
+                          color={'error'}
+                          fontSize={12}
+                          lineHeight={'16px'}
+                          fontWeight={500}
+                        >
+                          Make payment in {''}
+                        </Typography>
+                      ) : undefined}
+                    </>
+                  )}
+                  {status === 'Completed' && <CoinsSwapIcon />}
                 </Box>
               </Box>
             </Box>
-            <Box
-              display="flex"
-              gap={4}
-              justifyContent={isMobile && isPaid ? 'center' : isMobile && !isPaid ? 'space-between' : 'flex-end'}
-              alignItems={isMobile ? 'flex-end' : 'center'}
-              flexDirection={isMobile ? 'column-reverse' : 'row'}
-              height={!isMobile ? 52 : 'auto'}
-              gridRow={isMobile && !isPaid ? 'span 2' : 'unset'}
-            >
-              {!isPaid && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    fontSize: 14,
-                    lineHeight: '20px',
-                    width: 'fit-content',
-                  }}
-                >
-                  Pay now
-                </Button>
-              )}
-              <Box display="flex" alignItems="center" gap={4}>
-                <TransactionAmount amount={amount} fontWeight={500} color={'#1A1A1A'} />
-                <Menu
-                  open={open}
-                  setAnchorEl={setAnchorEl}
-                  onClose={() => setAnchorEl(null)}
-                  icon={<MoreVertIcon />}
-                  anchorEl={anchorEl}
-                  sx={{ '.MuiPaper-root': { borderRadius: 3 } }}
-                >
-                  {/* {dummy && dummy?.map((item) => <MenuItem key={item?.id}>{item?.text}</MenuItem>)} */}
-                  <MenuItem
-                  onClick={()=>{
-                    setIsOpen(true)
-                    setAnchorEl(null)
-                  }
-                  } 
-                  >
-                    View order
-                  </MenuItem>
-
-                  <MenuItem
-                  onClick={()=> {
-                    setReviewModalOpen(true)
-                    setAnchorEl(null)
-                  }}
-                  >
-                    Give review
-                  </MenuItem>
-
-                  {requestRefundBy?.includes(myUID ?? '') && rejectedRefundReason && (
-                    <MenuItem
-                      disabled={isLoading}
-                      onClick={() => {
-                        // setOpenDialogType('Refund Rejection');
-                        setRefundModalOpen(true);
-                      }}
-                    >
-                      Refund
-                    </MenuItem>
-                  )}
-
-                  {isAdmin && (
-                    <MenuItem
-                      // disabled={isLoading}
-                      sx={{ color: DateHelper?.getNumberOfHoursAgo(timeStamp.toDate()) > 72 ? 'red' : 'black' }}
-                      onClick={() => {
-                        setOpenDialogType('Issue Refund');
-                        setIsOpen(true);
-                      }}
-                    >
-                      Issue refund{' '}
-                      {DateHelper.getNumberOfHoursAgo(timeStamp.toDate()) > 72 ? '(more than 72 hours)' : ''}
-                    </MenuItem>
-                  )}
-
-                  {requestedRefund && isAdmin && (
-                    <>
-                      {Object.entries(requestedRefund).map((value, idx) => {
-                        const userUUID = value[0];
-
-                        return (
-                          <MenuItem
-                            key={idx}
-                            disabled={isLoading}
-                            onClick={() => {
-                              setOpenDialogType('Reject');
-                              setIsOpen(true);
-                              // setRejectedWho(userUUID);
-                              // setRejectDialog(true);
-                            }}
-                          >
-                            Reject {userInfo?.[userUUID]?.nick}
-                          </MenuItem>
-                        );
-                      })}
-                    </>
-                  )}
-
-                  {(statusEnum === OrderStatusEnum.completed ||
-                    statusEnum === OrderStatusEnum.pending_refund ||
-                    statusEnum === OrderStatusEnum.refund_rejected) && (
-                    <MenuItem
-                      disabled={isLoading}
-                      onClick={() => {
-                        setAnchorEl(null)
-                        // setOpenDialogType('Request Refund');
-                        setRefundModalOpen(true);
-                        // window.open(`/refund?id=${transactionID}&v=${version}`, '_blank');
-                      }}
-                    >
-                      Request Refund
-                    </MenuItem>
-                  )}
-                </Menu>
-              </Box>
-            </Box>
-            <Box
-              display="flex"
-              gap={isMobile ? 1 : 2}
-              gridColumn={isMobile && isPaid ? '1 / span 2' : 'unset'}
-              alignItems="center"
-              flexWrap={isMobile ? 'wrap' : 'nowrap'}
-            >
-              <Typography
-                variant="subtitle2"
-                color={'#999999'}
-                fontSize={12}
-                lineHeight={'16px'}
-              >{`Order ID: ${transactionID} `}</Typography>
-              {statusEnum === OrderStatusEnum.completed && !isMobile && <DotIcon />}
-              {!['expired', 'cancelled'].includes(status) && (
-                <>
-                  {statusEnum === OrderStatusEnum.completed ? (
-                    <Typography variant="subtitle2" color={'#999999'} fontSize={12} lineHeight={'16px'}>
-                      Paid by credit
-                    </Typography>
-                  ) : statusEnum === OrderStatusEnum.pending ? (
-                    <Typography variant="subtitle2" color={'error'} fontSize={12} lineHeight={'16px'} fontWeight={500}>
-                      Make payment in {remainingTime}
-                    </Typography>
-                  ): undefined}
-                </>
-              )}
-              {status === 'Completed' && <CoinsSwapIcon />}
-            </Box>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-    <ViewOrderModal isMobile={isMobile} isTablet={isMobile} isOpen={isOpen} setOpen={setIsOpen} />
-    <ReviewModal isMobile={isMobile} isTablet={isMobile} isOpen={reviewModalOpen} setOpen={setReviewModalOpen}/>
-    <RefundModal isMobile={isMobile} isTablet={isMobile} isOpen={refundModalOpen} setOpen={setRefundModalOpen} />
-    </>
-  );
-};
+          </CardContent>
+        </Card>
+        <ViewOrderModal isMobile={isMobile} isTablet={isMobile} isOpen={isOpen} setOpen={setIsOpen} />
+        <ReviewModal isMobile={isMobile} isTablet={isMobile} isOpen={reviewModalOpen} setOpen={setReviewModalOpen} />
+        <RefundModal isMobile={isMobile} isTablet={isMobile} isOpen={refundModalOpen} setOpen={setRefundModalOpen} />
+      </Box>
+    );
+  });
 
 export default TransactionStatusCard;

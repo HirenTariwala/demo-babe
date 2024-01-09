@@ -9,9 +9,8 @@ interface ITimer {
   phoneNumberSignIn: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Timer = ({ value, timer, phoneNumberSignIn }: ITimer) => {
-  console.log(value);
-
   return (
     <div>
       <Box display={'flex'} justifyContent={'end'}>

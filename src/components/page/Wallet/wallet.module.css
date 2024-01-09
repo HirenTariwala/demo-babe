@@ -25,6 +25,10 @@
   scroll-behavior: smooth !important;
 }
 
+.transactionList > div {
+  height: auto !important;
+  overflow: unset !important;
+}
 .headerCard {
   display: grid;
   align-items: center;

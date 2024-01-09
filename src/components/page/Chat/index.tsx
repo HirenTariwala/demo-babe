@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import Box from '@/components/atoms/box';
 import ArrowForwardIcon from '@/components/atoms/icons/arrowForwardIcon';
 import React from 'react';
@@ -8,31 +8,31 @@ import useChatHook from './useChatHook';
 import ReactWindowList from '@/components/organisms/list/ReactWindowList';
 import EmptyData from '@/components/molecules/EmptyData';
 import EmptyBoxIcon from '@/components/atoms/icons/emptyBoxIcon';
-import Typography from '@/components/atoms/typography';
+// import Typography from '@/components/atoms/typography';
 import ChatBox from './components/ChatBox';
 
 interface IChat {
   onDrawerClose?: () => void;
 }
-const ChatHeader = () => {
-  return (
-    <Box className={styles.chatBoxHeaderSection}>
-      <Box>
-        IMG
-        {/* <NextImage src={} /> */}
-      </Box>
-      <Box flex={'1 0 0'}>
-        <Typography variant="h3" color={'#1A1A1A'} fontWeight={500}>
-          limblake
-        </Typography>
-        <Typography variant="body2" color={'#999'} fontWeight={500}>
-          Last seen 2 hours ago
-        </Typography>
-      </Box>
-      <Box>:</Box>
-    </Box>
-  );
-};
+// const ChatHeader = () => {
+//   return (
+//     <Box className={styles.chatBoxHeaderSection}>
+//       <Box>
+//         IMG
+//         {/* <NextImage src={} /> */}
+//       </Box>
+//       <Box flex={'1 0 0'}>
+//         <Typography variant="h3" color={'#1A1A1A'} fontWeight={500}>
+//           limblake
+//         </Typography>
+//         <Typography variant="body2" color={'#999'} fontWeight={500}>
+//           Last seen 2 hours ago
+//         </Typography>
+//       </Box>
+//       <Box>:</Box>
+//     </Box>
+//   );
+// };
 const Chat = ({ onDrawerClose }: IChat) => {
   const {
     tabsData,
@@ -52,11 +52,11 @@ const Chat = ({ onDrawerClose }: IChat) => {
     loadNextPage,
     calculateSideBarWidth,
     Row,
-    selectedConversation,
-    currentUser,
-    chatUUID,
-    isUserDataLoading,
-    userData,
+    // selectedConversation,
+    // currentUser,
+    // chatUUID,
+    // isUserDataLoading,
+    // userData,
     // onCancelRejectHandler,
     // openGovDialogHandler,
     // tipOnClick,
@@ -79,7 +79,7 @@ const Chat = ({ onDrawerClose }: IChat) => {
     );
   }
 
-  if (!(dataConversation?.length as number)) {
+  if (!(dataConversation?.size as number)) {
     return (
       <Box
         sx={{
@@ -96,7 +96,6 @@ const Chat = ({ onDrawerClose }: IChat) => {
       </Box>
     );
   }
-  console.log('=============================', selectedConversation);
 
   return (
     <Box
@@ -112,14 +111,14 @@ const Chat = ({ onDrawerClose }: IChat) => {
         </Box>
         <Box className={styles.userList}>
           <Box>
-            <Tabs tabsData={tabsData} />
+            <Tabs mainClass={'main_tabs'} tabsData={tabsData} />
           </Box>
           <Box className={styles.userListArr}>
             <ReactWindowList
               height={size?.height - 56}
               width={calculateSideBarWidth()}
               hasNextPage={dataHasNextPage}
-              dataSize={dataConversation?.length as number}
+              dataSize={dataConversation?.size as number}
               loadNextPage={() => loadNextPage()}
               component={Row}
               itemSize={73}
@@ -148,17 +147,6 @@ const Chat = ({ onDrawerClose }: IChat) => {
             loadNextPage={() => loadNextPage()}
             component={Row}
             itemSize={73}
-          /> */}
-
-      {/* <InputSection
-            myBlock={myBlock as boolean}
-            otherBlock={otherBlock as boolean}
-            sendMessageCallBack={sendMessage}
-            onInput={autoGrow}
-            conversation={conversation!}
-            requestNewOrder={requestNewOrder as () => void}
-            isDisabled={!conversation?.hasOrder}
-            onFocus={onFocus as () => void}
           /> */}
 
       {/* {selectedUser?.nickname && selectedUser?.uid && (

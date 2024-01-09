@@ -190,6 +190,7 @@ const EthnicityData = [
   },
 ];
 sessionStorage.setItem('cardData', '[]');
+sessionStorage.setItem('cardDataLimit', JSON.stringify(Math.ceil(window.innerHeight / 100)));
 sessionStorage.setItem('scrollTo', '0');
 
 let initLoading = true;
@@ -223,6 +224,8 @@ const useRentHook = () => {
   const [activeGender, setActiveGender] = useState<string>('');
   const [activeCity, setActiveCity] = useState<string>('');
   const cardData = sessionStorage.getItem('cardData');
+  const cardDataLimit = sessionStorage.getItem('cardDataLimit');
+
   const [items, setItems] = useState(cardData ? JSON.parse(cardData) : []);
 
   const [hasMore, setHasMore] = useState(false);
@@ -231,7 +234,9 @@ const useRentHook = () => {
   // if (cardData) {
   //   parpageCount = (Math.ceil(JSON.parse(cardData)?.length / 50) || 1) * 50;
   // }
-  const [limitquery, setLimit] = useState(defaultLimitCount);
+  const [limitquery, setLimit] = useState(
+    cardDataLimit ? JSON.parse(cardDataLimit) || defaultLimitCount : defaultLimitCount
+  );
   const [nickname, setNickname] = useState<string>();
   const [time, setTime] = useState<any>(null);
   const [reset, setReset] = useState(false);
@@ -510,7 +515,7 @@ const useRentHook = () => {
     const totalRowCount = Math.ceil(totalItems / cardColumnCount);
     const rowHeight = isMobile ? 365 : 420;
     // const isAtBottom = props?.scrollTop > 0.8 * (totalRowCount * rowHeight - 350);
-    const isAtBottom = props?.scrollTop > 1 * (totalRowCount * rowHeight - 350);
+    const isAtBottom = props?.scrollTop > 0.7 * (totalRowCount * rowHeight - 350);
 
     if (isAtBottom) {
       // setLimit((prev) => prev + parPage);
@@ -638,6 +643,7 @@ const useRentHook = () => {
         });
         if (itemList?.length > items?.length) {
           sessionStorage.setItem('cardData', JSON.stringify(itemList));
+          sessionStorage.setItem('cardDataLimit', JSON.stringify(limitquery));
           setItems(itemList);
         }
         if (itemList?.length < limitquery) {

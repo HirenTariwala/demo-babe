@@ -4,62 +4,63 @@ import Header from '../../organisms/header/pageBannerHeader';
 import Tabs from '@/components/atoms/tabs';
 import { Box } from '@mui/material';
 import QACard from './components/QACard';
-import QAData from 'resources/QA.json';
 import styles from './faq.module.css';
-import useHeaderHook from '@/components/organisms/header/useHeaderHook';
+import { useTranslations } from 'next-intl';
+import useFaqHook from './useFaqHook';
 
 const FAQPage = () => {
-  const { isMobile, isTablet } = useHeaderHook();
+  const {data,isMobile,isTablet} = useFaqHook()
+  const t = useTranslations('faqPage.tabLabel')
   const FAQ_TABS = [
     {
       content: (
         <Box className={styles.qa_tabs}>
-          {QAData?.filter((item) => item.type === 'general')?.map((item, index) => {
+          {data?.filter((item) => item.type === 'general')?.map((item, index) => {
             return <QACard key={index} question={item?.question} answer={item?.answer} image={item?.image} />;
           })}
         </Box>
       ),
-      lable: () => 'General',
+      lable: () => t('general'),
     },
     {
       content: (
         <Box className={styles.qa_tabs}>
-          {QAData?.filter((item) => item.type === 'how to rent?')?.map((item, index) => {
+          {data?.filter((item) => item.type === 'how to rent?')?.map((item, index) => {
             return <QACard key={index} question={item?.question} answer={item?.answer} image={item?.image} />;
           })}
         </Box>
       ),
-      lable: () => 'How to rent?',
+      lable: () => t('howToRent'),
     },
     {
       content: (
         <Box className={styles.qa_tabs}>
-          {QAData?.filter((item) => item.type === 'rules')?.map((item, index) => {
+          {data?.filter((item) => item.type === 'rules')?.map((item, index) => {
             return <QACard key={index} question={item?.question} answer={item?.answer} image={item?.image} />;
           })}
         </Box>
       ),
-      lable: () => 'Rules',
+      lable: () => t('rules'),
     },
     {
       content: (
         <Box className={styles.qa_tabs}>
-          {QAData?.filter((item) => item.type === 'refunds')?.map((item, index) => {
+          {data?.filter((item) => item.type === 'refunds')?.map((item, index) => {
             return <QACard key={index} question={item?.question} answer={item?.answer} image={item?.image} />;
           })}
         </Box>
       ),
-      lable: () => 'Refund',
+      lable: () => t('refunds'),
     },
     {
       content: (
         <Box className={styles.qa_tabs}>
-          {QAData?.filter((item) => item.type === 'credit')?.map((item, index) => {
+          {data?.filter((item) => item.type === 'credit')?.map((item, index) => {
             return <QACard key={index} question={item?.question} answer={item?.answer} image={item?.image} />;
           })}
         </Box>
       ),
-      lable: () => 'Credit',
+      lable: () => t('credits'),
     },
   ];
 

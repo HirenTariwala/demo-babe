@@ -11,7 +11,7 @@ import TicktokIcon from '@/components/atoms/icons/tiktokIcon';
 import WalletIcon from '@/components/atoms/icons/walletIcon';
 import Typography from '@/components/atoms/typography';
 import { Card, CardContent, Divider } from '@mui/material';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -28,24 +28,25 @@ interface IProfileSideBar {
 
 const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium }: IProfileSideBar) => {
   const router = useRouter();
+  const locale  = useLocale()
   const t = useTranslations('sidebar');
 
   const nav = [
     {
       name: t('faq'),
-      path: '/faq',
+      path: `/${locale}/faq`,
     },
     {
       name: t('terms'),
-      path: '/terms',
+      path: `/${locale}/terms`,
     },
     {
       name: t('location'),
-      path: '/location',
+      path: `/${locale}/location`,
     },
     {
       name: t('contact'),
-      path: '/contact',
+      path: `/${locale}/contact`,
     },
   ];
 
@@ -166,7 +167,7 @@ const ProfileSideBar = ({ isMobile, uid, icon, name, email, logOut, goToPremium 
         )}
         <Divider sx={{ marginBottom: '4px', margin: '0 15px' }} />
         <Box p="8px 16px" display="flex" gap={3} flexDirection="column">
-          <Link href="/rent" shallow style={{ textDecoration: 'none', color: '#1A1A1A' }}>
+          <Link href={`/${locale}/rent`} shallow style={{ textDecoration: 'none', color: '#1A1A1A' }}>
             <Typography variant="subtitle2" component="span" fontWeight={500}>
               {t('rent')}
             </Typography>

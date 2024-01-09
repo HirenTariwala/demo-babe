@@ -70,6 +70,7 @@ const initialState: IcurrentConvo = {
     data: undefined,
   },
   selectedConversation: {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-expect-error
     convoData: jsonObj,
   },
@@ -99,6 +100,6 @@ export const { setConversation, setSelectedConversation } = conversationSlice.ac
 
 export const useConversationStore = () => useAppSelector((state: RootState) => state?.conversations);
 export const useSelectedConversationStore = () =>
-  useAppSelector((state: RootState) => state.conversations.selectedConversation?.data);
+  useAppSelector((state: RootState) => state?.conversations?.selectedConversation?.data);
 
 export default conversationSlice.reducer;

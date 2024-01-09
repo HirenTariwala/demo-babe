@@ -48,7 +48,7 @@ const WalletPage = () => {
       <Box className={styles.header}>
         <Box className={styles.headerContent}>
           <Box paddingBottom={'16px'} display={'flex'} alignItems={'center'} gap={4}>
-            <Typography variant="h1" fontWeight={500} color="#1A1A1A">
+            <Typography variant={isMobile ? 'h2' : 'h1'} fontWeight={500} color="#1A1A1A">
               Wallet
             </Typography>
             <Chip
@@ -104,7 +104,7 @@ const WalletPage = () => {
                   border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
                 }}
-                tooltipTitle={`“Credit” is a virtual currency used on RentBabe, it can be used to pay for services and tips. 1.00 Credit = 1.00 SGD
+                tooltipTitle={`“Credit” is a virtual currency used on RentBabe, it can be used to pay for services and tips. 1.00 Credit = 1.00 SGD\n
 
                 “Credit balance” is the remaining deposit on your account that could be spent. The money in “Credit balance” is a non-withdrawable currency that can only be spent on the platform.`}
               />

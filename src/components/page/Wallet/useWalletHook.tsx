@@ -82,7 +82,7 @@ const useWalletHook = () => {
   );
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  //@ts-ignore]
   const types: ITabs[] = useMemo(
     () => [
       {
@@ -129,16 +129,16 @@ const useWalletHook = () => {
         content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 4)  : [],
       },
       {
-        type: 'Spent',
+        type: 'Spend',
         badge: '0',
-        content: transactionData ? [] : [],
+        content:  transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 2) : [],
       },
     ],
     [transactionData]
   );
 
   const tabs = types?.map((item, index) => ({
-    lable: (value: number) => (
+    lable: () => (
       <span
         style={{
           display: 'flex',
@@ -147,9 +147,9 @@ const useWalletHook = () => {
         }}
       >
         <span>{item?.type}</span>
-        <span>
+        {/* <span>
           <Badge badgeContent={item?.badge} color={value === index ? 'primary' : 'secondary'} />,
-        </span>
+        </span> */}
       </span>
     ),
     content: (
@@ -195,14 +195,14 @@ const useWalletHook = () => {
   }, [walletData]);
 
   const withdrawButtonClick = () => {
-    setVerifiedWithdrawIsOpen(true);
-    // if (!nickname) {
-    //   router.push(`/admin?uid=${uid || ''}`);
-    // } else if (verified) {
-    //   setVerifiedWithdrawIsOpen(true);
-    // } else {
-    //   setUnVerifiedWithdrawIsOpen(true);
-    // }
+    // setVerifiedWithdrawIsOpen(true);
+    if (!nickname) {
+      router.push(`/admin?uid=${uid || ''}`);
+    } else if (verified) {
+      setVerifiedWithdrawIsOpen(true);
+    } else {
+      setUnVerifiedWithdrawIsOpen(true);
+    }
   };
 
   return {

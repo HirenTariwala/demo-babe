@@ -10,9 +10,8 @@
   backdrop-filter: blur(20px) !important;
   width: 100%;
   max-width: 960px;
-  padding: 40px 32px 36px 32px;
+  padding: 40px 32px 36px 32px !important;
   height: 100%;
-  padding: 2;
   border-radius: 24px !important;
   box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.1);
   cursor: pointer;

@@ -31,19 +31,19 @@ export default function RootLayout({ children, params }: { children: React.React
   return (
     <html lang={locale}>
       <body className={inter.className}>
-        <Providers>
-          <AuthProvider pathName={pathName}>
-            <ThemeProvider>
-              <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
+            <AuthProvider pathName={pathName}>
+              <ThemeProvider>
                 <Audio />
                 {!pathName.includes('login') && !pathName?.includes('profile') && <Header />}
                 <Box className={!pathName.includes('login') && !pathName?.includes('profile') ? 'children' : ''}>
                   {children}
                 </Box>
-              </NextIntlClientProvider>
-            </ThemeProvider>
-          </AuthProvider>
-        </Providers>
+              </ThemeProvider>
+            </AuthProvider>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

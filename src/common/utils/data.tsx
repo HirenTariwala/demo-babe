@@ -255,6 +255,31 @@ export const serviceIcon = {
   3: <GlitterIcon />,
 };
 
+export const CountryLookUpTable: { [country: string] : string } = {
+  Singapore: 'sg',
+  Philippines: 'ph',
+  'Metro Manila': 'ph',
+  Jakarta: 'id',
+  Indonesia: 'id',
+  India: 'in',
+  Malaysia: 'my',
+  USA: 'us',
+  Netherlands: 'nl',
+  Canada: 'ca',
+  Germany: 'de',
+  Brazil: 'br',
+  'South Africa': 'za',
+  'Timor-Leste': 'tl',
+  Macaristan: 'hu',
+  Hungary: 'hu',
+  'United Kingdom': 'uk',
+  Portugal: 'pt',
+  Serbia: 'rs',
+  Colombia: 'co',
+  'South Korea': 'kr',
+};
+
+
 export const tabs = [
   {
     icon: <FireIcon />,

@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import {
   collection,
   DocumentData,
@@ -9,30 +9,34 @@ import {
   Timestamp,
   where,
 } from 'firebase/firestore';
-// import { RBACType } from '@/props/types/rbacType';
-import {
-  CancelRejectProps,
-  // ClubProps
-} from '@/props/commonProps';
+import { RBACType } from '@/props/types/rbacType';
+import { CancelRejectProps, ClubProps } from '@/props/commonProps';
 import { ListChildComponentProps } from 'react-window';
 import {
   CONVERSATION,
   MESSAGES,
+  amountKey,
   chatRoomIdKey,
   clubKey,
-  // contentKey,
+  contentKey,
   createdAtKey,
-  lastMessageKey,
-  // lastSeenKey,
-  // mobileUrlKey,
-  // orderKey,
-  // senderKey,
+  lastSeenKey,
+  mobileUrlKey,
+  orderKey,
+  rejectReasonKey,
+  senderKey,
   stateKey,
+  statusKey,
   typeKey,
-  // urlKey,
-  // verifiedKey,
+  urlKey,
+  verifiedKey,
 } from '@/keys/firestoreKeys';
-// import { MessageEnum, RBACEnum } from '@/enum/myEnum';
+import {
+  MessageEnum,
+  option,
+  // MessageEnum,
+  RBACEnum,
+} from '@/enum/myEnum';
 import MessageBubble from '@/components/molecules/card/messagebubble';
 import { useUserStore } from '@/store/reducers/usersReducer';
 import { useSelectedConversationStore } from '@/store/reducers/conversationReducer';
@@ -43,6 +47,9 @@ import { db } from '@/credentials/firebase';
 import Box from '@/components/atoms/box';
 import LoadingIcon from '@/components/atoms/icons/loading';
 import VariableWindowList from '@/components/organisms/list/VariableWindowList';
+import InputSection from './Input/InputSection';
+import dayjs from 'dayjs';
+import styles from '../chat.module.css';
 
 interface ChatViewProps {
   myBlock: boolean;
@@ -56,8 +63,8 @@ interface ChatViewProps {
 const Row =
   (
     uid: string | null | undefined,
-    chatRoomId: string | undefined
-    // userRBAC: RBACType,
+    chatRoomId: string | undefined,
+    userRBAC: RBACType
     // tipOnClick: () => void,
     // requestNewOrder: () => void,
     // openGovDialogHandler: () => void,
@@ -66,130 +73,109 @@ const Row =
   ) =>
   // eslint-disable-next-line react/display-name
   // ({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | null | undefined>) => {
-  ({ index, style, data }: ListChildComponentProps<any>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, react/display-name
+  ({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[]>) => {
     const doc = data?.[index];
-    console.log(style);
 
     if (!doc || !data) return null;
 
-    // const sender = doc?.get(senderKey) as string | undefined;
-    // const isMine = uid === sender;
-    // const msg = doc?.get(contentKey) as string;
+    const sender = doc?.get(senderKey) as string | undefined;
+    const isMine = uid === sender;
+    const msg = doc?.get(contentKey) as string;
     const createAt = (doc?.get(createdAtKey) as Timestamp) ?? Timestamp.now();
 
-    // const seen = (doc?.get(lastSeenKey) as boolean) ?? false;
-    // const verified = doc?.get(verifiedKey) as boolean | undefined;
-    // const url = doc?.get(urlKey) as string | undefined;
+    const seen = (doc?.get(lastSeenKey) as boolean) ?? false;
+    const verified = doc?.get(verifiedKey) as boolean | undefined;
+    const url = doc?.get(urlKey) as string | undefined;
     const type = doc?.get(typeKey) as number;
-    // const club = doc?.get(clubKey) as ClubProps;
+    console.log("gettt",doc?.get(typeKey), typeKey, doc?.data())
+    const club = doc?.get(clubKey) as ClubProps;
+    const stat = doc?.get(statusKey);
 
-    // const order = doc?.get(orderKey) as { [key: string]: any } | undefined;
-    // const babeUID = order?.['babeUID'] as string | undefined;
-    // const babeProfileImage = order?.['babeProfileImage'] as string | undefined;
-    // const clientProfileImage = order?.['clientProfileImage'] as string | undefined;
+    const order = doc?.get(orderKey) as { [key: string]: any } | undefined;
+    const babeUID = order?.['babeUID'] as string | undefined;
+    const babeProfileImage = order?.['babeProfileImage'] as string | undefined;
+    const clientProfileImage = order?.['clientProfileImage'] as string | undefined;
 
-    // const profileImage = doc?.get(mobileUrlKey) as string | undefined;
-    // const showProfileImage =
-    //   userRBAC === RBACEnum.admin && window?.location?.href.getURLEnd().toLowerCase() === 'chatview';
+    const profileImage = doc?.get(mobileUrlKey) as string | undefined;
+    const showProfileImage = userRBAC === RBACEnum.admin && Helper?.getURLEnd().toLowerCase() === 'chatview';
     // const showProfileImage = false;
 
+    const date = Helper?.timeStempToDate(createAt);
+
+    const msgArray = msg?.split('\n');
+    console.log("typeee", type)
+
+    let statusLabel = '';
+    if (type == MessageEnum?.payRequest) {
+      statusLabel = 'Waiting for payment';
+    } else if (type == MessageEnum?.warning) {
+      statusLabel = '';
+    } else if (type == MessageEnum?.paid) {
+      statusLabel = !doc?.get(amountKey)
+        ? 'PAYMENT RECEIVED'
+        : `PAYMENT RECEIVED: ${(doc?.get(amountKey) / 100).toFixed(2)}`;
+    } else if (type == MessageEnum?.order) {
+      statusLabel = isMine ? 'Expired' : '';
+    } else if (type == MessageEnum?.text) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      statusLabel = 'text';
+    }
+    let status =
+      type === 0
+        ? 'text'
+        : type === 1
+        ? 'In Review'
+        : type === 2
+        ? 'payRequest'
+        : type === 3
+        ? 'warning'
+        : type === 4
+        ? 'Paid'
+        : type === 5
+        ? 'order'
+        : null;
+
     if (!chatRoomId) return null;
-    <MessageBubble
-      messageData={{
-        status: type || '',
-        date: createAt,
-        time: createAt,
-        price: 250,
-      }}
-      rate={doc?.get(lastMessageKey)}
-      services=""
-    />;
-    // else if (type === MessageEnum?.text)
-    //   return (
-    //     <div style={{ ...style }} key={index}>
-    //       <BubbleMessage
-    //         sender={_sender}
-    //         index={index}
-    //         url={_profileImage}
-    //         verified={_verified}
-    //         chatRoomID={chatRoomId}
-    //         messageId={doc.id}
-    //         seen={seen}
-    //         createdAt={createAt}
-    //         key={doc.id}
-    //         msg={msg}
-    //         isMine={isMine}
-    //         showProfileImage={showProfileImage}
-    //       />
-    //     </div>
-    //   );
-    // else if (_type === MessageEnum.payRequest)
-    //   return (
-    //     <div style={{ ...style }} key={index}>
-    //       <PaymentBubble
-    //         url={_url}
-    //         index={index}
-    //         chatRoomID={chatRoomId}
-    //         messageId={doc.id}
-    //         seen={seen}
-    //         createdAt={createAt}
-    //         key={doc.id}
-    //         msg={msg}
-    //         isMine={isMine}
-    //       />
-    //     </div>
-    //   );
-    // else if (_type === MessageEnum.warning)
-    //   return (
-    //     <div style={{ ...style }} key={index}>
-    //       <WarningBubble index={index} msg={msg} />
-    //     </div>
-    //   );
-    // else if (_type === MessageEnum.paid)
-    //   return (
-    //     <div style={{ ...style }} key={index}>
-    //       <PaidBubble index={index} data={doc} tipOnClick={tipOnClick} openCashBackDialog={openCashBackDialog} />
-    //     </div>
-    //   );
-    // else if (_type === MessageEnum.order)
-    //   return (
-    //     <div style={{ ...style }} key={index}>
-    //       <RequestOrderBubble
-    //         babeUID={_babeUID}
-    //         clientProfileImage={_clientProfileImage}
-    //         babeProfileImage={_babeProfileImage}
-    //         sender={_sender}
-    //         showProfileImage={showProfileImage}
-    //         club={_club}
-    //         order={doc.get(order) as any}
-    //         status={(doc.get(status) as number) ?? option.pending}
-    //         rejectedReason={doc.get(reject_reason) as string | undefined}
-    //         index={index}
-    //         chatRoomID={chatRoomId}
-    //         messageId={doc.id}
-    //         seen={seen}
-    //         createdAt={createAt}
-    //         key={doc.id}
-    //         msg={msg}
-    //         isMine={isMine}
-    //         requestNewOrder={requestNewOrder}
-    //         openGovDialog={openGovDialogHandler}
-    //         link={doc.get(pay_link) as string | undefined}
-    //         serviceDetails={doc.get('order')['serviceDetails'] as ServiceDetails | undefined}
-    //         onRejectCancel={onRejectCancel}
-    //       />
-    //     </div>
-    //   );
-    // else
-    //   return (
-    //     <div style={style} key={index}>
-    //       <UpdateBubble type={_type} index={index} isMine={isMine} />
-    //     </div>
-    //   );
+    else {
+      return (
+        <Box
+          key={index}
+          style={{ ...style }}
+          sx={{
+            paddingTop: `${index * 10}px`,
+          }}
+        >
+          <MessageBubble
+            index={index}
+            type={type}
+            messageData={{
+              status: status,
+              date: msgArray?.[1]?.split(': ')?.[1],
+              time: msgArray?.[2]?.split(': ')?.[1],
+              price: msgArray?.at(-1)?.split(': ')?.[1],
+              venue: msgArray?.[3]?.split(': ')?.[1],
+              activity: msgArray?.[4]?.split(': ')?.[1],
+              cabFare: msgArray?.[5]?.split(': ')?.[1],
+              info: msgArray?.[6]?.split(': ')?.[1]
+            }}
+            createdAt={createAt}
+            lastSeen={dayjs(date)?.format('hh:mm A')}
+            isMine={isMine}
+            msg={msg}
+            status={(doc.get(statusKey) as number) ?? option.pending}
+            services={doc.get(orderKey)?.['serviceDetails']}
+            // lastSeen={dayjs(createAt.toDate()).format('h:mm A')}
+            orderStatus={stat}
+            reason={doc.get(rejectReasonKey)}
+          />
+        </Box>
+      );
+    }
   };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }:ChatViewProps) => {
+const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewProps) => {
   const clubName = sessionStorage.getItem(clubKey);
   const clubState = sessionStorage.getItem(stateKey);
   const headerSize = clubName && clubState ? 44 : 0;
@@ -254,21 +240,21 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }:ChatViewProp
     true
   );
 
-  // const tipOnClick = () => {
-  //   setOpen(true);
-  // };
+  const tipOnClick = () => {
+    setOpen(true);
+  };
 
-  // const openCashBackDialog = () => {
-  //   setCashBack(true);
-  // };
+  const openCashBackDialog = () => {
+    setCashBack(true);
+  };
 
-  // const onCancelRejectHandler = (data: CancelRejectProps) => {
-  //   setRejectCancelDialog(data);
-  // };
+  const onCancelRejectHandler = (data: CancelRejectProps) => {
+    setRejectCancelDialog(data);
+  };
 
-  // const openGovDialogHandler = () => {
-  //   setGovDialog(true);
-  // };
+  const openGovDialogHandler = () => {
+    setGovDialog(true);
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const autoGrow = (value: any) => {
@@ -311,20 +297,20 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }:ChatViewProp
 
   if (loading || (data?.length as number) === 0)
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
+      <Box display="flex" justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
         <LoadingIcon />
       </Box>
     );
   else if (error)
     return (
-      <div style={{ height: '100vh' }}>
+      <Box sx={{ height: '100vh' }}>
         <p>Something went wrong</p>
-      </div>
+      </Box>
     );
   else
     return (
       <>
-        <Box position="relative" bgcolor="white" className="chat-background">
+        <Box position="relative" bgcolor="white" padding={'20px 24px'} className={styles.chatMsgList}>
           <VariableWindowList
             style={{ transform: 'scaleY(-1)' }}
             height={
@@ -337,11 +323,12 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }:ChatViewProp
             data={data}
             overScan={4}
             loadNextPage={loadNextPage}
-            //@ts-ignore
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             component={Row(
               uid,
-              conversation?.id ?? chatRoomID
-              // userRBAC,
+              conversation?.id ?? chatRoomID,
+              userRBAC
               // tipOnClick,
               // requestNewOrder,
               // openGovDialogHandler,
@@ -350,18 +337,17 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }:ChatViewProp
             )}
             scrollReversed
           />
-
-          {/* <InputSection
-            myBlock={myBlock}
-            otherBlock={otherBlock}
-            sendMessageCallBack={sendMessage}
-            onInput={autoGrow}
-            conversation={conversation!}
-            requestNewOrder={requestNewOrder}
-            isDisabled={conversation?.hasOrder ? false : true}
-            onFocus={onFocus}
-          /> */}
         </Box>
+        <InputSection
+          myBlock={myBlock}
+          otherBlock={otherBlock}
+          sendMessageCallBack={sendMessage}
+          onInput={autoGrow}
+          conversation={conversation!}
+          requestNewOrder={requestNewOrder}
+          isDisabled={conversation?.hasOrder ? false : true}
+          onFocus={onFocus}
+        />
         {/* 
         {currentUser?.nickname && currentUser?.uid && (
           <SendTipDialog chatRoomId={conversation!.id} open={open} onClose={() => setOpen(false)} />

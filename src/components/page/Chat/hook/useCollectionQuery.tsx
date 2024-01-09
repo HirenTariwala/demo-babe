@@ -2,8 +2,8 @@ import { CollectionReference, DocumentData, Query, onSnapshot, QueryDocumentSnap
 import { useEffect, useState } from 'react';
 
 // eslint-disable-next-line prefer-const
-let cache: { [key: string]: any } = {};
 
+const cache: { [key: string]: any } = {};
 export const useCollectionQuery: (
   key: string | undefined,
   collection: CollectionReference | Query<DocumentData> | undefined,
@@ -15,8 +15,6 @@ export const useCollectionQuery: (
   limitCount,
   reversed
 ) => {
-  console.log({ key });
-
   const [data, setData] = useState<QueryDocumentSnapshot<DocumentData>[] | null>(key ? cache[key] || null : null);
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,7 +27,7 @@ export const useCollectionQuery: (
     setLoading(cached ? false : true);
 
     if (cached) {
-      setData(cache[key]);
+      // setData(cache[key]);
     }
 
     const unsubscribe = onSnapshot(

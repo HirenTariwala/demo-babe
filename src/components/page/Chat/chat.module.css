@@ -36,8 +36,17 @@
 .userListArr {
   max-height: calc(100vh - 172px);
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 .userListArr::-webkit-scrollbar {
+  display: none !important;
+  scroll-behavior: smooth !important;
+}
+.userListArr > div::-webkit-scrollbar {
+  display: none !important;
+  scroll-behavior: smooth !important;
+}
+.chatMsgList > div::-webkit-scrollbar {
   display: none !important;
   scroll-behavior: smooth !important;
 }

@@ -93,6 +93,10 @@ export enum MessageEnum {
   order = 5,
 }
 
+export enum option {
+  pending, accept, reject, paid
+}
+
 export enum NewMessageEnum {
   checkAvailability,
   directMessage,

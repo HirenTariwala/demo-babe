@@ -1,7 +1,7 @@
 'use client';
 import styles from './rent.module.css';
 import Box from '@/components/atoms/box';
-import React from 'react';
+import React, { useState } from 'react';
 import useRentHook from './useRentHook';
 import Typography from '@/components/atoms/typography';
 import { Avatar, Card, CardHeader, CircularProgress, InputAdornment } from '@mui/material';
@@ -21,6 +21,7 @@ import WhoIsFreeTodayView from './components/WhoIsFreeTodayView';
 import RequestOrderModal from '../Profile/components/requestOrderModal';
 import { useRequestModal } from '@/store/reducers/serviceReducer';
 import { useTranslations } from 'next-intl';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 
 const imgs = [
   'https://rentbabe.com/assets/banner/newuser.jpg',
@@ -114,7 +115,6 @@ const Rent = () => {
     reset,
     nickname,
     open,
-    // limitquery,
     favouritesV2,
     filterIsOpen,
     regionState,
@@ -142,7 +142,30 @@ const Rent = () => {
     setActiveLocation,
   } = useRentHook();
   const isModalOpen = useRequestModal();
-  const t = useTranslations('rentPage')
+  const t = useTranslations('rentPage');
+  const placesLibrary = ['places'];
+  const [searchResult, setSearchResult] = useState('');
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_API_KEY,
+    libraries: placesLibrary,
+  } as any);
+  const onLoad = (autocomplete: any) => {
+    setSearchResult(autocomplete);
+  };
+  const onPlaceChanged = () => {
+    if (searchResult != null) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-expect-error
+      const place = searchResult?.getPlace();
+      const name = place?.name;
+      setActiveLocation(name);
+    } else {
+      alert('Please enter text');
+    }
+  };
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
   return (
     <Box
       sx={{
@@ -282,14 +305,17 @@ const Rent = () => {
               gap: '12px',
             }}
           >
-            <Dropdown
+            {/* <Dropdown
               size="small"
               sx={customStyles}
               placeholderText="All countries"
               value={activeLocation}
               listData={locationData}
               onChange={handleLocationChange}
-            />
+            /> */}
+            <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onLoad}>
+              <Input fullWidth size="small" placeholder="Find location" inputProps={{ sx: { padding: '12px 24px' } }} />
+            </Autocomplete>
             <Input
               size="small"
               placeholder="Type user name"
@@ -403,12 +429,9 @@ const Rent = () => {
         isTablet={isTablet}
         setOpen={setOpen}
       />
-        {isModalOpen && <RequestOrderModal
-        isMobile={isMobile}
-        isTablet={isTablet}
-        isOpen={isModalOpen}
-        setOpen={setOpen}
-      />}
+      {isModalOpen && (
+        <RequestOrderModal isMobile={isMobile} isTablet={isTablet} isOpen={isModalOpen} setOpen={setOpen} />
+      )}
       <FilterModal
         filterIsOpen={filterIsOpen}
         onCloseFilter={onCloseFilter}

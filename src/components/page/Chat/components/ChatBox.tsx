@@ -1,6 +1,13 @@
 import { useWindowSize } from '@/hooks/useWindowSize';
-import { setSelectedConversation, useSelectedConversationStore } from '@/store/reducers/conversationReducer';
-import { setCurrentUser, useUserStore } from '@/store/reducers/usersReducer';
+import {
+  // setConversation,
+  setSelectedConversation,
+  useSelectedConversationStore,
+} from '@/store/reducers/conversationReducer';
+import {
+  // setCurrentUser,
+  useUserStore,
+} from '@/store/reducers/usersReducer';
 import React, { useEffect, useState } from 'react';
 import { convertDocToConvo, getRecipientUID } from '../../Profile/util/helper';
 import { Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -15,7 +22,7 @@ import {
   privacyTimeStampKey,
   recipientLastSeenKey,
   senderLastSeenKey,
-  teleIdKey,
+  // teleIdKey,
   timeStampKey,
 } from '@/keys/firestoreKeys';
 import { useAppDispatch } from '@/store/useReduxHook';
@@ -55,18 +62,30 @@ const ChatBox = ({ loading }: IChatBox) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showProfile, setShowProfile] = useState<boolean>(false);
   const [openAlert, setAlert] = useState<boolean>(true);
+  const [apiRevalidate, setApiRevalidate] = useState<number>(0);
 
   useEffect(() => {
     if (!selectedConversation && chatUUID) {
       getDoc(doc(db, CONVERSATION, chatUUID)).then((snapshot) => {
         const map = convertDocToConvo(snapshot);
+
         dispatch(setSelectedConversation({ data: map }));
       });
     }
 
     setAlert(true);
     // eslint-disable-next-line
-  }, [selectedConversation, chatUUID]);
+  }, [selectedConversation, chatUUID, apiRevalidate]);
+
+  useEffect(() => {
+    if (chatUUID) {
+      getDoc(doc(db, CONVERSATION, chatUUID)).then((snapshot) => {
+        const map = convertDocToConvo(snapshot);
+
+        dispatch(setSelectedConversation({ data: map }));
+      });
+    }
+  }, [apiRevalidate]);
 
   useEffect(() => {
     const value = getRecipientUID(currentUser?.uid, selectedConversation);
@@ -106,12 +125,13 @@ const ChatBox = ({ loading }: IChatBox) => {
 
     const isCurrent = cache?.users?.includes(userData?.id);
     // const item = helper.convertToItem(userData);
-    const item = userData?.data();
-    if (item) dispatch(setCurrentUser(item));
+    // const item = userData?.data();
+
+    // if (item) dispatch(setConversation({item}));
 
     if (isCurrent) {
       const otherUserUUID = userData?.id;
-      const teleId = userData?.get(teleIdKey) as string;
+      // const teleId = userData?.get(teleIdKey) as string;
       const url = userData?.get(mobileUrlKey) as string;
       const username = userData?.get(nicknameKey) as string;
 
@@ -185,6 +205,10 @@ const ChatBox = ({ loading }: IChatBox) => {
   //   return <Box>hello</Box>;
   // }
 
+  const revalidate = () => {
+    setApiRevalidate((prev) => prev + 1);
+  };
+
   return (
     <Box
       // display="flex"
@@ -195,14 +219,7 @@ const ChatBox = ({ loading }: IChatBox) => {
       height="100%"
       onClick={onCloseAlert}
     >
-      <Box
-        bgcolor="white"
-        maxWidth={isChatBox ? maxWidth : 'auto'}
-        //         className={`${size.width <= 6000 ? 'chatbox' : ''} chat-box-background ${
-        //           loading || !selectedConversation ? 'center-it' : ''
-        //         }
-        // ${size.width <= 600 ? 'chat-box-background-image' : ''}`}
-      >
+      <Box bgcolor="white" maxWidth={isChatBox ? maxWidth : 'auto'} height="100%">
         <ChatHeader
           senderUUID={selectedConversation?.sender}
           myBlock={selectedConversation?.block?.includes(currentUser?.uid ?? '-') ?? false}
@@ -213,16 +230,18 @@ const ChatBox = ({ loading }: IChatBox) => {
           online={online}
           profileClick={profileClick}
           hasOrder={selectedConversation?.hasOrder || false}
+          revalidate={revalidate}
         />
 
         {openAlert && (
           <Alert
             onClose={onCloseAlert}
             style={{
+              width: '100%',
               position: 'absolute',
-              zIndex: 99,
-              maxWidth: isChatBox ? maxWidth : 'auto',
-              width: isChatBox ? 'auto' : `${size.width - 350}px`,
+              top: '77px',
+              zIndex: 1,
+              maxWidth: '620px',
             }}
             severity="warning"
           >
@@ -236,25 +255,23 @@ const ChatBox = ({ loading }: IChatBox) => {
           </Alert>
         )}
 
-        <>
-          {loading ? (
-            <>
-              basic Card
-              {/* <BasicCard /> */}
-            </>
-          ) : !selectedConversation ? (
-            // <BasicCard />
-            'basis Card'
-          ) : (
-            <ChatView
-              myBlock={selectedConversation?.block?.includes(currentUser?.uid ?? '-') ?? false}
-              otherBlock={selectedConversation?.block?.includes(otherUid ?? '-') ?? false}
-              requestNewOrder={profileClick}
-              onFocus={() => setAlert(false)}
-              //isDisabled={selectedConversation.hasOrder ? false : currentUser?.isAdmin ? false : true }
-            />
-          )}
-        </>
+        {loading ? (
+          <>
+            basic Card
+            {/* <BasicCard /> */}
+          </>
+        ) : !selectedConversation ? (
+          // <BasicCard />
+          'basis Card'
+        ) : (
+          <ChatView
+            myBlock={selectedConversation?.block?.includes(currentUser?.uid ?? '-') ?? false}
+            otherBlock={selectedConversation?.block?.includes(otherUid ?? '-') ?? false}
+            requestNewOrder={profileClick}
+            onFocus={() => setAlert(false)}
+            //isDisabled={selectedConversation.hasOrder ? false : currentUser?.isAdmin ? false : true }
+          />
+        )}
       </Box>
     </Box>
   );

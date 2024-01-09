@@ -47,23 +47,23 @@ const Header = () => {
   const nav = [
     {
       name: t('rent'),
-      path: '/rent',
+      path: `/${value}/rent`,
     },
     {
       name: t('faq'),
-      path: '/faq',
+      path: `/${value}/faq`,
     },
     {
       name: t('terms'),
-      path: '/terms',
+      path: `/${value}/terms`,
     },
     {
       name: t('location'),
-      path: '/location',
+      path: `/${value}/location`,
     },
     {
       name: t('contact'),
-      path: '/contact',
+      path: `/${value}/contact`,
     },
   ];
 
@@ -84,7 +84,7 @@ const Header = () => {
         bgcolor="#FFF"
       >
         <Box display="flex" gap={8} alignItems="center">
-          <Box onClick={()=> router.push("/")} sx={{cursor:"pointer"}}>
+          <Box onClick={() => router.push(`/`)} sx={{ cursor: 'pointer' }}>
             <LogoIcon />
           </Box>
           {!isTablet && <NavBar pathName={pathName} nav={nav} />}
@@ -229,7 +229,7 @@ const Header = () => {
           '.MuiDrawer-paperAnchorTop': { top: 65 },
           'MuiBackdrop-root-MuiModal-backdrop': { display: 'block' },
           top: 100,
-          '.MuiPaper-root': {
+          '.MuiDrawer-paper': {
             height: 'auto',
             width: '100%',
             minWidth: '600px',

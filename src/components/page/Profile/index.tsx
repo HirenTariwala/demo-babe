@@ -63,6 +63,7 @@ const Profile = ({
     goBack,
     onResetTab,
     setReportModalOpen,
+    state
   } = useProfileHook(uid);
   const dispatch = useAppDispatch();
 
@@ -424,7 +425,7 @@ const Profile = ({
         reportBy={myUid}
         user={item?.uid}
       />
-      <RequestOrderModal isMobile={isMobile} isTablet={isTablet} isOpen={isModalOpen} setOpen={setOpen} />
+    <RequestOrderModal state={state} isMobile={isMobile} isTablet={isTablet} isOpen={isModalOpen} setOpen={setOpen} />
     </Box>
   );
 };

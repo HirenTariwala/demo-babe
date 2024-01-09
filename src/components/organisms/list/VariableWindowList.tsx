@@ -4,7 +4,7 @@ import { VariableSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Size, useWindowSize } from '@/hooks/useWindowSize';
 
-interface Props {
+interface IVariableWindowList {
   height: string | number;
   width: string | number;
   hasNextPage: boolean;
@@ -31,7 +31,7 @@ const VariableWindowList = ({
   style,
   loadNextPage,
   component,
-}: Props) => {
+}: IVariableWindowList) => {
   const listRef = useRef<VariableSizeList<any> | null>(null);
   const [size] = useWindowSize();
   const sizeMap = useRef<{ [index: number]: number }>({});
@@ -40,10 +40,14 @@ const VariableWindowList = ({
 
   const isItemLoaded = (index: number) => !hasNextPage || index < ((data?.length as number) ?? 0);
 
-  const setSize = useCallback((index: number, _size: number) => {
-    sizeMap.current = { ...sizeMap.current, [index]: _size };
+  // const setSize = useCallback((index: number, _size: number) => {
+  //   sizeMap.current = { ...sizeMap.current, [index]: _size };
+  //   listRef.current?.resetAfterIndex(index);
+  // }, []);
+  const setSize = (index: number, PSize: number) => {
+    sizeMap.current = { ...sizeMap.current, [index]: PSize };
     listRef.current?.resetAfterIndex(index);
-  }, []);
+  };
 
   const getSize = useCallback((index: number) => {
     const currentSize = sizeMap.current[index] || 50;
@@ -85,7 +89,7 @@ const VariableWindowList = ({
 
   return (
     <InfiniteLoader isItemLoaded={isItemLoaded} itemCount={itemCount} loadMoreItems={loadNextPage}>
-      {({ onItemsRendered, ref: _ref }) => (
+      {({ onItemsRendered, ref: infiniteLoaderRef }) => (
         <VariableWindowListContext.Provider value={value}>
           <VariableSizeList
             className="infinite-scroll-chatview"
@@ -98,7 +102,7 @@ const VariableWindowList = ({
             outerRef={scrollReversed ? useInvertScrollDirection : undefined}
             ref={(variableSizeList) => {
               listRef.current = variableSizeList;
-              return _ref;
+              return infiniteLoaderRef;
             }}
             width={width}
             itemSize={getSize}

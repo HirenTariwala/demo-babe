@@ -17,6 +17,7 @@ export interface UserProps {
   gender?: string | undefined | null;
   profileImage?: string | undefined | null;
   nickname?: string | undefined | null;
+  nick?: string | undefined | null;
   phoneNumber?: string | undefined | null;
   isAdmin?: boolean | null | undefined;
   isPremium?: boolean;

@@ -1,6 +1,5 @@
 import { useUserStore } from '@/store/reducers/usersReducer';
 import useRentHook from '../Rent/useRentHook';
-import Badge from '@/components/atoms/badge';
 import { collection, orderBy, query, where } from 'firebase/firestore';
 import { useCollectionQuery2 } from '@/hooks/useCollectionQuery2';
 import { db } from '@/credentials/firebase';
@@ -14,7 +13,7 @@ const useOrderhook = () => {
   const userStore = useUserStore();
   const currentUser = userStore?.currentUser;
 
-  const [uid,isAdmin] = [currentUser?.uid,currentUser?.isAdmin];
+  const [uid, isAdmin] = [currentUser?.uid, currentUser?.isAdmin];
 
   // const uid = 'nvWQi1KhGuPDnzAIwuJ89DVWz5i1';
 
@@ -87,7 +86,7 @@ const useOrderhook = () => {
         const noOfItems = getNoOfBadge(item?.key?.toString());
 
         return {
-          lable: (value: number) => (
+          lable: () => (
             <span
               style={{
                 display: 'flex',
@@ -96,9 +95,9 @@ const useOrderhook = () => {
               }}
             >
               <span>{item?.label}</span>
-              <span>
+              {/* <span>
                 <Badge badgeContent={noOfItems?.length?.toString()} color={value === index ? 'primary' : 'secondary'} />
-              </span>
+              </span> */}
             </span>
           ),
           content: (

@@ -12,7 +12,7 @@ const useHeaderHook = () => {
   const isTablet = useMediaQuery('(max-width:1024px)');
   const isMobile = useMediaQuery('(max-width:600px)');
   const { uid, logOut, currentUser } = useLoginHook();
-  const [isPending, startTransition] = useTransition();
+  const [isPending] = useTransition();
   const [value, setValue] = useState(useLocale());
   const [isOpenChat, setIsOpenChat] = useState(false);
 
@@ -24,11 +24,10 @@ const useHeaderHook = () => {
   const profileImage = '';
 
   const handleChange = (event: SelectChangeEvent) => {
-    setValue(event.target.value);
-    const nextLocale = event.target.value;
-    startTransition(() => {
+    const nextLocale = event?.target?.value;
+    setValue(nextLocale);
       router.replace(pathName, { locale: nextLocale });
-    });
+  
   };
 
   const goToPremium = () => {

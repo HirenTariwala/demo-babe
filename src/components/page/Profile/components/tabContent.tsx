@@ -25,7 +25,6 @@ const TabContent = ({ activeTab, setActiveTab, data, isMobile }: ITabContent) =>
   const emeets = selectedBabe?.emeets;
   const dispatch = useDispatch();
   const servicesKeyId = Object?.keys(data)?.filter((item) => item != 'id');
-  console.log(servicesKeyId);
 
   const temp = servicesKeyId?.map((key) => data[key]);
   const handleTabChange = (e: number) => {

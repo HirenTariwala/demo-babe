@@ -3,9 +3,7 @@ import Rent from '@/components/page/Rent';
 
 const page = () => {
   return (
-    <>
     <Rent/>
-    </>
   );
 };
 

@@ -10,22 +10,25 @@ import {
   senderProfileURLKey,
 } from '@/keys/firestoreKeys';
 import { ListItem, ListItemProps, ListItemText } from '@mui/material';
-import { Fragment } from 'react';
 import { User } from '../../shared/types';
 import Typography from '@/components/atoms/typography';
 import NextImage from '@/components/atoms/image';
 import Box from '@/components/atoms/box';
+import DotIcon from '@/components/atoms/icons/dotIcon';
+import Badge from '@/components/atoms/badge';
 
 export interface IItem extends ListItemProps {
   uid: string;
   otherUid: string | undefined;
   isSelected: boolean;
   doc: any;
+  time?: string;
   index: number;
   onClick?: () => void;
+  badge?: string | number;
 }
 
-const Item = ({ uid, otherUid, isSelected, doc, index, onClick, ...props }: IItem) => {
+const Item = ({ uid, otherUid, isSelected, time, doc, index, onClick, ...props }: IItem) => {
   const isSender = (doc.get(senderKey) as string) === uid;
   const user = doc?.get(infoKey) as User | undefined;
 
@@ -66,10 +69,17 @@ const Item = ({ uid, otherUid, isSelected, doc, index, onClick, ...props }: IIte
         sx={{ color: '#1A1A1A', margin: '0px' }}
         primary={nickname}
         secondary={
-          <Fragment>
+          <Box
+            sx={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}
+          >
             <Typography
               noWrap
               sx={{
+                width: 'calc(100% - 60px)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 color: '#999',
@@ -79,9 +89,36 @@ const Item = ({ uid, otherUid, isSelected, doc, index, onClick, ...props }: IIte
             >
               {doc.get(lastMessageKey) as string}
             </Typography>
-          </Fragment>
+            <Typography
+              noWrap
+              sx={{
+                color: '#646464',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: '5px',
+              }}
+              fontSize="12px"
+              variant="body2"
+              color="text.primary"
+            >
+              <DotIcon />
+              {time}
+            </Typography>
+          </Box>
         }
       />
+      {!isSelected && (
+        <Badge
+          variant="dot"
+          badgeContent={props.badge}
+          sx={{
+            '.MuiBadge-badge': {
+              background: '#37AAF2',
+            },
+          }}
+        />
+      )}
     </ListItem>
   );
 };

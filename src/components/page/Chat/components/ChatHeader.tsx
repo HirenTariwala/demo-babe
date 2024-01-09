@@ -1,7 +1,7 @@
-import { FC } from 'react';
-import { Avatar, Card, CardHeader, Skeleton, Typography } from '@mui/material';
+import { Card, CardHeader, Skeleton, Typography } from '@mui/material';
 import {
   arrayRemove,
+  arrayUnion,
   doc,
   DocumentData,
   DocumentSnapshot,
@@ -32,6 +32,8 @@ import NextImage from '@/components/atoms/image';
 import Box from '@/components/atoms/box';
 import Verifed from '@/components/atoms/icons/verifed';
 import { useDocumentQuery } from '@/hooks/useDocumentQuery';
+import Badge from '@/components/atoms/badge';
+import HeaderMore from './HeaderMore';
 
 interface ChatHeaderProps {
   senderUUID: string | undefined;
@@ -43,6 +45,7 @@ interface ChatHeaderProps {
   userData?: DocumentSnapshot<DocumentData> | null | undefined;
   hasOrder: boolean;
   profileClick: () => void;
+  revalidate: () => void;
 }
 
 const ChatHeader = ({
@@ -58,7 +61,8 @@ const ChatHeader = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasOrder,
   profileClick,
-}:ChatHeaderProps) => {
+  revalidate,
+}: ChatHeaderProps) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const isChatBox = Helper?.getQueryStringValue('cri') ? true : false;
@@ -90,25 +94,26 @@ const ChatHeader = ({
     dispatch(setSelectedConversation({ data: undefined }));
   };
 
-  // const blockClick = () => {
-  //   const otherUid = data?.id;
+  const blockClick = () => {
+    const otherUid = data?.id;
 
-  //   if (!myUID || !otherUid) return;
+    if (!myUID || !otherUid) return;
 
-  //   if (myBlock) {
-  //     if (chatRoomID) {
-  //       updateDoc(doc(db, CONVERSATION, chatRoomID), {
-  //         [blockKey]: arrayRemove(myUID),
-  //       });
-  //     }
-  //   } else {
-  //     if (chatRoomID) {
-  //       updateDoc(doc(db, CONVERSATION, chatRoomID), {
-  //         [blockKey]: arrayUnion(myUID),
-  //       });
-  //     }
-  //   }
-  // };
+    if (myBlock) {
+      if (chatRoomID) {
+        updateDoc(doc(db, CONVERSATION, chatRoomID), {
+          [blockKey]: arrayRemove(myUID),
+        });
+      }
+    } else {
+      if (chatRoomID) {
+        updateDoc(doc(db, CONVERSATION, chatRoomID), {
+          [blockKey]: arrayUnion(myUID),
+        });
+      }
+    }
+    revalidate();
+  };
 
   return (
     <Card
@@ -122,102 +127,115 @@ const ChatHeader = ({
       }}
     >
       <CardHeader
-        avatar={
-          <Box display="flex" alignItems="center">
-            {isOpen || isChatBox ? (
+        title={
+          <Box onClick={profileClick} display="flex" gap="16px" alignItems="center">
+            <Box display="flex" alignItems="center" width={44} height={44} position={'relative'}>
+              {isOpen || isChatBox ? (
+                <NextImage
+                  onClick={() => router?.back()}
+                  height={16}
+                  width={16}
+                  src="https://images.rentbabe.com/assets/back.svg"
+                  alt=""
+                />
+              ) : null}
+
               <NextImage
-                onClick={() => router?.back()}
-                height={16}
-                width={16}
-                src="https://images.rentbabe.com/assets/back.svg"
+                onClick={profileClick}
+                fill
+                sizes="100%"
+                style={{ borderRadius: '100px', objectFit: 'cover' }}
+                src={data?.get(mobileUrlKey) ?? ''}
                 alt=""
               />
-            ) : null}
-
-            <Avatar
-              onClick={profileClick}
-              // src={data?.get(mobileUrlKey)?.toCloudFlareURL() ?? ''}
-              src={data?.get(mobileUrlKey) ?? ''}
-              alt=""
-              sx={{ width: 40, height: 40, marginLeft: '1em', cursor: 'pointer' }}
-            >
-              <Skeleton variant="circular" width={40} height={40}></Skeleton>
-            </Avatar>
-          </Box>
-        }
-        title={
-          <Box onClick={profileClick} display="flex" gap="8px" alignItems="center">
-            {isUserDataLoading || data === undefined ? (
-              <Skeleton variant="text" width="100px" />
-            ) : (
-              <Typography
-                fontWeight="bold"
-                sx={{
-                  textTransform: 'capitalize',
-                }}
-                fontSize={21}
-              >
-                {data?.get(nicknameKey) ?? 'Account Deleted'}
-              </Typography>
-            )}
-
-            {(data?.get(videoVerificationKey) as boolean) ? (
-              <>
-                <div className="flex-gap" />
-                <Verifed size={24} />
-              </>
-            ) : null}
-
-            {(premiumData?.get(premiumKey) as boolean) && (
-              <>
-                <div className="flex-gap" />
-                {/* <UserTag /> */}
-                User Tag
-              </>
-            )}
-          </Box>
-        }
-        subheader={
-          <>
-            {isUserDataLoading ? (
-              <>
-                <Skeleton variant="text" width="40px" />
-              </>
-            ) : (
-              <>
-                {data ? (
-                  <Box onClick={profileClick} display="flex">
-                    <Typography fontWeight={500} variant="body2" color={data?.get(isOnlineKey) ? 'secondary' : 'error'}>
-                      {premiumData?.get(blockKey)
-                        ? 'CAUTION: This user is being banned'
-                        : data?.get(isOnlineKey)
-                        ? 'Online'
-                        : online
-                        ? `Last seen ${Helper?.timeSince(online?.toDate(), true)}`
-                        : ''}
-                    </Typography>
-
-                    <div className="flex-gap" />
-                  </Box>
+            </Box>
+            <Box flex="1 0 0">
+              <Box display="flex" gap="8px" alignItems="center">
+                {isUserDataLoading || data === undefined ? (
+                  <Skeleton variant="text" width="100px" />
                 ) : (
-                  <Skeleton variant="text" width="40px" />
+                  <Typography
+                    fontWeight="bold"
+                    sx={{
+                      textTransform: 'capitalize',
+                    }}
+                    fontSize={21}
+                  >
+                    {data?.get(nicknameKey) ?? 'Account Deleted'}
+                  </Typography>
                 )}
-              </>
-            )}
-          </>
+
+                {(data?.get(videoVerificationKey) as boolean) ? (
+                  <>
+                    <div className="flex-gap" />
+                    <Verifed size={24} />
+                  </>
+                ) : null}
+
+                {(premiumData?.get(premiumKey) as boolean) && (
+                  <Box>
+                    <div className="flex-gap" />
+                    {/* <UserTag /> */}
+                    User Tag
+                  </Box>
+                )}
+              </Box>
+              <Box>
+                {isUserDataLoading ? (
+                  <>
+                    <Skeleton variant="text" width="40px" />
+                  </>
+                ) : (
+                  <>
+                    {data ? (
+                      <Box onClick={profileClick} display="flex" alignItems="center" gap="14px">
+                        {data?.get(isOnlineKey) && (
+                          <Badge
+                            variant="dot"
+                            badgeContent={''}
+                            sx={{
+                              '.MuiBadge-badge': {
+                                backgroundColor: '#4CAF4F',
+                                left: '-4px',
+                              },
+                            }}
+                          />
+                        )}
+                        <Typography
+                          fontWeight={500}
+                          variant="body2"
+                          color={premiumData?.get(blockKey) ? '#E32D2D' : data?.get(isOnlineKey) ? '#4CAF4F' : '#999'}
+                        >
+                          {premiumData?.get(blockKey)
+                            ? 'CAUTION: This user is being banned'
+                            : data?.get(isOnlineKey)
+                            ? 'Online'
+                            : online
+                            ? `Last seen ${Helper?.timeSince(online?.toDate(), true)}`
+                            : ''}
+                        </Typography>
+
+                        <div className="flex-gap" />
+                      </Box>
+                    ) : (
+                      <Skeleton variant="text" width="40px" />
+                    )}
+                  </>
+                )}
+              </Box>
+            </Box>
+            <HeaderMore
+              senderUUID={senderUUID}
+              myBlock={myBlock}
+              chatRoomID={chatRoomID}
+              deleteClick={deleteClick}
+              blockClick={blockClick}
+              reportData={{ user: data?.id, reportBy: myUID }}
+              openProfile={profileClick}
+              hasOrder={hasOrder}
+            />
+          </Box>
         }
-        // action={
-        //   <HeaderMore
-        //     senderUUID={senderUUID}
-        //     myBlock={myBlock}
-        //     chatRoomID={chatRoomID}
-        //     deleteClick={deleteClick}
-        //     blockClick={blockClick}
-        //     reportData={{ user: data?.id, reportBy: myUID }}
-        //     openProfile={profileClick}
-        //     hasOrder={hasOrder}
-        //   />
-        // }
       />
     </Card>
   );

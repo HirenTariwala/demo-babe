@@ -211,7 +211,6 @@ const Quotation = (props: Props) => {
 
   const handleAmountChange = (event: any) => {
     const sanitizedValue = event?.target?.value?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    console.log(event?.target?.value, sanitizedValue, props?.income);
 
     props.setError('');
     if (!sanitizedValue || Number(sanitizedValue) === 0) {
@@ -244,7 +243,6 @@ const Quotation = (props: Props) => {
 
   const handleCurrencyChange = (event: any) => {
     const sanitizedValue = event?.target?.value?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    console.log({ sanitizedValue });
 
     props.setError('');
     setCurrency(sanitizedValue);

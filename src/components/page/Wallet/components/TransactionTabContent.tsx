@@ -2,10 +2,10 @@ import Box from '@/components/atoms/box';
 import LoadingIcon from '@/components/atoms/icons/loading';
 import Typography from '@/components/atoms/typography';
 import TransactionCard from '@/components/molecules/card/transaction';
-import { OrderItemEnum } from '@/enum/orderEnum';
-import dayjs from 'dayjs';
+import VariableWindowList from '@/components/organisms/list/VariableWindowList';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import React from 'react';
+import styles from '../wallet.module.css';
 
 interface ITabContent {
   index: number;
@@ -38,51 +38,18 @@ const TransactionTabContent = ({ index, data, loading, error }: ITabContent) => 
     );
   }
 
-  const getStatus = (item: number) => {
-    console.log(item)
-    switch (item) {
-      case OrderItemEnum.custom_recharge: {
-        return { status: 'Custom Recharge', color: 'info' };
-      }
-
-      case OrderItemEnum.bundle_recharge: {
-        return { status: 'Bundle Recharge', color: 'info' };
-      }
-
-      case OrderItemEnum.refund: {
-        return { status: 'Refunded', color: 'primary' };
-      }
-      case OrderItemEnum.credits_movement: {
-        return { status: 'Withdrawn', color: 'error' };
-      }
-
-      default: {
-        return { status: 'All', color: 'success' };
-      }
-    }
-  };
-
   return (
-    <Box key={index} display={'flex'} flexDirection={'column'} gap={5}>
-      {data?.map((item, index) => {
-        const doc = item?.data();
-        const combinedTimestamp = doc?.t?.seconds * 1000 + Math.floor(doc?.t?.nanoseconds / 1000000);
-        const date = dayjs(new Date(combinedTimestamp)).format('MMM DD, hh:mm A');
-        const statusWithColorObj = getStatus(doc?.item);
-
-        return (
-          <TransactionCard
-            key={index}
-            transactionData={{
-              amount: doc?.amt || 0,
-              status: statusWithColorObj?.status,
-              color: statusWithColorObj?.color,
-              time: date,
-              transactionID: doc?.id,
-            }}
-          />
-        );
-      })}
+    <Box position={'relative'} key={index} className={styles.transactionList}>
+      <VariableWindowList
+        data={data ?? []}
+        height={(window?.innerHeight / 3) * 4}
+        width={'100%'}
+        hasNextPage={true}
+        loadNextPage={() => {}}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignores
+        component={TransactionCard}
+      />
     </Box>
   );
 };

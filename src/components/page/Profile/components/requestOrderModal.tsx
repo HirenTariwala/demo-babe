@@ -44,8 +44,10 @@ import {
 import Toast from '@/components/molecules/toast';
 import { ServiceTypeEnum } from '@/props/servicesProps';
 import { messenger, nsfw, payment, sendTelegramNotificationToAdmin, sex } from '@/keys/filters';
+import { CountryLookUpTable } from '@/common/utils/data';
 
 interface IRequestOrderModal {
+  state?: any,
   uid?: string;
   isOpen: boolean;
   isMobile: boolean;
@@ -55,7 +57,7 @@ interface IRequestOrderModal {
 
 const placesLibrary = ['places'];
 
-const RequestOrderModal = ({ isMobile, isTablet, isOpen, setOpen }: IRequestOrderModal) => {
+const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IRequestOrderModal) => {
   const { selectedBabe } = useSeletedBabeStore();
   const [searchResult, setSearchResult] = useState('');
   const [value, setValue] = useState('0');
@@ -112,6 +114,7 @@ const RequestOrderModal = ({ isMobile, isTablet, isOpen, setOpen }: IRequestOrde
       //@ts-expect-error
       const place = searchResult.getPlace();
       const name = place.name;
+      
       setSelectedLocation(name);
     } else {
       alert('Please enter text');
@@ -257,7 +260,9 @@ const RequestOrderModal = ({ isMobile, isTablet, isOpen, setOpen }: IRequestOrde
       setLoading(true);
       const res = await newConversation(map);
       const data = res.data as any;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result = data.result as string | null | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const chatRoomId = data.chatRoomId as string | null | undefined;
       setLoading(false);
       setToast(true);
@@ -437,7 +442,9 @@ const RequestOrderModal = ({ isMobile, isTablet, isOpen, setOpen }: IRequestOrde
               <Autocomplete
                 onPlaceChanged={onPlaceChanged}
                 onLoad={onLoad}
-                options={{ types: getRestrictions(selectedServiceData?.id), fields: ['name'] }}
+                options={{ types: getRestrictions(selectedServiceData?.id), fields: ['name'], componentRestrictions: {country: 
+                  CountryLookUpTable[state] || 
+                  "sg"} }}
               >
                 <Input
                   fullWidth
