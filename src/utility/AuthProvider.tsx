@@ -9,7 +9,7 @@ const AuthProvider = ({ pathName, children }: { pathName: string; children: Reac
   const router = useRouter();
   const currentUser = userStore?.currentUser;
   const uid = currentUser?.uid;
-  let newPath = '/';
+  let newPath = pathName;
 
   if (
     pathName?.includes('/en') ||
@@ -33,6 +33,7 @@ const AuthProvider = ({ pathName, children }: { pathName: string; children: Reac
     router.push('/');
     return;
   }
+
   return children;
 };
 

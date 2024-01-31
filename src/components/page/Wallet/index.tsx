@@ -16,6 +16,7 @@ import ToolTip from '@/components/atoms/tooltip';
 import VerifiedModal from './components/Withdrawn/VerifiedModal';
 import UnVerifiedModal from './components/Withdrawn/UnVerifiedModal';
 import Toast from '@/components/molecules/toast';
+import { useTranslations } from 'next-intl';
 
 const WalletPage = () => {
   const {
@@ -25,15 +26,12 @@ const WalletPage = () => {
     uid,
     verified,
     rejectedReasonAfter,
-    // balance,
-    // pending,
     income,
     toastMsg,
+    setActiveTransactionTab,
     onOpenToastWithMsg,
     openToast,
     onCloseToast,
-    // penaltyCredits,
-    // nickname,
     verifiedWithdrawIsOpen,
     setVerifiedWithdrawIsOpen,
     unVerifiedWithdrawIsopen,
@@ -41,15 +39,66 @@ const WalletPage = () => {
     onClickRecharge,
     withdrawButtonClick,
   } = useWalletHook();
+  const t = useTranslations('walletPage');
 
   return (
     <Box>
-      <Toast alertMessage={toastMsg} onClose={onCloseToast} open={openToast} />
+      {/* <Toast alertMessage={toastMsg} onClose={onCloseToast} open={openToast} /> */}
+      {/* {isOpenAlert && !getAllTransaction && hasNextPage && (
+        <Box sx={{ background: '#f9f9f9', paddingTop: '20px' }}>
+          <Alert
+            sx={{
+              width: '100%',
+              maxWidth: '960px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+            onClose={() => {
+              setIsOpenAlert(false);
+            }}
+            action={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <Button
+                  color="inherit"
+                  size="small"
+                  sx={{
+                    whiteSpace: 'nowrap',
+                  }}
+                  onClick={() => {
+                    setGetAllTransaction(true);
+                  }}
+                >
+                  GET ALL
+                </Button>
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    setIsOpenAlert(false);
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            }
+            severity="warning"
+          >
+            <Typography variant="body1" color="inherit">
+              Get all transaction Click GET ALL.
+            </Typography>
+          </Alert>
+        </Box>
+      )} */}
       <Box className={styles.header}>
         <Box className={styles.headerContent}>
           <Box paddingBottom={'16px'} display={'flex'} alignItems={'center'} gap={4}>
             <Typography variant={isMobile ? 'h2' : 'h1'} fontWeight={500} color="#1A1A1A">
-              Wallet
+              {t('heading')}
             </Typography>
             <Chip
               label={
@@ -67,9 +116,10 @@ const WalletPage = () => {
                     fontWeight={500}
                     sx={{ lineHeight: '20px', display: 'flex', alignItems: 'center' }}
                   >
-                    Loyalty points: {currentUser?.points ? CalculatorHelper?.priceFormat(currentUser?.points / 100) : 0}
+                    {t('pointKey')}:{' '}
+                    {currentUser?.points ? CalculatorHelper?.priceFormat(currentUser?.points / 100) : 0}
                   </Typography>
-                  <ToolTip title="Our platform give users cashback and other privileges according to the total number of Credits they bought.">
+                  <ToolTip title={t('loyaltyTooltipText')}>
                     <InfoIcon />
                   </ToolTip>
                 </Box>
@@ -99,21 +149,19 @@ const WalletPage = () => {
               <Wallet
                 amount={currentUser?.balance || 0}
                 position="bottom"
-                label="Credit Balance"
+                label={t('walletCardCreditBalance')}
                 sx={{
                   border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
                 }}
-                tooltipTitle={`“Credit” is a virtual currency used on RentBabe, it can be used to pay for services and tips. 1.00 Credit = 1.00 SGD\n
-
-                “Credit balance” is the remaining deposit on your account that could be spent. The money in “Credit balance” is a non-withdrawable currency that can only be spent on the platform.`}
+                tooltipTitle={t('creditBalanceTooltipText')}
               />
 
               <Wallet
                 amount={currentUser?.incomeCredits || 0}
                 position="bottom"
-                label="INCOME"
-                tooltipTitle="“Credit income” refers to the income you have generated through providing services and collecting tips. Income can be withdrawn."
+                label={t('walletCardCreditIncome')}
+                tooltipTitle={t('creditIncomeTooltipText')}
                 sx={{
                   border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
@@ -122,14 +170,8 @@ const WalletPage = () => {
               <Wallet
                 amount={currentUser?.pendingCredits || 0}
                 position="bottom"
-                label="PENDING INCOME"
-                tooltipTitle="Pending Credit refers to your Credit income that is within the Security Period (3-7 days). They will be transferred to your account after this period.
-                
-                If you’ve completed less than 3 orders, your Security Period would be 7 days.
-                
-                If you’ve completed 3-9 orders, your Security Period would be 5 days.
-                
-                If you’ve completed over 10 orders, your Security Period would be 3 days."
+                label={t('walletCardPendingBalance')}
+                tooltipTitle={t('pendingIncomeTooltipText')}
                 sx={{
                   border: '2px solid rgba(0, 0, 0, 0)',
                   padding: isMobile ? 4 : 6,
@@ -152,7 +194,7 @@ const WalletPage = () => {
                 onClick={onClickRecharge}
                 variant="outlined"
               >
-                Recharge
+                {t('rechargeButton')}
               </Button>
               <Button
                 color="primary"
@@ -169,7 +211,7 @@ const WalletPage = () => {
                 onClick={withdrawButtonClick}
                 variant="outlined"
               >
-                Withdraw
+                {t('withdrawButton')}
               </Button>
             </Box>
           </Box>
@@ -178,10 +220,14 @@ const WalletPage = () => {
       <Box className={styles.body}>
         <Box className={styles.bodyContent}>
           <Typography variant="h4" fontWeight={500} color="#1A1A1A">
-            Transaction history
+            {t('transactionHeading')}
           </Typography>
+
           <Tabs
             tabBottomPadding="20px"
+            onTabChange={(e) => {
+              setActiveTransactionTab(e ?? 0);
+            }}
             tabsData={tabs}
             sx={{
               '.MuiTabs-scroller': {

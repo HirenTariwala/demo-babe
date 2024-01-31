@@ -166,7 +166,6 @@ const VerifiedModal = ({ income, onClose, ...props }: Props) => {
               <StepLabel
                 StepIconComponent={QontoStepIcon}
                 onClick={() => {
-                  console.log('Hello i am click');
                   onStepClick(index);
                 }}
                 sx={{

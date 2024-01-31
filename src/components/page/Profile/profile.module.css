@@ -13,3 +13,13 @@
   height: auto !important;
   overflow: unset !important;
 }
+
+.slider > button {
+  display: none !important;
+}
+.slider > div {
+  overflow: hidden;
+}
+.slider > div > div {
+  display: flex !important;
+}

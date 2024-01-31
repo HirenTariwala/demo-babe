@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 interface ICountDown {
   date: Date | undefined;
@@ -83,7 +83,7 @@ const CountDown = ({ date, minutesToExpire, hasExpired }: ICountDown) => {
   //   }
   // }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!timerComponents.length) {
       hasExpired?.();
       return;

@@ -9,27 +9,28 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { setRequestModalOpen } from '@/store/reducers/serviceReducer';
 import { useTranslations } from 'next-intl';
+import { setIsOpenProfileModal } from '@/store/reducers/drawerOpenReducer';
+import { useMediaQuery } from '@mui/material';
 
 interface IProfileModal {
   uid?: string;
   isOpen: boolean;
-  isMobile: boolean;
-  isTablet: boolean;
-  onClick: () => void;
-  setOpen:(arg: boolean) => void;
-
 }
 
-const ProfileModalComponents = ({ isOpen, setOpen,onClick, isMobile, isTablet }: IProfileModal) => {
-  const {currentUser} = useUserStore()
-  const router = useRouter()
-  const dispatch = useDispatch()
-  const t= useTranslations('profile.modal')
+const ProfileModalComponents = ({ isOpen }: IProfileModal) => {
+  const { currentUser } = useUserStore();
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:1024px)');
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const t = useTranslations('profile.modal');
   return (
     <>
       <Dialog
         maxWidth="lg"
-        onClose={onClick}
+        onClose={() => {
+          dispatch(setIsOpenProfileModal(false));
+        }}
         footer={
           !isMobile ? (
             <Box display="flex" flexDirection="column" gap={3} alignItems="center" justifyContent="center">
@@ -40,12 +41,12 @@ const ProfileModalComponents = ({ isOpen, setOpen,onClick, isMobile, isTablet }:
                   background: 'linear-gradient(77deg, #FFED34 11.3%, #FFD144 86.76%)',
                 }}
                 color="secondary"
-                onClick={()=>{
-                  if(!currentUser?.uid) {
-                    router.push("/login")
-                  }else{
-                    setOpen(false)
-                    dispatch(setRequestModalOpen(true))
+                onClick={() => {
+                  if (!currentUser?.uid) {
+                    router.push('/login');
+                  } else {
+                    dispatch(setIsOpenProfileModal(false));
+                    dispatch(setRequestModalOpen(true));
                   }
                 }}
               >
@@ -65,14 +66,19 @@ const ProfileModalComponents = ({ isOpen, setOpen,onClick, isMobile, isTablet }:
           },
           '.MuiDialogContent-root': {
             position: 'relative',
+            overflow: 'visible',
           },
           '.MuiDialogActions-root': {
             justifyContent: 'center',
+            position: 'sticky',
+            bottom: 0,
+            width: '100%',
+            backgroundColor: 'white',
           },
         }}
         open={isOpen}
       >
-        <Profile onClick={onClick} setOpen={setOpen}/>
+        <Profile />
       </Dialog>
     </>
   );

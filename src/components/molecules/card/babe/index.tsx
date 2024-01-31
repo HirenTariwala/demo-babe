@@ -26,6 +26,8 @@ import VoiceButtom from './VoiceButtom';
 import { ServiceTypeEnum } from '@/props/servicesProps';
 import dayjs from 'dayjs';
 import { Item } from '@/props/profileProps';
+import ToolTip from '@/components/atoms/tooltip';
+import { useTranslations } from 'next-intl';
 
 interface IBabeCard extends CardProps {
   babeData: any;
@@ -50,6 +52,7 @@ const BabeCard = ({
   ...props
 }: IBabeCard) => {
   const allServicesArr = useServicesStore();
+  const t = useTranslations('profile')
 
   const iAmFreeToday = babeData?.end ? Helper.amIFreeToday(Timestamp?.fromDate(new Date(babeData?.end))) : false;
   const servicesList = ServiceHelper.getServices(
@@ -125,7 +128,15 @@ const BabeCard = ({
               {babeData?.isOnline && <StatusDot />}
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {babeData?.videoVerification && <Verifed size={size === 'small' ? 20 : 24} />}
+              <Box
+                sx={{
+                  zIndex: 10,
+                }}
+              >
+                <ToolTip title={t('verificationTooltipText')}>
+                  {babeData?.videoVerification && <Verifed size={size === 'small' ? 20 : 24} />}
+                </ToolTip>
+              </Box>
               {babeData?.isgToken && <SocialIcon size={size === 'small' ? 20 : 24} />}
             </Box>
           </Box>

@@ -23,6 +23,7 @@ import {
 } from '@/keys/firestoreKeys';
 import { DocumentData, DocumentSnapshot, QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { ConversationInfo, User } from '../../Chat/shared/types';
+import { ServiceTypeEnum } from '@/props/servicesProps';
 
 const CabFareComp = (icon: any, text: string) => {
   return (
@@ -54,12 +55,9 @@ export const getCabFarePrice = (cabfare: any) => {
   }
 };
 
-export const serviceCheck = (imageUrl: string | undefined) => {
-  const parts = imageUrl?.split('/SERVICES/');
-  if (parts && parts?.length > 1) {
-    const extractedString = parts?.[1].split('/')[0];
-    return ['EMEET', 'GAMES'].includes(extractedString);
-  }
+export const serviceCheck = (value: number | undefined) => {   
+    return [ServiceTypeEnum.eMeet,ServiceTypeEnum.games].includes(value);
+  
 };
 
 export const getRestrictions = (meetupType: meetupEnum | undefined | string): string[] => {
@@ -243,4 +241,13 @@ export const convertDocToConvo = (
   };
 
   return map;
+};
+
+export const isExistsValue = (array: string[], value: string | null | undefined) => {
+  let currentValue = null;
+  array?.some((item) => {
+    currentValue = item;
+    return value?.toLowerCase()?.includes(item?.toLowerCase());
+  });
+  return currentValue;
 };

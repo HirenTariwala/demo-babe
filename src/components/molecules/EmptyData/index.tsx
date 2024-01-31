@@ -1,5 +1,6 @@
 import Box from '@/components/atoms/box';
 import Typography from '@/components/atoms/typography';
+import { StringHelper } from '@/utility/stringHelper';
 import React from 'react';
 
 interface IEmptyData {
@@ -21,9 +22,13 @@ const EmptyData = ({ icon, msg, ...props }: IEmptyData) => {
       {...props}
     >
       <Box textAlign={'center'}>{icon}</Box>
-      <Typography variant={'body1'} fontWeight={500} color="#1A1A1A" textAlign={'center'}>
-        {msg}
-      </Typography>
+      <Typography
+        variant={'body1'}
+        fontWeight={500}
+        color="#1A1A1A"
+        textAlign={'center'}
+        dangerouslySetInnerHTML={{ __html: StringHelper?.bubbleMessage(msg ?? '') }}
+      />
     </Box>
   );
 };

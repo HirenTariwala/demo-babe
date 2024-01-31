@@ -310,3 +310,14 @@ export const tabs = [
     label: 'Mobile Legends: Bang Bang',
   },
 ];
+
+export const extractKeyValuePairs = (data: any) => {
+  const result: { [key: string]: string } = {};
+  data.forEach((item: any) => {
+    if (item.includes(':')) {
+      const [key, ...value] = item.split(':');
+      result[key.trim()] = value.join(':').trim();
+    }
+  });
+  return result;
+};

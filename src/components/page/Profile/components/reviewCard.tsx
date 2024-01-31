@@ -89,7 +89,7 @@ const ReviewCard = (hasNextPage: boolean) =>
           key={index}
           style={style}
           sx={{
-            paddingTop: `${index * 12}px`,
+            marginTop: `${index * 12}px`,
           }}
         >
           <Box id={index?.toString()} display={'flex'} gap={'14px'} maxWidth={'552px'}>

@@ -19,9 +19,9 @@ export const useEffectCollectionQuery: (
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState(false);
   const [hasNextPage, setNextPage] = useState(true);
+  const authUser = auth?.currentUser;
 
   useEffect(() => {
-    const authUser = auth?.currentUser;
     if (!key || !collection || !authUser) return () => {};
     setLoading(!cache[key]);
     if (cache[key]) {
@@ -35,14 +35,15 @@ export const useEffectCollectionQuery: (
         setLoading(false);
         setError(false);
 
-        const current = snapshot.docs.length;
+        const current = snapshot?.docs?.length;
         const value = current >= (limitCount ?? 0);
 
         setNextPage(value);
 
         cache[key] = snapshot;
       },
-      () => {
+      (error) => {
+        console.log('useEffectCollectionQuery Error ==> ', error);
         setData(null);
         setLoading(false);
 
@@ -53,7 +54,7 @@ export const useEffectCollectionQuery: (
     return () => {
       unsubscribe();
     };
-  }, [key, limitCount]);
+  }, [key, limitCount, authUser]);
 
   return {
     loading,

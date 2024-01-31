@@ -28,6 +28,7 @@ export interface Item {
   mHeight: number | undefined;
   vac: number | undefined;
   isgToken: string | undefined;
+  isgUid: number | undefined;
   age: number | undefined;
   dob: number;
   videoVerification: boolean | undefined;

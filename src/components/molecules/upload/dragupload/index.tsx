@@ -24,18 +24,24 @@ const DragUpload = ({
     setImage(files[0]);
 
     if (isImageViewAuto) {
-      const reader = new FileReader();
-      reader.readAsDataURL(files[0]);
-      reader.onloadend = function () {
-        const img = document.createElement('img');
-        img.src = reader.result as string;
-        img.className = 'image';
-        img.width = 200;
-        const dropArea = document.getElementById('drop-area');
-        if (dropArea) {
-          dropArea.appendChild(img);
-        }
-      };
+      const dropArea = document.getElementById('drop-area');
+  
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        const file = files[i];
+  
+        reader.readAsDataURL(file);
+        reader.onloadend = function () {
+          const img = document.createElement('img');
+          img.src = reader.result as string;
+          img.className = 'image';
+          img.width = 200;
+  
+          if (dropArea) {
+            dropArea.appendChild(img);
+          }
+        };
+      }
     }
   };
 

@@ -4,7 +4,7 @@ import Box from '@/components/atoms/box';
 import React, { useState } from 'react';
 import useRentHook from './useRentHook';
 import Typography from '@/components/atoms/typography';
-import { Avatar, Card, CardHeader, CircularProgress, InputAdornment } from '@mui/material';
+import { Avatar, Card, CardHeader, CircularProgress, Fab, InputAdornment } from '@mui/material';
 import Dropdown from '@/components/molecules/dropdown';
 import Input from '@/components/atoms/input';
 import Button from '@/components/atoms/button';
@@ -16,12 +16,11 @@ import FiltrerIcon from '@/components/atoms/icons/filterIcon';
 import FilterModal from './components/FilterModal';
 import ReactWindow from './components/reactWindow';
 import NextImage from '@/components/atoms/image';
-import ProfileModalComponents from '../Profile/components/profileModalComponents';
 import WhoIsFreeTodayView from './components/WhoIsFreeTodayView';
-import RequestOrderModal from '../Profile/components/requestOrderModal';
-import { useRequestModal } from '@/store/reducers/serviceReducer';
 import { useTranslations } from 'next-intl';
 import { Autocomplete, useLoadScript } from '@react-google-maps/api';
+import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop';
+import { useWindowSize } from '@/hooks/useWindowSize';
 
 const imgs = [
   'https://rentbabe.com/assets/banner/newuser.jpg',
@@ -91,6 +90,7 @@ const Rent = () => {
   const {
     isMobile,
     isTablet,
+    isTabletMini,
     loading,
     initLoading,
     cardColumnCount,
@@ -114,7 +114,6 @@ const Rent = () => {
     data,
     reset,
     nickname,
-    open,
     favouritesV2,
     filterIsOpen,
     regionState,
@@ -133,15 +132,13 @@ const Rent = () => {
     handleGenderChange,
     handleEthnicityChange,
     backVideoHandler,
-    handleClose,
-    setOpen,
     nextVideoHandler,
     fetchMoreData,
     onOpenFilter,
     onCloseFilter,
     setActiveLocation,
   } = useRentHook();
-  const isModalOpen = useRequestModal();
+  const [size] = useWindowSize()
   const t = useTranslations('rentPage');
   const placesLibrary = ['places'];
   const [searchResult, setSearchResult] = useState('');
@@ -164,7 +161,7 @@ const Rent = () => {
     }
   };
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return <></>;
   }
   return (
     <Box
@@ -385,53 +382,22 @@ const Rent = () => {
 
       <ReactWindow
         columnCount={cardColumnCount}
-        columnWidth={isMobile ? 177 : 276}
+        columnWidth={isTabletMini ? 177 : isTablet ? 230 : 265}
         onItemsRendered={() => true}
         rowCount={Math.ceil((items?.length || 1) / cardColumnCount)}
-        rowHeight={isMobile ? 360 : 420}
-        width={isMobile ? 375 : 1440}
+        rowHeight={isTabletMini ? 360 : 420}
+        width={size.width-50}
         height={window.screenTop}
         onScroll={(e) => fetchMoreData(e, items?.length)}
         className={styles.cardV3}
-        overscanColumnCount={5}
-        overscanRowCount={5}
-        // component={Column}
+        overscanColumnCount={20}
+        overscanRowCount={20}
       >
         {Column}
       </ReactWindow>
 
-      {/* <InfiniteScroll
-        dataLength={items.length}
-        next={fetchMoreData}
-        hasMore={hasMore}
-        loader={<CircularProgress size={18} />}
-      >
-        <Box className={`main ${styles.cards}`}>
-          {loading
-            ? new Array(20)?.fill(null)?.map((_, index) => <SkeletonCardView key={index} />)
-            : items.map((item: Item, index) => (
-                <BabeCard
-                  key={index}
-                  babeData={item}
-                  onClick={() => {
-                    setSelectedUid(item?.uid);
-                    setOpen(true);
-                  }}
-                  size={isMobile ? 'small' : 'medium'}
-                />
-              ))}
-        </Box>
-      </InfiniteScroll> */}
-      <ProfileModalComponents
-        isOpen={open}
-        onClick={handleClose}
-        isMobile={isMobile}
-        isTablet={isTablet}
-        setOpen={setOpen}
-      />
-      {isModalOpen && (
-        <RequestOrderModal isMobile={isMobile} isTablet={isTablet} isOpen={isModalOpen} setOpen={setOpen} />
-      )}
+      {/* {isModalOpen && <RequestOrderModal isOpen={isModalOpen} />} */}
+
       <FilterModal
         filterIsOpen={filterIsOpen}
         onCloseFilter={onCloseFilter}
@@ -459,33 +425,17 @@ const Rent = () => {
         setActiveLocation={setActiveLocation}
       />
       {showScrollToTop && (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignContent="center"
-          flexDirection="column"
-          position="fixed"
-          right={'calc(1rem + 28px - 16px - 6px)'}
-          bottom={'20px'}
+        <Fab
           onClick={scrollToTop}
-          zIndex={99}
-          bgcolor="black"
+          color="primary"
           sx={{
-            transform: 'translate(0, -50%)',
-            cursor: 'pointer',
-            width: 30,
-            height: 30,
-            borderRadius: 999999,
-            padding: '8px',
+            position: 'fixed',
+            bottom: 25,
+            right: 25,
           }}
         >
-          <NextImage
-            width={15}
-            height={15}
-            src={`https://${process.env.NEXT_PUBLIC_IMAGE_PREFIX}/assets/flaticon/gotop.svg`}
-            alt=""
-          />
-        </Box>
+          <VerticalAlignTopIcon fontSize="small" />
+        </Fab>
       )}
     </Box>
   );

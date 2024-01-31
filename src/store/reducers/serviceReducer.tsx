@@ -7,15 +7,15 @@ import { ServiceDetailProps } from '@/props/servicesProps';
 export interface IService {
   services: ServiceDetailProps[];
   selectedService: ServiceDetailProps;
-  isRequestModalOpen: boolean
+  isRequestModalOpen: boolean;
 }
 
 // Define the initial state using that type
 const initialState: IService = {
   services: [],
-  selectedService:{},
-  isRequestModalOpen: false
-}
+  selectedService: {},
+  isRequestModalOpen: false,
+};
 
 export const servicesSlice = createSlice({
   name: 'services',
@@ -23,22 +23,21 @@ export const servicesSlice = createSlice({
   initialState,
   reducers: {
     setServices: (state, action: PayloadAction<ServiceDetailProps[] | null>) => {
-      state.services = action.payload|| [];
+      state.services = action.payload || [];
     },
     setSelectedServices: (state, action: PayloadAction<ServiceDetailProps>) => {
-      state.selectedService = action.payload 
+      state.selectedService = action.payload;
     },
-    setRequestModalOpen:(state, action: PayloadAction<boolean>) => {
-     state.isRequestModalOpen = action.payload
-    }
+    setRequestModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.isRequestModalOpen = action.payload;
+    },
   },
- 
 });
 
-export const { setServices,setSelectedServices,setRequestModalOpen} = servicesSlice.actions;
+export const { setServices, setSelectedServices, setRequestModalOpen } = servicesSlice.actions;
 
 export const useServicesStore = () => useAppSelector((state: RootState) => state?.services);
 export const useSelectedServicesStore = () => useAppSelector((state: RootState) => state?.services?.selectedService);
-export const useRequestModal = ()=> useAppSelector((state: RootState) => state?.services?.isRequestModalOpen)
+export const useRequestModal = () => useAppSelector((state: RootState) => state?.services?.isRequestModalOpen);
 
 export default servicesSlice.reducer;

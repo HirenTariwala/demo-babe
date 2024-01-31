@@ -1,4 +1,4 @@
-import { AlertProps, Alert as MuiAlert } from "@mui/material";
+import { AlertProps, Alert as MuiAlert } from '@mui/material';
 
 interface IAlert extends AlertProps {}
 

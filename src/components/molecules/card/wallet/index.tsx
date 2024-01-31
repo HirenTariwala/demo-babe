@@ -50,7 +50,11 @@ const Wallet = ({ position, amount, label, tooltipTitle, sx }: IWallet) => {
             {label}
           </Typography>
           <ToolTip
-            title={tooltipTitle}
+            title={
+              <Typography whiteSpace="pre-line" variant="body2" fontSize="12px">
+                {tooltipTitle}
+              </Typography>
+            }
             color={'#1A1A1A'}
             sx={{
               whiteSpace: 'pre-line',

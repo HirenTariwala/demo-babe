@@ -1,120 +1,83 @@
 import { useUserStore } from '@/store/reducers/usersReducer';
 import useRentHook from '../Rent/useRentHook';
-import { collection, orderBy, query, where } from 'firebase/firestore';
-import { useCollectionQuery2 } from '@/hooks/useCollectionQuery2';
-import { db } from '@/credentials/firebase';
-import { ORDER, babeUIDKey, clientUIDKey, statusKey, timeStampKey } from '@/keys/firestoreKeys';
 import { OrderStatusEnum } from '@/enum/orderEnum';
-import { useMemo } from 'react';
+import { useState } from 'react';
 import OrderTabContent from './components/OrderTabContent';
+import { useTranslations } from 'next-intl';
 
 const useOrderhook = () => {
   const { isMobile } = useRentHook();
   const userStore = useUserStore();
+  const t = useTranslations('orderPage.orderTab');
   const currentUser = userStore?.currentUser;
+  const [getAllOrder, setGetAllOrder] = useState(false);
+  const [isOpenAlert, setIsOpenAlert] = useState(true);
 
-  const [uid, isAdmin] = [currentUser?.uid, currentUser?.isAdmin];
+  const [isAdmin] = [currentUser?.isAdmin];
+  console.log(currentUser);
 
-  // const uid = 'nvWQi1KhGuPDnzAIwuJ89DVWz5i1';
-
-  const {
-    loading: orderLoading,
-    data: orderData,
-    error: orderError,
-  } = useCollectionQuery2(
-    uid ? `${uid}-session` : undefined,
-    query(collection(db, ORDER), where(isAdmin ? babeUIDKey : clientUIDKey, '==', uid), orderBy(timeStampKey, 'desc'))
-  );
+  // const uid = 'nvWQi1KhGuPDnzAIwuJ89DVWz5i1'
 
   const orderStatusList = [
     {
       key: '-',
-      label: 'All',
+      label: t('all'),
     },
     {
       key: OrderStatusEnum.completed,
-      label: 'Completed',
-    },
-    {
-      key: OrderStatusEnum.error,
-      label: 'Expired',
+      label: t('completed'),
     },
     {
       key: OrderStatusEnum.cancel,
-      label: 'Cancelled',
+      label: t('cancelled'),
     },
     {
       key: OrderStatusEnum.pending,
-      label: 'Pending',
+      label: t('pending'),
     },
     {
       key: OrderStatusEnum.pending_refund,
-      label: 'Pending Refunded',
+      label: t('pendingRefunded'),
     },
     {
       key: OrderStatusEnum.refunded,
-      label: 'Refunded',
+      label: t('refunded'),
     },
     {
       key: OrderStatusEnum.unsuccessful,
-      label: 'Unsuccessful',
+      label: t('unsuccessful'),
     },
     {
       key: OrderStatusEnum.rejected,
-      label: 'Rejected',
+      label: t('rejected'),
     },
     {
       key: OrderStatusEnum.refund_rejected,
-      label: 'Refund Rejected',
+      label: t('refundRejected'),
     },
   ];
 
-  const getNoOfBadge = (key: string | undefined) => {
-    if (!key) return [];
+  const tabs = orderStatusList?.map((item, index) => {
+    return {
+      lable: () => (
+        <span
+          style={{
+            display: 'flex',
+            gap: '20px',
+            alignItems: 'center',
+          }}
+        >
+          <span>{item?.label}</span>
+          {/* <span>
+            <Badge badgeContent={noOfItems?.length?.toString()} color={value === index ? 'primary' : 'secondary'} />
+          </span> */}
+        </span>
+      ),
+      content: <OrderTabContent isAdmin={isAdmin} index={index} keyIndex={item?.key} />,
+    };
+  });
 
-    if (!orderData) return [];
-
-    if (key == '-') return orderData?.docs;
-
-    return orderData?.docs?.filter((item) => item?.get(statusKey) == key);
-  };
-  const isEmpty = orderData ? orderData?.docs?.length < 1 : false;
-
-  const tabs = useMemo(
-    () =>
-      orderStatusList?.map((item, index) => {
-        const noOfItems = getNoOfBadge(item?.key?.toString());
-
-        return {
-          lable: () => (
-            <span
-              style={{
-                display: 'flex',
-                gap: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <span>{item?.label}</span>
-              {/* <span>
-                <Badge badgeContent={noOfItems?.length?.toString()} color={value === index ? 'primary' : 'secondary'} />
-              </span> */}
-            </span>
-          ),
-          content: (
-            <OrderTabContent
-              isAdmin={isAdmin}
-              index={index}
-              data={noOfItems}
-              loading={orderLoading}
-              error={orderError}
-            />
-          ),
-        };
-      }),
-    [orderData]
-  );
-
-  return { isMobile, isEmpty, tabs };
+  return { isMobile, tabs, getAllOrder, setGetAllOrder, isOpenAlert, setIsOpenAlert };
 };
 
 export default useOrderhook;

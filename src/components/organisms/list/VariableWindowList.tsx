@@ -38,7 +38,7 @@ const VariableWindowList = ({
 
   const itemCount = hasNextPage ? (data?.length as number) + 1 : (data?.length as number);
 
-  const isItemLoaded = (index: number) => !hasNextPage || index < ((data?.length as number) ?? 0);
+  const isItemLoaded = (index: number) => !hasNextPage || index < (data?.length as number) 
 
   // const setSize = useCallback((index: number, _size: number) => {
   //   sizeMap.current = { ...sizeMap.current, [index]: _size };

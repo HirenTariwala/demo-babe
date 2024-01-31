@@ -160,7 +160,7 @@
     grid-template-columns: repeat(5, 1fr);
   }
 } */
-@media (max-width: 1024px) {
+@media (max-width: 1439px) {
   .main {
     grid-template-columns: 1fr 341px;
   }
@@ -170,9 +170,24 @@
   .announcementBox {
     height: 90.67px;
   }
+  .cardV3 {
+    max-width: 1024px !important;
+    height: 100% !important;
+    overflow: unset !important;
+  }
+ 
+ 
   /* .cards {
     grid-template-columns: repeat(4, 1fr);
   } */
+}
+@media (max-width: 1023px) {
+  
+  .cardV3 {
+    max-width: 640px !important;
+    height: 100% !important;
+    overflow: unset !important;
+  }
 }
 /* @media (max-width: 815px) {
   .cards {

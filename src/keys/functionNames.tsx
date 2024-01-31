@@ -3,7 +3,9 @@ const localhost = 'http://localhost:3000';
 const localhost2 = 'http://localhost:3001';
 
 export const isTEST =
-  window.location.origin === port || window.location.origin === localhost || window.location.origin === localhost2;
+  window?.location?.origin === port ||
+  window?.location?.origin === localhost ||
+  window?.location?.origin === localhost2;
 
 export const stripeConnectFunction = isTEST ? 'stripeConnectTEST' : 'stripeConnect';
 export const stripeRetrieveAccountFunction = isTEST ? 'stripeRetrieveAccountTEST' : 'stripeRetrieveAccount';

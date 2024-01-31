@@ -2,12 +2,8 @@ import Box from '@/components/atoms/box';
 import Button from '@/components/atoms/button';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { useUserStore } from '@/store/reducers/usersReducer';
-import { LockEnum, lockChat } from '@/utility/CloudFunctionTrigger';
 import { IconButton } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
-import UnlockChatDialog from '../Dialog/UnlockChatDialog';
-import UnVerifiedModal from '@/components/page/Wallet/components/Withdrawn/UnVerifiedModal';
-import Toast from '@/components/molecules/toast';
+import { ChangeEvent } from 'react';
 import Typography from '@/components/atoms/typography';
 import Input from '@/components/atoms/input';
 import SendIcon from '@/components/atoms/icons/sendIcon';
@@ -19,49 +15,40 @@ interface IInputBar {
   myBlock: boolean;
   disabled: boolean;
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onKeyUp?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  inputValue?: string | number | readonly string[] | undefined;
   sendMessage?: () => void;
-  onInput?: (e: any) => void;
   unBlockClick?: () => void;
   onFocus?: () => void;
+  openUnVerifiedModalHandler: () => void;
+  onLockChat: () => void;
+  lockUnlockChatLoading: boolean;
 }
 
 const InputBar = ({
   senderUUID,
-  chatRoomId,
   requestNewOrder,
   myBlock,
   disabled: isDisable,
   onChange,
-  onKeyUp,
-  inputValue: value,
   sendMessage,
-  onInput,
   unBlockClick,
   onFocus,
+  onLockChat,
+  lockUnlockChatLoading,
 }: IInputBar) => {
-  const [isLoading, setLoading] = useState<boolean>(false);
-  const [openUnlockDialog, setOpenUnlockDialog] = useState<boolean>(false);
-  const [openGovDialog, setGovDialog] = useState<boolean>(false);
   const { currentUser } = useUserStore();
-  const [myUUID, isAdmin, isVerified, rejectedReasonAfter] = [
+  const [
+    myUUID,
+    isAdmin,
+    // isVerified, rejectedReasonAfter
+  ] = [
     currentUser?.uid,
-    currentUser?.isAdmin,
-    currentUser?.verified,
-    currentUser?.rejectedReasonAfter,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    currentUser?.isAdmin || currentUser?.a,
+    // currentUser?.verified,
+    // currentUser?.rejectedReasonAfter,
   ];
   const [size] = useWindowSize();
-  const [openToast, setOpenToast] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
-
-  const onCloseToast = () => {
-    setOpenToast(false);
-  };
-  const onOpenToastWithMsg = (msg: string) => {
-    setToastMsg(msg);
-    setOpenToast(true);
-  };
 
   const showUnlockButton = isAdmin && myUUID !== senderUUID;
 
@@ -76,38 +63,12 @@ const InputBar = ({
       </Box>
     );
 
-  const unlockOnClick = () => {
-    if (!isVerified) {
-      setGovDialog(true);
-      return;
-    }
-
-    setOpenUnlockDialog(true);
-  };
-
-  const lockClick = async () => {
-    if (!chatRoomId || isLoading) {
-      return;
-    }
-    setLoading(true);
-    await lockChat(chatRoomId, LockEnum?.LOCKED);
-    setLoading(false);
-  };
-
   return (
     <Box>
-      <Toast alertMessage={toastMsg} onClose={onCloseToast} open={openToast} />
-      <Box
-        id="msger-inputarea-wrapper"
-        sx={
-          {
-            //   padding: '20px',
-          }
-        }
-      >
+      <Box id="msger-inputarea-wrapper">
         {!isDisable ? (
           <>
-            <Box display="flex" justifyContent="space-between" p={5} gap={3} alignItems="center">
+            <Box display="flex" justifyContent="space-between" padding="0px 20px 20px 20px" gap={3} alignItems="center">
               <Input
                 id="msger-input"
                 multiline
@@ -164,7 +125,7 @@ const InputBar = ({
             <Typography variant="caption" component="span">
               We only issue refund within 72 hours from the date of purchase
             </Typography>
-            <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+            <Box display="flex" justifyContent="center" alignItems="center" width="100%" gap="12px">
               <Button
                 // fullWidth={!showUnlockButton}
 
@@ -177,17 +138,16 @@ const InputBar = ({
               </Button>
 
               {showUnlockButton && (
-                <>
-                  <Button
-                    onClick={unlockOnClick}
-                    variant="contained"
-                    color="error"
-                    sx={{ borderRadius: 999999, maxWidth: 600 }}
-                  >
-                    {' '}
-                    {'Unlock chat'}{' '}
-                  </Button>
-                </>
+                <Button
+                  onClick={onLockChat}
+                  variant="outlined"
+                  color="error"
+                  loading={lockUnlockChatLoading}
+                  sx={{ borderRadius: 999999, maxWidth: 600 }}
+                >
+                  {' '}
+                  {'Unlock chat'}{' '}
+                </Button>
               )}
             </Box>
 
@@ -195,21 +155,6 @@ const InputBar = ({
           </Box>
         )}
       </Box>
-
-      {chatRoomId && (
-        <UnlockChatDialog open={openUnlockDialog} chatRoomId={chatRoomId} onClose={() => setOpenUnlockDialog(false)} />
-      )}
-
-      {openGovDialog && (
-        <UnVerifiedModal
-          open={openGovDialog}
-          onClose={() => setGovDialog(false)}
-          myUID={myUUID}
-          verified={isVerified}
-          rejectedReasonAfter={rejectedReasonAfter}
-          onOpenToastWithMsg={onOpenToastWithMsg}
-        />
-      )}
     </Box>
   );
 };

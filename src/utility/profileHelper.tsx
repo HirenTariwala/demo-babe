@@ -22,14 +22,16 @@ import {
   urlsKey,
   // videoVerificationKey,
 } from '../keys/firestoreKeys';
-import { 
-  // ClubProps, 
-  EmeetsProps } from '../props/commonProps';
+import {
+  // ClubProps,
+  EmeetsProps,
+} from '../props/commonProps';
 import { StarProps } from '../props/profileProps';
 import { ServiceDetailProps, ServicesProps, ServiceTypeEnum } from '../props/servicesProps';
-import { 
-  // APNSTokenProps, 
-  UserProps } from '../props/userProps';
+import {
+  // APNSTokenProps,
+  UserProps,
+} from '../props/userProps';
 import { CalculatorHelper } from './calculator';
 import { StringHelper } from './stringHelper';
 
@@ -97,7 +99,7 @@ export const ProfileHelper = {
     //   state: thisState,
     // };
 
-    const map = userData?.data() as UserProps
+    const map = userData?.data() as UserProps;
     if (thisRatings) {
       const weightedValue = CalculatorHelper.weightedAverageValue(thisRatings);
       const numberOfRents = CalculatorHelper.numberOfMeetups(thisRatings);
@@ -119,7 +121,8 @@ export const ProfileHelper = {
     const thisUrls = userData.get(urlsKey) as string[];
 
     if (thisUrls && thisUrls.length > 0) {
-      const thisUrl = StringHelper.toCloudFlareURL(thisUrls[0]);
+      // const thisUrl = StringHelper.toCloudFlareURL(thisUrls[0]);
+      const thisUrl = thisUrls[0];
       // _mobileUrl = _url
       map.profileImage = thisUrl;
     }

@@ -7,7 +7,6 @@ import SocialIcon from '@/components/atoms/icons/socialIcon';
 import Rating from '@/components/molecules/ratings';
 import DotIcon from '@/components/atoms/icons/dotIcon';
 import Menu from '@/components/atoms/popup/menu';
-import { dummy } from '@/common/utils/data';
 import MenuItem from '@/components/atoms/popup';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CloseIcon from '@/components/atoms/icons/closeIcon';
@@ -16,28 +15,19 @@ import useProfileHook from './useProfileHook';
 import Button from '@/components/atoms/button';
 import NextImage from '@/components/atoms/image';
 import BackIcon from '@/components/atoms/icons/backIcon';
-import PlayIcon from '@/components/atoms/icons/playIcon';
-import AudioWavesIcon from '@/components/atoms/icons/audioWavesIcon';
 import SkeletonLine from '@/components/atoms/SkeletonLine';
 import ToolTip from '@/components/atoms/tooltip';
 import ReportModal from './components/reportModal';
 import ShareModal from './components/shareModal';
 import { IconButton } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import RequestOrderModal from './components/requestOrderModal';
-import { setRequestModalOpen, useRequestModal } from '@/store/reducers/serviceReducer';
+import { setRequestModalOpen } from '@/store/reducers/serviceReducer';
 import { useAppDispatch } from '@/store/useReduxHook';
 import { useTranslations } from 'next-intl';
+import VoiceButtonComp from '@/components/organisms/voiceComp';
+import { setIsOpenProfileModal } from '@/store/reducers/drawerOpenReducer';
 
-const Profile = ({
-  uid,
-  onClick,
-  setOpen,
-}: {
-  uid?: string | undefined;
-  onClick?: () => void;
-  setOpen?: (arg: boolean) => void;
-}) => {
+const Profile = ({ uid }: { uid?: string | undefined }) => {
   const {
     isMobile,
     item,
@@ -45,31 +35,44 @@ const Profile = ({
     galleryData,
     tabsData,
     url,
-    isTablet,
     myUid,
     dateTime,
     open,
     anchorEl,
     shareModalOpen,
-    duration,
-    isAudioPlaying,
     reportModalOpen,
     view,
     isProfilePage,
-    voiceOnClick,
     setAnchorEl,
     setShareModalOpen,
     handleClose,
     goBack,
     onResetTab,
     setReportModalOpen,
-    state
   } = useProfileHook(uid);
   const dispatch = useAppDispatch();
-
   const router = useRouter();
-  const isModalOpen = useRequestModal();
-  const t = useTranslations('profile.modal')
+  const t = useTranslations('profile.modal');
+
+  const dummy = [
+    {
+      text: (
+        <Typography variant="subtitle2" component="span" fontWeight={500}>
+          {t('share')}
+        </Typography>
+      ),
+      id: 1,
+    },
+    {
+      text: (
+        <Typography variant="subtitle2" component="span" fontWeight={500} color="error">
+          {t('report')}
+        </Typography>
+      ),
+      id: 2,
+    },
+  ];
+
   return (
     <Box
       width={'100%'}
@@ -84,7 +87,7 @@ const Profile = ({
         maxWidth={isProfilePage ? 600 : '100%'}
         mx={'auto'}
         paddingBottom={isMobile ? '100px' : 0}
-        overflow={'hidden'}
+        // overflow={'hidden'}
         sx={{
           padding: !isProfilePage || isMobile ? '0px' : '20px',
         }}
@@ -106,87 +109,22 @@ const Profile = ({
         )}
 
         <Box display="flex" flexDirection="column" gap={6} padding={isMobile ? '0px 16px' : '0px'}>
-          <Box display="flex" justifyContent="space-between">
-            <Box display="flex" gap={6}>
-              <Box width={isMobile ? 60 : 80} height={isMobile ? 60 : 80}>
-                <NextImage
-                  src={url || ''}
-                  width={isMobile ? 60 : 80}
-                  height={isMobile ? 60 : 80}
-                  style={{ borderRadius: 50, objectFit: 'cover' }}
-                  alt=""
-                  skeletonRadius={'100px'}
-                />
-                {!isProfilePage && item?.voiceUrl && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '80px',
-                      left: '15px',
-                    }}
-                  >
-                    <Button
-                      onClick={voiceOnClick}
-                      sx={{
-                        display: 'flex',
-                        width: 'fit-content',
-                        height: '36px',
-                        padding: '6px 12px 6px 8px',
-                        justifyContent: 'center',
-                        alignItems: 'baseline',
-                        gap: '8px',
-                        borderRadius: '360px',
-                        background: '#FFF',
-                        boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.10)',
-                        ':hover': {
-                          background: '#FFF',
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          gap: '8px',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            background: '#FFD443',
-                            borderRadius: '100px',
-                          }}
-                        >
-                          <PlayIcon />
-                        </Box>
-                        <Box
-                          sx={{
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {!isAudioPlaying ? (
-                            <AudioWavesIcon />
-                          ) : (
-                            <NextImage
-                              src="https://images.rentbabe.com/assets/gif/wave2.gif"
-                              width={20}
-                              height={20}
-                              alt=""
-                            />
-                          )}
-                        </Box>
-                        <Box>{duration}s</Box>
-                      </Box>
-                    </Button>
+          <Box display="flex" justifyContent="space-between" minHeight={190} alignItems="flex-start">
+            <Box display="flex" gap={6} justifyContent="flex-start" minHeight={190} alignItems="flex-start">
+              <Box>
+                <Box position="relative">
+                  <Box width={!isMobile ? 80 : 60} height={!isMobile ? 80 : 60} position="relative">
+                    <NextImage
+                      src={url || ''}
+                      fill
+                      style={{ borderRadius: 50, objectFit: 'cover' }}
+                      alt=""
+                      skeletonRadius={'100px'}
+                    />
                   </Box>
-                )}
+
+                  {!isProfilePage && item?.voiceUrl && <VoiceButtonComp voiceUrl={item?.voiceUrl} />}
+                </Box>
               </Box>
 
               <Box display="flex" flexDirection="column" gap={2}>
@@ -211,7 +149,7 @@ const Profile = ({
                     item?.time_stamp && (
                       <Typography variant="subtitle2" color={'#999999'}>
                         {' '}
-                        {`Last seen ${dateTime} ago`}
+                        {`${t('lastSeen')} ${dateTime} ago`}
                       </Typography>
                     )
                   ) : (
@@ -220,67 +158,7 @@ const Profile = ({
                     </Box>
                   )}
                 </Box>
-                {isProfilePage && item?.voiceUrl && (
-                  <Box>
-                    <Button
-                      onClick={voiceOnClick}
-                      sx={{
-                        display: 'flex',
-                        width: 'fit-content',
-                        height: '36px',
-                        padding: '6px 12px 6px 8px',
-                        justifyContent: 'center',
-                        alignItems: 'baseline',
-                        gap: '8px',
-                        borderRadius: '360px',
-                        background: '#FFF',
-                        boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.10)',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          gap: '8px',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            background: '#FFD443',
-                            borderRadius: '100px',
-                          }}
-                        >
-                          <PlayIcon />
-                        </Box>
-                        <Box
-                          sx={{
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {!isAudioPlaying ? (
-                            <AudioWavesIcon />
-                          ) : (
-                            <NextImage
-                              src="https://images.rentbabe.com/assets/gif/wave2.gif"
-                              width={20}
-                              height={20}
-                              alt=""
-                            />
-                          )}
-                        </Box>
-                        <Box>{duration}s</Box>
-                      </Box>
-                    </Button>
-                  </Box>
-                )}
+                {isProfilePage && item?.voiceUrl && <VoiceButtonComp voiceUrl={item?.voiceUrl} />}
                 {/* {item ? ( */}
                 <Box display="flex" gap={2} alignItems="center">
                   <Rating ratingData={item?.ratings} size="small" />
@@ -295,19 +173,14 @@ const Profile = ({
                   <SkeletonLine height={15} width={100} />
                 )} */}
                 <Box display="flex" gap={2} flexDirection="column">
-                  {/* {item ? ( */}
                   <Box display="flex" alignItems="flex-start" gap={2}>
                     <Typography variant="body1" fontWeight={500}>
-                      Availability:
+                      {t('availability')}:
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#999999' }}>
                       {item?.availability || '--'}
                     </Typography>
                   </Box>
-                  {/* ) : (
-                    <SkeletonLine height={15} width={100} />
-                  )} */}
-                  {/* {item ? ( */}
                   <Box display="flex" alignItems="center" gap={2}>
                     <Typography variant="body1" fontWeight={500}>
                       {item?.race || '--'}
@@ -317,21 +190,14 @@ const Profile = ({
                       {item?.mHeight ? `${item?.mHeight}cm` : '--'}
                     </Typography>
                   </Box>
-                  {/* ) : (
-                    <SkeletonLine height={15} width={100} />
-                  )} */}
-                  {/* {item ? ( */}
                   <Box display="flex" alignItems="center" gap={2}>
                     <Typography variant="body1" fontWeight={500}>
-                      Location at
+                      {t('locationAt')}
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#999999' }}>
                       {item?.state || '--'}
                     </Typography>
                   </Box>
-                  {/* ) : (
-                    <SkeletonLine height={15} width={100} />
-                  )} */}
                 </Box>
               </Box>
             </Box>
@@ -351,14 +217,14 @@ const Profile = ({
               >
                 {dummy &&
                   dummy.map((item: any) => (
-                    <MenuItem key={item.id} onClick={() => handleClose(item.text)}>
+                    <MenuItem key={item.id} onClick={() => handleClose(item.id)}>
                       {item.text}
                     </MenuItem>
                   ))}
               </Menu>
               {!isProfilePage && !isMobile && (
                 <IconButton>
-                  <CloseIcon onClick={onClick} />
+                  <CloseIcon onClick={() => dispatch(setIsOpenProfileModal(false))} />
                 </IconButton>
               )}
             </Box>
@@ -375,7 +241,7 @@ const Profile = ({
           <Box
             marginLeft={isMobile ? '0px' : '100px '}
             sx={{
-              paddingBottom: isProfilePage ? 50 : 0,
+              paddingBottom: isProfilePage ? 25 : 0,
             }}
           >
             <Tabs tabBottomPadding="24px" tabsData={galleryData} />
@@ -410,10 +276,10 @@ const Profile = ({
               dispatch(setRequestModalOpen(true));
             }}
           >
-           {t('requestOrder')}
+            {t('requestOrder')}
           </Button>
           <Typography variant="caption" component="span">
-          {t('requestMessage')}
+            {t('requestMessage')}
           </Typography>
         </Box>
       )}
@@ -425,7 +291,6 @@ const Profile = ({
         reportBy={myUid}
         user={item?.uid}
       />
-    <RequestOrderModal state={state} isMobile={isMobile} isTablet={isTablet} isOpen={isModalOpen} setOpen={setOpen} />
     </Box>
   );
 };

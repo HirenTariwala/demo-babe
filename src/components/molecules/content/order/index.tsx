@@ -12,7 +12,7 @@ const Order = ({ orderData, meals = false }: IOrder) => {
     <Box display="flex" flexDirection="column" gap={1}>
       <Box display="flex" alignItems="center" gap="5px">
         <Typography variant="body2" fontWeight={500}>
-          Date:{' '}
+          Date:
         </Typography>
         <Typography variant="body2" sx={{ color: '#999999' }}>
           {orderData?.date}
@@ -20,7 +20,7 @@ const Order = ({ orderData, meals = false }: IOrder) => {
       </Box>
       <Box display="flex" alignItems="center" gap="5px">
         <Typography variant="body2" fontWeight={500}>
-          Time:{' '}
+          Time:
         </Typography>
         <Typography variant="body2" sx={{ color: '#999999' }}>
           {orderData?.time}
@@ -28,40 +28,40 @@ const Order = ({ orderData, meals = false }: IOrder) => {
       </Box>
       {meals && (
         <>
-          <Box display="flex" alignItems="center">
+          <Box display="flex" alignItems="flex-start" gap="5px">
             <Typography variant="body2" fontWeight={500}>
-              Venue:{' '}
+              Venue:
             </Typography>
             <Typography variant="body2" sx={{ color: '#999999' }}>
               {orderData.venue}
             </Typography>
           </Box>
-          <Box display="flex" alignItems="center">
+          <Box display="flex" alignItems="center" gap="5px">
             <Typography variant="body2" fontWeight={500}>
-              Activity:{' '}
+              Activity:
             </Typography>
             <Typography variant="body2" sx={{ color: '#999999' }}>
               {orderData.activity}
             </Typography>
           </Box>
           <Box display="flex" alignItems="center">
-            <Typography variant="body2" fontWeight={500}>
-              Cab fare:{' '}
+            <Typography variant="body2" fontWeight={500} gap="5px">
+              Cab fare:
             </Typography>
             <Typography variant="body2" sx={{ color: '#999999' }}>
               {orderData.cabFare}
             </Typography>
           </Box>
-          <Box display="flex" alignItems="center">
-            <Typography variant="body2" fontWeight={500}>
-              Info:{' '}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#999999' }}>
-              {orderData.info}
-            </Typography>
-          </Box>
         </>
       )}
+      <Box display="flex" alignItems="center" gap="5px">
+        <Typography variant="body2" fontWeight={500}>
+          Info:
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#999999', wordBreak: 'break-word' }}>
+          {orderData.info}
+        </Typography>
+      </Box>
     </Box>
   );
 };

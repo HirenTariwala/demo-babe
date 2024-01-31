@@ -8,38 +8,36 @@ import Toast from '@/components/molecules/toast';
 import MenuItem from '@/components/atoms/popup';
 import Typography from '@/components/atoms/typography';
 import LoadingIcon from '@/components/atoms/icons/loading';
-import { lockChat } from '@/utility/CloudFunctionTrigger';
 
 interface IHeaderMore {
   senderUUID: string | undefined;
   myBlock: boolean;
-  chatRoomID: string | undefined;
   hasOrder: boolean;
-  reportData?: {
-    user: string | undefined;
-    reportBy: string | null | undefined;
-  };
   reportClick?: () => void;
   deleteClick?: () => void;
   blockClick?: () => void;
   openProfile?: () => void;
+  onLockChat: () => void;
+  lockUnlockChatLoading: boolean;
 }
 
 const HeaderMore = ({
   senderUUID,
   myBlock,
-  chatRoomID,
   hasOrder,
-  //   reportData,
   reportClick,
   deleteClick,
   blockClick,
   openProfile,
+  onLockChat,
+  lockUnlockChatLoading,
 }: IHeaderMore) => {
   const { currentUser } = useUserStore();
 
   const [isAdmin, uid, verified, rejectedReasonAfter] = [
-    currentUser?.isAdmin,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    currentUser?.isAdmin || currentUser?.a,
     currentUser?.uid,
     currentUser?.verified,
     currentUser?.rejectedReasonAfter,
@@ -51,7 +49,7 @@ const HeaderMore = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [openReport, setReport] = useState<boolean>(false);
   const [isOpen, setOpen] = useState<boolean>(false);
-  const [isLoading, setLoading] = useState<boolean>(false);
+
   const [openToast, setOpenToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
@@ -66,21 +64,6 @@ const HeaderMore = ({
   //   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
   //     setAnchorEl(event.currentTarget);
   //   };
-
-  const onLockChat = async () => {
-    if (!chatRoomID) return;
-
-    setLoading(true);
-
-    try {
-      await lockChat(chatRoomID);
-      // Successfully locked the chat
-    } catch {
-      // error occur;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const onHandleReport = () => {
     reportClick?.();
@@ -115,7 +98,7 @@ const HeaderMore = ({
   //   };
 
   const handleClose = () => {
-    if (isLoading) {
+    if (lockUnlockChatLoading) {
       return;
     }
 
@@ -149,7 +132,7 @@ const HeaderMore = ({
 
             {isAdmin && senderUUID !== uid && (
               <MyMenuItem
-                isLoading={isLoading}
+                isLoading={lockUnlockChatLoading}
                 name={`${hasOrder ? 'Lock' : 'Unlock'} chat`}
                 onClick={() => {
                   onLockChat();
@@ -197,9 +180,9 @@ const MyMenuItem = ({
   color?: string;
 }) => {
   return (
-    <MenuItem sx={{ justifyContent: 'right', minWidth: 80 }} onClick={onClick}>
-      <Typography color={color}>
-        {isLoading && <LoadingIcon />}
+    <MenuItem sx={{ justifyContent: 'left', minWidth: 80 }} onClick={onClick}>
+      <Typography color={color} display="flex" alignItems="center" gap="8px">
+        {isLoading && <LoadingIcon size={16} />}
         {name}
       </Typography>
     </MenuItem>

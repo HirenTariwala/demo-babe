@@ -158,11 +158,16 @@ const useLoginHook = () => {
   const logOut = async () => {
     // dispatch(logout());
     // await auth.signOut();
-    await signOut(auth);
-    clearStorage();
-    await persistor.purge();
-    dispatch(logoutAction());
-    router.push('/');
+
+    try {
+      await signOut(auth);
+      clearStorage();
+      await persistor.purge();
+      dispatch(logoutAction());
+      router.push('/');
+    } catch (error) {
+      console.log('Logout User Error ==> ', error);
+    }
   };
   const handleRedirectResult = async () => {
     try {

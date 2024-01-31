@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import { Drawer } from '@mui/material';
-// import Image from 'next/image';
 import ProfileSideBar from '../sidebar';
 import styles from './header.module.css';
 import useHeaderHook from './useHeaderHook';
@@ -20,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import NavBar from '@/components/molecules/navbar';
 import NextImage from '@/components/atoms/image';
 import Chat from '@/components/page/Chat';
+import Avatar from '@/components/atoms/avatar';
 
 const Header = () => {
   const {
@@ -34,7 +34,7 @@ const Header = () => {
     anchorEl,
     value,
     currentUser,
-    isOpenChat,
+    isOpenChatDrawer,
     handleChatDrawerChange,
     goToPremium,
     logOut,
@@ -75,7 +75,6 @@ const Header = () => {
         alignItems="center"
         boxShadow={'0px 2px 8px 0px rgba(0, 0, 0, 0.10)'}
         justifyContent="space-between"
-        // position={isMobile ? 'relative' : 'unset'}
         position={'fixed'}
         width={'100%'}
         maxWidth={'100vw'}
@@ -130,6 +129,7 @@ const Header = () => {
                     right: '30%',
                     background: '#FFF',
                     padding: 0,
+                    zIndex: 5,
                   },
                   cursor: 'pointer',
                 }}
@@ -140,18 +140,16 @@ const Header = () => {
                   setAnchorEl={() => {}}
                   onClose={() => setAnchorEl(null)}
                   icon={
-                    profileImage ? (
-                      <NextImage src={profileImage} alt="Profile" width={40} height={40} />
-                    ) : (
-                      <ProfileIcon size={40} />
-                    )
+                    <Avatar avatars={[{ src: profileImage ? profileImage : <ProfileIcon size={40} />, alt: '' }]} />
                   }
                   anchorEl={anchorEl}
                   sx={{ '.MuiMenu-list': { paddingBottom: 0, paddingTop: 0 } }}
                 >
                   {
                     <ProfileSideBar
-                      icon={<ProfileIcon />}
+                      icon={
+                        <Avatar avatars={[{ src: profileImage ? profileImage : <ProfileIcon size={40} />, alt: '' }]} />
+                      }
                       uid={uid}
                       isMobile={isMobile}
                       logOut={logOut}
@@ -204,7 +202,9 @@ const Header = () => {
                 >
                   <Box onClick={() => setOpen(!isopen)}>
                     <ProfileSideBar
-                      icon={<ProfileIcon />}
+                      icon={
+                        <Avatar avatars={[{ src: profileImage ? profileImage : <ProfileIcon size={40} />, alt: '' }]} />
+                      }
                       uid={uid}
                       isMobile={isMobile}
                       logOut={logOut}
@@ -223,17 +223,15 @@ const Header = () => {
       </Box>
       <Drawer
         anchor={'right'}
-        open={isOpenChat}
+        open={isOpenChatDrawer}
         componentsProps={{ backdrop: { style: { display: 'block' } } }}
         sx={{
-          '.MuiDrawer-paperAnchorTop': { top: 65 },
           'MuiBackdrop-root-MuiModal-backdrop': { display: 'block' },
           top: 100,
           '.MuiDrawer-paper': {
             height: 'auto',
-            width: '100%',
-            minWidth: '600px',
-            maxWidth: '1024px',
+            width: 'auto',
+            bottom: 0,
           },
         }}
         onClose={handleChatDrawerChange}

@@ -17,12 +17,11 @@ import {
   clientUIDKey,
   idKey,
   infoKey,
-  rejectReasonAfterKey,
-  rejectReasonKey,
+  priceKey,
+  shortLinkKey,
   statusKey,
   timeStampKey,
 } from '@/keys/firestoreKeys';
-import { DateHelper } from '@/utility/dateHelper';
 import { OrderStatusEnum } from '@/enum/orderEnum';
 import { getColor } from '@/common/utils/getcolor';
 import ViewOrderModal from '@/components/page/Order/components/viewOrderModal';
@@ -33,13 +32,33 @@ import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import dayjs from 'dayjs';
 import { Helper } from '@/utility/helper';
 import { VariableWindowListContext } from '@/components/organisms/list/VariableWindowList';
+import CountDown from '@/components/page/Login/Form/Timer/CountDown';
+import { useRouter } from 'next/navigation';
+import RefundRequestSubmittedModal from '@/components/page/Order/components/RefundRequestSubmittedModal';
+import LoadingIcon from '@/components/atoms/icons/loading';
+import { useTranslations } from 'next-intl';
 
-const TransactionStatusCard = (isAdmin: boolean | null) =>
+const TransactionStatusCard = (isAdmin: boolean | null, hasMore: boolean, loading: boolean) =>
   // eslint-disable-next-line react/display-name
   memo(({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | undefined>) => {
+    const isMobile = useMediaQuery('(max-width:600px)');
+    const t = useTranslations('orderPage');
+    const router = useRouter();
+    const isLastIndex = index === (data ? data?.length - 1 : 0);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [reviewModalOpen, setReviewModalOpen] = useState<boolean>(false);
+    const [refundModalOpen, setRefundModalOpen] = useState<boolean>(false);
+    const [hasExpired, setExpired] = useState<boolean>(false);
+    const [isOpenRefundRequestSubmittedDialog, setIsOpenRefundRequestSubmittedDialog] = useState<boolean>(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [isLoading, setLoading] = useState<boolean>(false);
+    const userStore = useUserStore();
+    const { size, setSize } = useContext(VariableWindowListContext);
     const doc = data?.[index]?.data();
-    let currentObj: any = '';
 
+    const time = dayjs(Helper?.timeStempToDate(doc?.t)).format('MMM DD, hh:mm A');
+    const price = doc?.[priceKey] || 0;
     const getStatus = (item: number) => {
       switch (item) {
         case OrderStatusEnum?.completed: {
@@ -52,10 +71,12 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
           return { status: 'Cancelled' };
         }
         case OrderStatusEnum?.pending: {
-          return { status: 'Pending' };
+          if (!hasExpired) {
+            return { status: 'Pending' };
+          } else return { status: 'Expired' };
         }
         case OrderStatusEnum?.pending_refund: {
-          return { status: 'Pending Refunded' };
+          return { status: 'Pending Refund' };
         }
         case OrderStatusEnum?.refund_rejected: {
           return { status: 'Refund Rejected' };
@@ -74,37 +95,11 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
         }
       }
     };
-    if (isAdmin) {
-      currentObj = doc?.inf?.[doc?.[clientUIDKey]];
-    } else {
-      currentObj = doc?.inf?.[doc?.[babeUIDKey]];
-    }
-    const name = currentObj?.nick || '--';
-    const profilePic = currentObj?.u || '';
-
-    const time = dayjs(Helper?.timeStempToDate(doc?.t)).format('MMM DD, hh:mm A');
     const statusWithColorObj = getStatus(doc?.st);
-    const price = doc?.services?.details?.price || 0;
-    const isMobile = useMediaQuery('(max-width:600px)');
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [reviewModalOpen, setReviewModalOpen] = useState<boolean>(false);
-    const [refundModalOpen, setRefundModalOpen] = useState<boolean>(false);
-    const [openDialogType, setOpenDialogType] = useState<string>('');
-    const [isLoading, setLoading] = useState<boolean>(false);
-    const userStore = useUserStore();
-    const { size, setSize } = useContext(VariableWindowListContext);
-    useEffect(() => {
-      const root = document.getElementById(index?.toString());
-      const height = root?.getBoundingClientRect().height ?? 0;
-
-      setSize?.(index, height);
-    }, [size?.width]);
     const currentUser = userStore?.currentUser;
 
     const [myUID] = [currentUser?.uid];
     const open = Boolean(anchorEl);
-    // const { profilePic, status, name, time, transactionID, amount, remainingTime } = transactionStatusData;
 
     const color: any = {
       Completed: 'success',
@@ -117,19 +112,36 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
 
     const status = statusWithColorObj?.status;
     const isPaid = status?.toLowerCase() === 'pending' ? false : true;
-    const requestRefundBy = Object.keys(doc?.[rejectReasonKey] ?? {});
-    const rejectedRefundReason = doc?.[rejectReasonAfterKey];
     const timeStamp = doc?.[timeStampKey];
-    const requestedRefund = doc?.[rejectReasonKey];
     const userInfo = doc?.[infoKey];
     const statusEnum = doc?.[statusKey];
+    const isClient = doc?.[clientUIDKey] === myUID;
+    const uid = isClient ? doc?.[babeUIDKey] : doc?.[clientUIDKey];
+    const link = userInfo?.[uid]?.[shortLinkKey];
+
+    useEffect(() => {
+      const root = document.getElementById(index?.toString());
+      const height = root?.getBoundingClientRect().height ?? 0;
+
+      setSize?.(index, height);
+    }, [size?.width]);
+    if (!doc) return null;
+    let currentObj: any = '';
+
+    if (isAdmin) {
+      currentObj = doc?.inf?.[doc?.[clientUIDKey]];
+    } else {
+      currentObj = doc?.inf?.[doc?.[babeUIDKey]];
+    }
+    const name = currentObj?.nick || '--';
+    const profilePic = currentObj?.u || '';
 
     return (
       <Box
         key={index}
         style={style}
         sx={{
-          paddingTop: `${index * 20}px`,
+          marginTop: `${index * 20}px`,
         }}
       >
         <Card
@@ -194,13 +206,14 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                     <Button
                       variant="contained"
                       size="small"
+                      onClick={() => router.push(`/checkout?id=${doc?.[idKey]}`)}
                       sx={{
                         fontSize: 14,
                         lineHeight: '20px',
                         width: 'fit-content',
                       }}
                     >
-                      Pay now
+                      {t('btnPayNow')}
                     </Button>
                   )}
                   <Box display="flex" alignItems="center" gap={4}>
@@ -220,18 +233,20 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                           setAnchorEl(null);
                         }}
                       >
-                        View order
+                        {t('menuViewOrder')}
                       </MenuItem>
 
-                      <MenuItem
-                        onClick={() => {
-                          setReviewModalOpen(true);
-                          setAnchorEl(null);
-                        }}
-                      >
-                        Give review
-                      </MenuItem>
-
+                      {!['Expired', 'Pending', 'Cancelled'].includes(status) && (
+                        <MenuItem
+                          onClick={() => {
+                            setReviewModalOpen(true);
+                            setAnchorEl(null);
+                          }}
+                        >
+                          {t('menuGiveReview')}
+                        </MenuItem>
+                      )}
+                      {/* 
                       {requestRefundBy?.includes(myUID ?? '') && rejectedRefundReason && (
                         <MenuItem
                           disabled={isLoading}
@@ -242,9 +257,9 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                         >
                           Refund
                         </MenuItem>
-                      )}
+                      )} */}
 
-                      {isAdmin && (
+                      {/* {isAdmin && (
                         <MenuItem
                           // disabled={isLoading}
                           sx={{ color: DateHelper?.getNumberOfHoursAgo(timeStamp.toDate()) > 72 ? 'red' : 'black' }}
@@ -256,9 +271,9 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                           Issue refund{' '}
                           {DateHelper.getNumberOfHoursAgo(timeStamp.toDate()) > 72 ? '(more than 72 hours)' : ''}
                         </MenuItem>
-                      )}
+                      )} */}
 
-                      {requestedRefund && isAdmin && (
+                      {/* {requestedRefund && isAdmin && (
                         <>
                           {Object.entries(requestedRefund).map((value, idx) => {
                             const userUUID = value[0];
@@ -279,7 +294,7 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                             );
                           })}
                         </>
-                      )}
+                      )} */}
 
                       {(statusEnum === OrderStatusEnum.completed ||
                         statusEnum === OrderStatusEnum.pending_refund ||
@@ -287,13 +302,13 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                         <MenuItem
                           disabled={isLoading}
                           onClick={() => {
+                            setRefundModalOpen(true);
                             setAnchorEl(null);
                             // setOpenDialogType('Request Refund');
-                            setRefundModalOpen(true);
                             // window.open(`/refund?id=${transactionID}&v=${version}`, '_blank');
                           }}
                         >
-                          Request Refund
+                          {t('menuRequestRefund')}
                         </MenuItem>
                       )}
                     </Menu>
@@ -309,6 +324,7 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                   <Typography
                     variant="subtitle2"
                     color={'#999999'}
+                    whiteSpace="nowrap"
                     fontSize={12}
                     lineHeight={'16px'}
                   >{`Order ID: ${doc?.[idKey]} `}</Typography>
@@ -316,18 +332,32 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
                   {!['expired', 'cancelled'].includes(status) && (
                     <>
                       {statusEnum === OrderStatusEnum.completed ? (
-                        <Typography variant="subtitle2" color={'#999999'} fontSize={12} lineHeight={'16px'}>
-                          Paid by credit
+                        <Typography
+                          variant="subtitle2"
+                          color={'#999999'}
+                          whiteSpace="nowrap"
+                          fontSize={12}
+                          lineHeight={'16px'}
+                        >
+                          {t('paidByCredit')}
                         </Typography>
-                      ) : statusEnum === OrderStatusEnum.pending ? (
+                      ) : statusEnum === OrderStatusEnum.pending && !hasExpired ? (
                         <Typography
                           variant="subtitle2"
                           color={'error'}
                           fontSize={12}
+                          whiteSpace="nowrap"
                           lineHeight={'16px'}
                           fontWeight={500}
                         >
-                          Make payment in {''}
+                          {t('makePaymentText')} {''}
+                          <CountDown
+                            hasExpired={() => {
+                              setExpired(true);
+                            }}
+                            minutesToExpire={Helper?.minutesToExpire()}
+                            date={timeStamp?.toDate()}
+                          />
                         </Typography>
                       ) : undefined}
                     </>
@@ -338,9 +368,80 @@ const TransactionStatusCard = (isAdmin: boolean | null) =>
             </Box>
           </CardContent>
         </Card>
-        <ViewOrderModal isMobile={isMobile} isTablet={isMobile} isOpen={isOpen} setOpen={setIsOpen} />
-        <ReviewModal isMobile={isMobile} isTablet={isMobile} isOpen={reviewModalOpen} setOpen={setReviewModalOpen} />
-        <RefundModal isMobile={isMobile} isTablet={isMobile} isOpen={refundModalOpen} setOpen={setRefundModalOpen} />
+        {(hasMore || loading) && isLastIndex && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '40px 0px',
+            }}
+          >
+            <LoadingIcon />
+          </Box>
+        )}
+        {!hasMore && isLastIndex && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '40px 0px',
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight={500}>
+              {t('noMore')}
+            </Typography>
+          </Box>
+        )}
+        <ViewOrderModal
+          isMobile={isMobile}
+          isTablet={isMobile}
+          isOpen={isOpen}
+          setOpen={setIsOpen}
+          orderDeatils={{
+            service: doc?.services?.details,
+            details: {
+              name: name,
+              profile: profilePic,
+              status: status,
+              chatRoomId: doc.cri,
+              messageID: doc.mid,
+              price: price,
+            },
+          }}
+        />
+        <ReviewModal
+          isMobile={isMobile}
+          isTablet={isMobile}
+          isOpen={reviewModalOpen}
+          setOpen={setReviewModalOpen}
+          babeDetails={{ name: name, profile: profilePic, reviewLink: link, myUID: myUID, currentUserName: name }}
+        />
+        <RefundModal
+          isMobile={isMobile}
+          isTablet={isMobile}
+          isOpen={refundModalOpen}
+          setOpen={setRefundModalOpen}
+          orderId={doc?.[idKey]}
+          myUid={myUID}
+          orderDetails={{
+            service: doc?.services?.details,
+            details: {
+              name: name,
+              profile: profilePic,
+              status: status,
+              chatRoomId: doc.cri,
+              messageID: doc.mid,
+              price: price / 100,
+            },
+          }}
+          setIsOpenRefundRequestSubmittedDialog={setIsOpenRefundRequestSubmittedDialog}
+        />
+        <RefundRequestSubmittedModal
+          open={isOpenRefundRequestSubmittedDialog}
+          setIsOpenRefundRequestSubmittedDialog={setIsOpenRefundRequestSubmittedDialog}
+        />
       </Box>
     );
   });

@@ -1,4 +1,4 @@
-import { Card, CardHeader, Skeleton, Typography } from '@mui/material';
+import { Card, CardHeader, Skeleton, Typography, useMediaQuery } from '@mui/material';
 import {
   arrayRemove,
   arrayUnion,
@@ -24,7 +24,6 @@ import {
   isOnlineKey,
   mobileUrlKey,
   nicknameKey,
-  premiumKey,
   usersKey,
   videoVerificationKey,
 } from '@/keys/firestoreKeys';
@@ -34,6 +33,7 @@ import Verifed from '@/components/atoms/icons/verifed';
 import { useDocumentQuery } from '@/hooks/useDocumentQuery';
 import Badge from '@/components/atoms/badge';
 import HeaderMore from './HeaderMore';
+import ArrowForwardIcon from '@/components/atoms/icons/arrowForwardIcon';
 
 interface ChatHeaderProps {
   senderUUID: string | undefined;
@@ -46,6 +46,8 @@ interface ChatHeaderProps {
   hasOrder: boolean;
   profileClick: () => void;
   revalidate: () => void;
+  onLockChat: () => void;
+  lockUnlockChatLoading: boolean;
 }
 
 const ChatHeader = ({
@@ -62,9 +64,12 @@ const ChatHeader = ({
   hasOrder,
   profileClick,
   revalidate,
+  onLockChat,
+  lockUnlockChatLoading,
 }: ChatHeaderProps) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const isMobile = useMediaQuery('(max-width:600px)');
   const isChatBox = Helper?.getQueryStringValue('cri') ? true : false;
 
   const { currentUser } = useUserStore();
@@ -119,6 +124,7 @@ const ChatHeader = ({
     <Card
       sx={{
         maxHeight: '82px',
+        minHeight: '77px',
         boxShadow: 'none',
         borderLeft: `1px solid #e6e6e6`,
         borderRight: `1px solid #e6e6e6`,
@@ -128,29 +134,45 @@ const ChatHeader = ({
     >
       <CardHeader
         title={
-          <Box onClick={profileClick} display="flex" gap="16px" alignItems="center">
-            <Box display="flex" alignItems="center" width={44} height={44} position={'relative'}>
+          <Box display="flex" gap={isMobile ? '12px' : '16px'} alignItems="center">
+            <Box
+              display="flex"
+              alignItems="center"
+              width={isMobile ? 'auto' : 44}
+              height={44}
+              position={'relative'}
+              gap={'8px'}
+            >
               {isOpen || isChatBox ? (
-                <NextImage
+                <Box
                   onClick={() => router?.back()}
-                  height={16}
-                  width={16}
-                  src="https://images.rentbabe.com/assets/back.svg"
-                  alt=""
-                />
+                  sx={{ transform: 'scaleX(-1)', display: 'flex', alignItems: 'center' }}
+                >
+                  <ArrowForwardIcon size={16} />
+                </Box>
               ) : null}
 
               <NextImage
                 onClick={profileClick}
-                fill
+                // fill={isMobile ? false : true}
+                width={isMobile ? 36 : 44}
+                height={isMobile ? 36 : 44}
                 sizes="100%"
-                style={{ borderRadius: '100px', objectFit: 'cover' }}
+                style={{ borderRadius: '100px', objectFit: 'cover', cursor: 'pointer' }}
                 src={data?.get(mobileUrlKey) ?? ''}
                 alt=""
               />
             </Box>
             <Box flex="1 0 0">
-              <Box display="flex" gap="8px" alignItems="center">
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={profileClick}
+              >
                 {isUserDataLoading || data === undefined ? (
                   <Skeleton variant="text" width="100px" />
                 ) : (
@@ -166,19 +188,17 @@ const ChatHeader = ({
                 )}
 
                 {(data?.get(videoVerificationKey) as boolean) ? (
-                  <>
-                    <div className="flex-gap" />
+                  <Box display="flex">
                     <Verifed size={24} />
-                  </>
+                  </Box>
                 ) : null}
 
-                {(premiumData?.get(premiumKey) as boolean) && (
-                  <Box>
-                    <div className="flex-gap" />
-                    {/* <UserTag /> */}
+                {/* {(premiumData?.get(premiumKey) as boolean) && (
+                  <Box display="flex">
+                    
                     User Tag
                   </Box>
-                )}
+                )} */}
               </Box>
               <Box>
                 {isUserDataLoading ? (
@@ -188,7 +208,10 @@ const ChatHeader = ({
                 ) : (
                   <>
                     {data ? (
-                      <Box onClick={profileClick} display="flex" alignItems="center" gap="14px">
+                      <Box
+                        onClick={profileClick}
+                        sx={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
+                      >
                         {data?.get(isOnlineKey) && (
                           <Badge
                             variant="dot"
@@ -227,12 +250,12 @@ const ChatHeader = ({
             <HeaderMore
               senderUUID={senderUUID}
               myBlock={myBlock}
-              chatRoomID={chatRoomID}
               deleteClick={deleteClick}
               blockClick={blockClick}
-              reportData={{ user: data?.id, reportBy: myUID }}
               openProfile={profileClick}
               hasOrder={hasOrder}
+              onLockChat={onLockChat}
+              lockUnlockChatLoading={lockUnlockChatLoading}
             />
           </Box>
         }

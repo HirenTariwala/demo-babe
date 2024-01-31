@@ -53,7 +53,9 @@ export const userSlice = createSlice({
     setFirebaseUser: (state, action: PayloadAction<User | null>) => {
       state.firebaseUser = action.payload;
     },
-    logoutAction: () => {},
+    logoutAction: (state) => {
+      state = initialState;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchUserData.pending, (state) => {

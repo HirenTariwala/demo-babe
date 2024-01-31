@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   collection,
+  doc,
   DocumentData,
   limitToLast,
   orderBy,
@@ -10,34 +11,19 @@ import {
   where,
 } from 'firebase/firestore';
 import { RBACType } from '@/props/types/rbacType';
-import { CancelRejectProps, ClubProps } from '@/props/commonProps';
+import { CancelRejectProps } from '@/props/commonProps';
 import { ListChildComponentProps } from 'react-window';
 import {
   CONVERSATION,
   MESSAGES,
-  amountKey,
+  ORDER,
   chatRoomIdKey,
   clubKey,
-  contentKey,
   createdAtKey,
-  lastSeenKey,
-  mobileUrlKey,
-  orderKey,
-  rejectReasonKey,
-  senderKey,
+  idKey,
+  infoKey,
   stateKey,
-  statusKey,
-  typeKey,
-  urlKey,
-  verifiedKey,
 } from '@/keys/firestoreKeys';
-import {
-  MessageEnum,
-  option,
-  // MessageEnum,
-  RBACEnum,
-} from '@/enum/myEnum';
-import MessageBubble from '@/components/molecules/card/messagebubble';
 import { useUserStore } from '@/store/reducers/usersReducer';
 import { useSelectedConversationStore } from '@/store/reducers/conversationReducer';
 import { useWindowSize } from '@/hooks/useWindowSize';
@@ -48,14 +34,23 @@ import Box from '@/components/atoms/box';
 import LoadingIcon from '@/components/atoms/icons/loading';
 import VariableWindowList from '@/components/organisms/list/VariableWindowList';
 import InputSection from './Input/InputSection';
-import dayjs from 'dayjs';
 import styles from '../chat.module.css';
+import MessageWrapper from './message/MessageWrapper';
+import SendTipDialog from './Dialog/SendTipDialog';
+import ReviewModal from '../../Order/components/reviewModal';
+import { useMediaQuery } from '@mui/material';
+import RejectCancelDialog from './Dialog/RejectCancelDialog';
+import { useDocumentQuery } from '@/hooks/useDocumentQuery';
+import RefundModal from '../../Order/components/refundModal';
 
 interface ChatViewProps {
   myBlock: boolean;
   otherBlock: boolean;
   requestNewOrder: () => void;
   onFocus: () => void;
+  onLockChat: () => void;
+  lockUnlockChatLoading: boolean;
+  openUnVerifiedModalHandler: () => void;
 }
 //   const chatRoomId = conversation?.id ?? chatRoomID
 // tipOnClick={() => setOpen(true)}
@@ -64,12 +59,14 @@ const Row =
   (
     uid: string | null | undefined,
     chatRoomId: string | undefined,
-    userRBAC: RBACType
-    // tipOnClick: () => void,
-    // requestNewOrder: () => void,
-    // openGovDialogHandler: () => void,
-    // openCashBackDialog: () => void,
-    // onRejectCancel: (data: CancelRejectProps) => void
+    userRBAC: RBACType,
+    tipOnClick: () => void,
+    reviewOnClick: (arg: number) => void,
+    refundOnClick: (arg: any) => void,
+    requestNewOrder: () => void,
+    openUnVerifiedModalHandler: () => void,
+    openCashBackDialog: () => void,
+    onRejectCancel: (data: CancelRejectProps) => void
   ) =>
   // eslint-disable-next-line react/display-name
   // ({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | null | undefined>) => {
@@ -79,63 +76,6 @@ const Row =
 
     if (!doc || !data) return null;
 
-    const sender = doc?.get(senderKey) as string | undefined;
-    const isMine = uid === sender;
-    const msg = doc?.get(contentKey) as string;
-    const createAt = (doc?.get(createdAtKey) as Timestamp) ?? Timestamp.now();
-
-    const seen = (doc?.get(lastSeenKey) as boolean) ?? false;
-    const verified = doc?.get(verifiedKey) as boolean | undefined;
-    const url = doc?.get(urlKey) as string | undefined;
-    const type = doc?.get(typeKey) as number;
-    console.log("gettt",doc?.get(typeKey), typeKey, doc?.data())
-    const club = doc?.get(clubKey) as ClubProps;
-    const stat = doc?.get(statusKey);
-
-    const order = doc?.get(orderKey) as { [key: string]: any } | undefined;
-    const babeUID = order?.['babeUID'] as string | undefined;
-    const babeProfileImage = order?.['babeProfileImage'] as string | undefined;
-    const clientProfileImage = order?.['clientProfileImage'] as string | undefined;
-
-    const profileImage = doc?.get(mobileUrlKey) as string | undefined;
-    const showProfileImage = userRBAC === RBACEnum.admin && Helper?.getURLEnd().toLowerCase() === 'chatview';
-    // const showProfileImage = false;
-
-    const date = Helper?.timeStempToDate(createAt);
-
-    const msgArray = msg?.split('\n');
-    console.log("typeee", type)
-
-    let statusLabel = '';
-    if (type == MessageEnum?.payRequest) {
-      statusLabel = 'Waiting for payment';
-    } else if (type == MessageEnum?.warning) {
-      statusLabel = '';
-    } else if (type == MessageEnum?.paid) {
-      statusLabel = !doc?.get(amountKey)
-        ? 'PAYMENT RECEIVED'
-        : `PAYMENT RECEIVED: ${(doc?.get(amountKey) / 100).toFixed(2)}`;
-    } else if (type == MessageEnum?.order) {
-      statusLabel = isMine ? 'Expired' : '';
-    } else if (type == MessageEnum?.text) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      statusLabel = 'text';
-    }
-    let status =
-      type === 0
-        ? 'text'
-        : type === 1
-        ? 'In Review'
-        : type === 2
-        ? 'payRequest'
-        : type === 3
-        ? 'warning'
-        : type === 4
-        ? 'Paid'
-        : type === 5
-        ? 'order'
-        : null;
-
     if (!chatRoomId) return null;
     else {
       return (
@@ -143,31 +83,22 @@ const Row =
           key={index}
           style={{ ...style }}
           sx={{
-            paddingTop: `${index * 10}px`,
+            marginTop: `${index * 10}px`,
           }}
         >
-          <MessageBubble
+          <MessageWrapper
+            doc={doc}
+            uid={uid}
+            userRBAC={userRBAC}
             index={index}
-            type={type}
-            messageData={{
-              status: status,
-              date: msgArray?.[1]?.split(': ')?.[1],
-              time: msgArray?.[2]?.split(': ')?.[1],
-              price: msgArray?.at(-1)?.split(': ')?.[1],
-              venue: msgArray?.[3]?.split(': ')?.[1],
-              activity: msgArray?.[4]?.split(': ')?.[1],
-              cabFare: msgArray?.[5]?.split(': ')?.[1],
-              info: msgArray?.[6]?.split(': ')?.[1]
-            }}
-            createdAt={createAt}
-            lastSeen={dayjs(date)?.format('hh:mm A')}
-            isMine={isMine}
-            msg={msg}
-            status={(doc.get(statusKey) as number) ?? option.pending}
-            services={doc.get(orderKey)?.['serviceDetails']}
-            // lastSeen={dayjs(createAt.toDate()).format('h:mm A')}
-            orderStatus={stat}
-            reason={doc.get(rejectReasonKey)}
+            chatRoomId={chatRoomId}
+            onRejectCancel={onRejectCancel}
+            openCashBackDialog={openCashBackDialog}
+            openUnVerifiedModalHandler={openUnVerifiedModalHandler}
+            requestNewOrder={requestNewOrder}
+            tipOnClick={tipOnClick}
+            reviewOnClick={reviewOnClick}
+            refundOnClick={refundOnClick}
           />
         </Box>
       );
@@ -175,10 +106,21 @@ const Row =
   };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewProps) => {
+const ChatView = ({
+  myBlock,
+  otherBlock,
+  requestNewOrder,
+  onLockChat,
+  lockUnlockChatLoading,
+  onFocus,
+  openUnVerifiedModalHandler,
+}: ChatViewProps) => {
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:1024px)');
   const clubName = sessionStorage.getItem(clubKey);
   const clubState = sessionStorage.getItem(stateKey);
-  const headerSize = clubName && clubState ? 44 : 0;
+  // const headerSize = clubName && clubState ? 44 : 0;
+  const headerSize = clubName && clubState ? 77 : 77;
 
   const textAreaHeight = 42;
   const textAreaWrapperHeight = 80;
@@ -192,11 +134,12 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
   const conversation = useSelectedConversationStore();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [uid, isVerified, rejectedReasonAfter, userRBAC] = [
+  const [uid, isVerified, rejectedReasonAfter, userRBAC, nickname] = [
     currentUser?.uid,
     currentUser?.verified,
     currentUser?.rejectedReasonAfter,
     currentUser?.userRBAC,
+    currentUser?.nickname,
   ];
   const calculateChats = () => {
     const calculation = (size?.height - 144 - 116 - 56) / 38;
@@ -211,11 +154,25 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [openRejectCancelDialog, setRejectCancelDialog] = useState<CancelRejectProps | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [open, setOpen] = useState<boolean>(false);
+  const [isOpenTip, setOpenTip] = useState<boolean>(false);
+  const [isOpenReview, setOpenReview] = useState<boolean>(false);
+  const [isOpenRefund, setOpenRefund] = useState<boolean>(false);
+  const [orderInfo, setOrderInfo] = useState<any>();
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [openCashBack, setCashBack] = useState<boolean>(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [openGovDialog, setGovDialog] = useState<boolean>(false);
+
+  // const [isOpenUnVerifiedModal, setIsOpenUnVerifiedModal] = useState<boolean>(false);
+
+  const [index, setIndex] = useState(0);
+
+  // const onCloseToast = () => {
+  //   setOpenToast(false);
+  // };
+  // const onOpenToastWithMsg = (msg: string) => {
+  //   setToastMsg(msg);
+  //   setOpenToast(true);
+  // };
 
   const { loading, error, data, hasNextPage } = useCollectionQuery(
     `${conversation?.id}-chatview`,
@@ -239,42 +196,42 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
     limitCount,
     true
   );
+  const { data: orderData } = useDocumentQuery(
+    `order-data-${orderInfo}`,
+    orderInfo ? doc(db, ORDER, orderInfo) : undefined
+  );
+  const orderDetails = orderData?.data();
+  const temp = data?.[index]?.data()?.[infoKey];
+  const filterUser = temp ? Object.keys(temp).filter((id) => id !== uid) : '';
+  const otherUid = filterUser?.length > 0 ? filterUser[0] : '';
+  const babeDetails = temp?.[otherUid];
+  const btemp = orderDetails?.[infoKey] ? Object?.keys(orderDetails?.[infoKey])?.filter((id) => id !== uid) : '';
+  const bInfoRefund = orderDetails?.[infoKey]?.[btemp[0]];
 
   const tipOnClick = () => {
-    setOpen(true);
+    setOpenTip(true);
+  };
+  const reviewOnClick = (value: number) => {
+    setIndex(value);
+    setOpenReview(true);
+  };
+
+  const refundOnClick = (order: any) => {
+    setOrderInfo(order);
+    setOpenRefund(true);
   };
 
   const openCashBackDialog = () => {
     setCashBack(true);
   };
 
-  const onCancelRejectHandler = (data: CancelRejectProps) => {
+  const onRejectCancel = (data: CancelRejectProps) => {
     setRejectCancelDialog(data);
   };
 
-  const openGovDialogHandler = () => {
-    setGovDialog(true);
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const autoGrow = (value: any) => {
-    const element = value.target;
-
-    element.style.height = 'auto';
-    // WARNING: Must set height to auto first to get scroll height
-    const scrollHeight = element.scrollHeight > 150 ? 150 : element.scrollHeight;
-    element.style.height = `${scrollHeight}px`;
-
-    const increaseBy = scrollHeight - textAreaHeight;
-
-    const wrapper = document.getElementById('msger-inputarea-wrapper') as HTMLDivElement;
-
-    if (wrapper && scrollHeight > textAreaHeight) wrapper.style.height = `${textAreaWrapperHeight + increaseBy}px`;
-    else if (wrapper) wrapper.style.height = `${textAreaWrapperHeight}px`;
-
-    if (scrollHeight > textAreaHeight) setHeightIncrease(increaseBy);
-    else setHeightIncrease(0);
-  };
+  // const openUnVerifiedModalHandler = () => {
+  //   setIsOpenUnVerifiedModal(true);
+  // };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendMessage = () => {
@@ -310,13 +267,17 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
   else
     return (
       <>
-        <Box position="relative" bgcolor="white" padding={'20px 24px'} className={styles.chatMsgList}>
+        <Box
+          position="relative"
+          bgcolor="white"
+          className={conversation?.hasOrder ? styles.chatMsgListIsChatEnable : styles.chatMsgList}
+        >
           <VariableWindowList
             style={{ transform: 'scaleY(-1)' }}
             height={
               size.width > 600
-                ? size.height - 80 - 50 - 90 - heightIncrease - headerSize
-                : size.height - 48 - 24 - 80 - heightIncrease - headerSize
+                ? size?.height - 80 - 50 - (conversation?.hasOrder ? -20 : 20) - heightIncrease - headerSize
+                : size?.height - 48 - 24 - 90 - heightIncrease - headerSize
             }
             width={'100%'}
             hasNextPage={hasNextPage}
@@ -328,12 +289,14 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
             component={Row(
               uid,
               conversation?.id ?? chatRoomID,
-              userRBAC
-              // tipOnClick,
-              // requestNewOrder,
-              // openGovDialogHandler,
-              // openCashBackDialog,
-              // onCancelRejectHandler
+              userRBAC,
+              tipOnClick,
+              reviewOnClick,
+              refundOnClick,
+              requestNewOrder,
+              openUnVerifiedModalHandler,
+              openCashBackDialog,
+              onRejectCancel
             )}
             scrollReversed
           />
@@ -342,15 +305,18 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
           myBlock={myBlock}
           otherBlock={otherBlock}
           sendMessageCallBack={sendMessage}
-          onInput={autoGrow}
+          // onInput={autoGrow}
           conversation={conversation!}
           requestNewOrder={requestNewOrder}
           isDisabled={conversation?.hasOrder ? false : true}
           onFocus={onFocus}
+          openUnVerifiedModalHandler={openUnVerifiedModalHandler}
+          onLockChat={onLockChat}
+          lockUnlockChatLoading={lockUnlockChatLoading}
         />
-        {/* 
-        {currentUser?.nickname && currentUser?.uid && (
-          <SendTipDialog chatRoomId={conversation!.id} open={open} onClose={() => setOpen(false)} />
+
+        {(currentUser?.nickname || currentUser?.nick) && currentUser?.uid && (
+          <SendTipDialog chatRoomId={conversation!.id} open={isOpenTip} onClose={() => setOpenTip(false)} />
         )}
 
         <RejectCancelDialog
@@ -359,17 +325,40 @@ const ChatView = ({ myBlock, otherBlock, requestNewOrder, onFocus }: ChatViewPro
           onClose={() => setRejectCancelDialog(null)}
         />
 
-        <CashBackDialog open={openCashBack} onClose={() => setCashBack(false)} />
+        {/* <CashBackDialog open={openCashBack} onClose={() => setCashBack(false)} /> */}
 
-        {openGovDialog && (
-          <GovDialog
-            open={openGovDialog}
-            onClose={() => setGovDialog(false)}
-            myUID={uid}
-            verified={isVerified}
-            rejectedReasonAfter={rejectedReasonAfter}
-          />
-        )} */}
+        <ReviewModal
+          isMobile={isMobile}
+          isTablet={isTablet}
+          isOpen={isOpenReview}
+          setOpen={setOpenReview}
+          babeDetails={{
+            name: babeDetails?.nick,
+            profile: babeDetails?.u,
+            reviewLink: babeDetails?.link,
+            myUID: uid,
+            currentUserName: currentUser?.nickname || currentUser?.nick,
+          }}
+        />
+
+        <RefundModal
+          isMobile={isMobile}
+          isTablet={isMobile}
+          isOpen={isOpenRefund}
+          setOpen={setOpenRefund}
+          orderId={orderDetails?.[idKey]}
+          myUid={uid}
+          orderDetails={{
+            service: orderDetails?.services?.details,
+            details: {
+              name: bInfoRefund?.nick,
+              profile: bInfoRefund?.u,
+              chatRoomId: orderDetails?.cri,
+              messageID: orderDetails?.mid,
+              price: orderDetails?.pr,
+            },
+          }}
+        />
       </>
     );
 };

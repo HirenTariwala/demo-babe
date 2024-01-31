@@ -11,10 +11,13 @@ import {
   writeBatch,
   QueryDocumentSnapshot,
   DocumentData,
+  getDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from '@/credentials/firebase';
 import {
   CONVERSATION,
+  USERS,
   // MESSAGES,
   chatRoomIdKey,
   clubKey,
@@ -30,7 +33,7 @@ import {
   updatedAtKey,
   usersKey,
 } from '@/keys/firestoreKeys';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import {
@@ -52,9 +55,22 @@ import dayjs from 'dayjs';
 import Badge from '@/components/atoms/badge';
 import { notifyLocalKey } from '@/keys/localStorageKeys';
 import { Helper } from '@/utility/helper';
+import ReactWindowList from '@/components/organisms/list/ReactWindowList';
+import styles from './chat.module.css';
+import { useMediaQuery } from '@mui/material';
+import { setSelectedBabe } from '@/store/reducers/babeReducer';
+import { Item } from '@/props/profileProps';
+
+export enum conversationType {
+  normal,
+  deleted,
+}
 
 const useChatHook = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const [activeTab, setActiveTab] = useState(0);
   const clubName = sessionStorage.getItem(clubKey);
   const clubState = sessionStorage.getItem(stateKey);
   const headerSize = clubName && clubState ? 44 : 0;
@@ -63,7 +79,6 @@ const useChatHook = () => {
   const { currentConvo } = useConversationStore();
   const { notification: badgeNotification } = currentConvo;
   const [size] = useWindowSize();
-  const conversation = useSelectedConversationStore();
   const searchParams = useSearchParams();
   const selectedConversation = useSelectedConversationStore();
   // const chatUUID = selectedConversation?.id ?? window?.location?.href?.getQueryStringValue('cri');
@@ -78,7 +93,6 @@ const useChatHook = () => {
   const defaultSize = Math.ceil(window.innerHeight / 50);
 
   const [limitCount, setLimitCount] = useState<number>(defaultSize);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [limitCount2, setLimitCount2] = useState<number>(defaultSize); //(defaultSize)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [heightIncrease, setHeightIncrease] = useState<number>(0);
@@ -125,7 +139,7 @@ const useChatHook = () => {
     const value = getRecipientUID(currentUser?.uid, selectedConversation);
     setOtherUid(value);
     // eslint-disable-next-line
-  }, [selectedConversation]);
+  }, [selectedConversation, activeTab]);
 
   useEffect(() => {
     const docs = dataConversation?.docs ?? [];
@@ -173,7 +187,7 @@ const useChatHook = () => {
     }
 
     // eslint-disable-next-line
-  }, [dataConversation]);
+  }, [dataConversation, activeTab]);
   useEffect(() => {
     let notification = 0;
 
@@ -206,14 +220,31 @@ const useChatHook = () => {
     localStorage.setItem(notifyLocalKey, `${notification}`);
 
     dispatch(setConversation({ notification: notification, data: dataConversation }));
-  }, [dataConversation]);
+  }, [dataConversation, activeTab]);
 
-  const loadNextPage = () => {
-    if (dataHasNextPage) {
-      setLimitCount(
-        (prev) => prev + 10 // calculateChats()  //10
-      );
+  const loadNextPage = (type: conversationType) => {
+    switch (type) {
+      case conversationType.normal:
+        if ((dataConversation?.size as number) >= limitCount && dataHasNextPage) {
+          setLimitCount((prev) => {
+            return prev + defaultSize;
+          });
+        }
+        break;
+
+      case conversationType.deleted:
+        if ((dataArchive?.size as number) >= limitCount2 && hasNextPageArchive) {
+          setLimitCount2((prev) => {
+            return prev + defaultSize;
+          });
+        }
+        break;
     }
+    // if (dataHasNextPage) {
+    //   setLimitCount(
+    //     (prev) => prev + 10 // calculateChats()  //10
+    //   );
+    // }
   };
 
   const calculateSideBarWidth = () => {
@@ -255,12 +286,21 @@ const useChatHook = () => {
     openChat(conversation);
   };
   const openChat = (conversation: ConversationInfo) => {
+    dispatch(setSelectedConversation({ data: conversation }));
+    try {
+      const getUserId = conversation?.users?.find((item) => item !== currentUser?.uid) ?? '';
+
+      getDoc(doc(db, USERS, getUserId)).then((docs) => {
+        const newData = Helper.createItemFromDocument(docs);
+
+        dispatch(setSelectedBabe(newData as Item));
+      });
+    } catch (error) {
+      console.log('OnClick Chat sidebar get babeData Error ==> ', error);
+    }
     if (size?.width <= 600) {
-      dispatch(setSelectedConversation({ data: conversation }));
       // push chat box
-      // history.push(`./chatbox?${chat_room_id}=${conversation.id}`, conversation)
-    } else {
-      dispatch(setSelectedConversation({ data: conversation }));
+      router?.push(`/chatbox?${chatRoomIdKey}=${conversation?.id}`);
     }
   };
 
@@ -293,6 +333,24 @@ const useChatHook = () => {
       </Box>
     );
   };
+  const RowDeletedChats = ({ index, style }: ListChildComponentProps) => {
+    const doc = dataArchive?.docs[index];
+
+    if (!doc) return <SkeletonItem style={style} index={index} />;
+
+    return (
+      <div style={style} key={index}>
+        <SideBarItem
+          isArchive={true}
+          uid={uid!}
+          otherUid={getRecipientUID(uid, convertDocToConvo(doc))}
+          isSelected={selectedConversation?.id === doc.id}
+          doc={doc}
+          index={index}
+        />
+      </div>
+    );
+  };
 
   const tabsData = [
     {
@@ -321,7 +379,33 @@ const useChatHook = () => {
           )}
         </span>
       ),
-      content: '',
+      content: (
+        <Box className={styles.userListArr}>
+          {/* {(dataConversation?.size as number) > 0 ? ( */}
+          <ReactWindowList
+            height={size?.height - 56}
+            width={calculateSideBarWidth()}
+            hasNextPage={dataHasNextPage}
+            dataSize={dataConversation?.size as number}
+            loadNextPage={() => loadNextPage(conversationType.normal)}
+            component={Row}
+            itemSize={73}
+          />
+          {/* ) : (
+            <Box
+              sx={{
+                flex: '1 0 0',
+                display: 'flex',
+                maxWidth: '600px',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <EmptyData icon={<EmptyBoxIcon />} msg="You have no messages yet" />
+            </Box>
+          )} */}
+        </Box>
+      ),
     },
     {
       lable: (value: number) => (
@@ -346,23 +430,58 @@ const useChatHook = () => {
           </span>
         </span>
       ),
-      content: '',
+      content: (
+        // (dataArchive?.size as number) > 0 ? (
+        <Box className={styles.userListArr}>
+          <ReactWindowList
+            height={size?.height - 56}
+            width={calculateSideBarWidth()}
+            hasNextPage={hasNextPageArchive}
+            dataSize={dataArchive?.size as number}
+            loadNextPage={() => loadNextPage(conversationType.deleted)}
+            component={RowDeletedChats}
+            itemSize={73}
+          />
+        </Box>
+      ),
+      // ) : (
+      //   <Box
+      //     className="veer"
+      //     sx={{
+      //       height: '100%',
+      //       minHeight: '100%',
+      //       display: 'flex',
+      //       maxWidth: '600px',
+      //       justifyContent: 'center',
+      //       alignItems: 'center',
+      //     }}
+      //   >
+      //     <EmptyData icon={<EmptyBoxIcon />} msg="You have no messages yet" />
+      //   </Box>
+      // ),
     },
   ];
 
   return {
+    isMobile,
     tabsData,
-    loadingChat,
-    errorChat,
     dataConversation,
+    errorChat,
+    loadingChat,
+    errorArchive,
+    loadingArchive,
+    dataArchive,
+    chatUUID,
+    activeTab,
+    setActiveTab,
+    router,
+    // Bottom variable is not use
     size,
     headerSize,
-    dataHasNextPage,
     uid,
     isVerified,
     rejectedReasonAfter,
     userRBAC,
-    conversation,
     chatRoomID,
     heightIncrease,
     loadNextPage,
@@ -370,7 +489,6 @@ const useChatHook = () => {
     Row,
     selectedConversation,
     currentUser,
-    chatUUID,
     isUserDataLoading,
     userData,
   };

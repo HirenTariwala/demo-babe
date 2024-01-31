@@ -12,13 +12,15 @@ import { ListChildComponentProps } from 'react-window';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import dayjs from 'dayjs';
 import { Helper } from '@/utility/helper';
-import { OrderItemEnum } from '@/enum/orderEnum';
+import { MovementEnum, OrderItemEnum } from '@/enum/orderEnum';
 import { VariableWindowListContext } from '@/components/organisms/list/VariableWindowList';
+import LoadingIcon from '@/components/atoms/icons/loading';
 
-// eslint-disable-next-line react/display-name
-const TransactionCard = memo(
-  ({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | undefined>) => {
+const TransactionCard = (loading: boolean, hasMore: boolean, onOpenToastWithMsg: (arg: string) => void) =>
+  // eslint-disable-next-line react/display-name
+  memo(({ index, style, data }: ListChildComponentProps<QueryDocumentSnapshot<DocumentData>[] | undefined>) => {
     const transactionObj = data?.[index];
+    const isLastIndex = index === (data ? data?.length - 1 : 0);
     const doc = transactionObj?.data();
     const { size, setSize } = useContext(VariableWindowListContext);
 
@@ -36,10 +38,13 @@ const TransactionCard = memo(
           return { status: 'Refunded', color: 'primary' };
         }
         case OrderItemEnum.credits_movement: {
-          return { status: 'Withdrawn', color: 'error' };
+          const movement = doc?.['mtw'] ?? 0;
+          return movement === MovementEnum.income_to_cash
+            ? { status: 'Withdrawn', color: 'error' }
+            : { status: 'Moved from Pending', color: 'primary' };
         }
         case OrderItemEnum.transaction: {
-          return { status: 'Spend', color: 'error' };
+          return doc?.amt > 0 ? { status: 'Earned', color: 'success' } : { status: 'Spend', color: 'error' };
         }
 
         default: {
@@ -60,22 +65,24 @@ const TransactionCard = memo(
     const transactionID = doc?.id;
 
     useEffect(() => {
-      const root = document.getElementById(index?.toString());
+      const root = document.getElementById(`${index?.toString()}-wallet`);
       const height = root?.getBoundingClientRect().height ?? 0;
 
       setSize?.(index, height);
     }, [size?.width]);
+
+    if (!doc) return null;
 
     return (
       <Box
         key={index}
         style={style}
         sx={{
-          paddingTop: `${index * 20}px`,
+          marginTop: `${index * 20}px`,
         }}
       >
         <Card
-          id={index?.toString()}
+          id={`${index?.toString()}-wallet`}
           sx={{
             p: 4,
             maxWidth: '688px',
@@ -118,6 +125,11 @@ const TransactionCard = memo(
                     }}
                   >
                     <MenuItem
+                      onClick={() => {
+                        navigator.clipboard.writeText(transactionID);
+                        setAnchorEl(null);
+                        onOpenToastWithMsg('ID Copied');
+                      }}
                       sx={{
                         minHeight: 'fit-content !important',
                       }}
@@ -137,9 +149,34 @@ const TransactionCard = memo(
             </Box>
           </CardContent>
         </Card>
+        {(hasMore || loading) && isLastIndex && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '40px 0px',
+            }}
+          >
+            <LoadingIcon />
+          </Box>
+        )}
+        {!hasMore && isLastIndex && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '40px 0px',
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight={500}>
+              No More Data
+            </Typography>
+          </Box>
+        )}
       </Box>
     );
-  }
-);
+  });
 
 export default TransactionCard;

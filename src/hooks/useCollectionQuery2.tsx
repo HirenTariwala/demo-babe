@@ -5,24 +5,20 @@ import { useEffect, useState } from 'react';
 
 export const useCollectionQuery2: (
   key: string | undefined,
-  collection: CollectionReference | Query<DocumentData> | undefined
-  //   limitCount: number
+  collection: CollectionReference | Query<DocumentData> | undefined,
+  limitCount?: number
 ) => {
   loading: boolean;
   error: boolean;
   data: QuerySnapshot | null;
-  //   hasNextPage: boolean;
-} = (
-  key,
-  collection
-  // limitCount
-) => {
+  hasNextPage: boolean;
+} = (key, collection, limitCount) => {
   const cache: { [key: string]: any } = {};
   const [data, setData] = useState<QuerySnapshot<DocumentData> | null>(key ? cache[key] || undefined : undefined);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState(false);
-  //   const [hasNextPage, setNextPage] = useState(true);
+  const [hasNextPage, setNextPage] = useState(true);
 
   useEffect(() => {
     if (!key || !collection) return () => {};
@@ -38,7 +34,10 @@ export const useCollectionQuery2: (
         setLoading(false);
         setError(false);
 
+        const current = snapshot.docs.length;
+        const value = current >= (limitCount ?? 0);
 
+        setNextPage(value);
         cache[key] = snapshot;
       },
       (error) => {
@@ -53,12 +52,12 @@ export const useCollectionQuery2: (
     return () => {
       unsubscribe();
     };
-  }, [key]);
+  }, [key, limitCount]);
 
   return {
     loading,
     error,
     data,
-    // hasNextPage,
+    hasNextPage,
   };
 };

@@ -1,37 +1,40 @@
-import Badge from '@/components/atoms/badge';
+// import Badge from '@/components/atoms/badge';
 import useRentHook from '../Rent/useRentHook';
-import TransactionTabContent from './components/TransactionTabContent';
 import { useEffect, useMemo, useState } from 'react';
 import { setCurrentUser, useUserStore } from '@/store/reducers/usersReducer';
-import {
-  CREDIT,
-  TRANSACTION,
-  balanceKey,
-  incomeKey,
-  penaltyKey,
-  pendingKey,
-  pointsKey,
-  timeStampKey,
-  uidKey,
-} from '@/keys/firestoreKeys';
+import { CREDIT, balanceKey, incomeKey, penaltyKey, pendingKey, pointsKey } from '@/keys/firestoreKeys';
 import { db } from '@/credentials/firebase';
-import { DocumentData, QueryDocumentSnapshot, collection, doc, orderBy, query, where } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { useCollectionQuery2 } from '@/hooks/useCollectionQuery2';
 import { useDocumentQuery } from '@/hooks/useDocumentQuery';
 import { useAppDispatch } from '@/store/useReduxHook';
+import { useTranslations } from 'next-intl';
+import TransactionTabContent from './components/TransactionTabContent';
+import { OrderItemEnum } from '@/enum/orderEnum';
 
 interface ITabs {
   type: string;
-  badge: number;
-  content: QueryDocumentSnapshot<DocumentData>[];
+  value: OrderItemEnum | null;
 }
+const typeOrder: any = {
+  0: -1,
+  1: 3,
+  2: 2,
+  3: 1,
+  4: 0,
+  5: 4,
+  6: 4,
+  7: 2,
+};
 
 const useWalletHook = () => {
   const { isMobile } = useRentHook();
+  const t = useTranslations('walletPage.transactionTabsKey');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { currentUser } = useUserStore();
+  const [getAllTransaction, setGetAllTransaction] = useState(false);
+  const [isOpenAlert, setIsOpenAlert] = useState(true);
   const [openToast, setOpenToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
@@ -57,28 +60,12 @@ const useWalletHook = () => {
 
   const [verifiedWithdrawIsOpen, setVerifiedWithdrawIsOpen] = useState(false);
   const [unVerifiedWithdrawIsopen, setUnVerifiedWithdrawIsOpen] = useState(false);
-  // const defaultSize = 150;
-  // const defaultLimitCount = Math.ceil(window.innerHeight / defaultSize);
-  // const [limitCount, setLimitCount] = useState(defaultLimitCount);
+
+  const [activeTransactionTab, setActiveTransactionTab] = useState<number>(0);
 
   const { data: walletData } = useDocumentQuery(
     `${uid || ''}-balance-main`,
     uid ? doc(db, CREDIT, uid ?? 'empty') : undefined
-  );
-
-  const {
-    loading: transactionLoading,
-    data: transactionData,
-    error: transactionError,
-  } = useCollectionQuery2(
-    uid ? `${uid}-order` : undefined,
-    query(
-      collection(db, TRANSACTION),
-      where(uidKey, '==', `${uid || ''}`),
-      orderBy(timeStampKey, 'desc')
-      // limit(limitCount)
-    )
-    // limitCount
   );
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -86,58 +73,50 @@ const useWalletHook = () => {
   const types: ITabs[] = useMemo(
     () => [
       {
-        type: 'All',
-        badge: transactionData ? transactionData?.size : '0',
-        content: transactionData ? transactionData?.docs : [],
+        type: t('all'),
+        // badge: transactionData ? transactionData?.size : '0',
+        value: null,
       },
       {
-        type: 'Refunded',
-        badge: transactionData
-          ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 3)?.length?.toString()
-          : '0',
-        content: transactionData ? [] : [],
+        type: t('refunded'),
+        // badge: countAndContentObj?.refund || '0',
+        value: OrderItemEnum?.refund,
       },
       {
-        type: 'Earned',
-        badge: '0',
-        content: transactionData ? [] : [],
+        type: t('earned'),
+        // badge: countAndContentObj?.transactionEarned || '0',
+        value: OrderItemEnum.earned,
       },
       {
-        type: 'Bundle Recharge',
-        badge: transactionData
-          ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 1)?.length?.toString()
-          : '0',
-        content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 1) : [],
+        type: t('bundleRecharge'),
+        // badge: countAndContentObj?.bundleRecharge || '0',
+        value: OrderItemEnum?.bundle_recharge,
       },
       {
-        type: 'Custom Recharge',
-        badge: transactionData
-          ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 0)?.length?.toString()
-          : '0',
-        content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 0) : [],
+        type: t('customRecharge'),
+        // badge: countAndContentObj?.custom_recharge || '0',
+        value: OrderItemEnum?.custom_recharge,
       },
       {
-        type: 'Moved from Pending',
-        badge: '0',
-        content: transactionData ? [] : [],
+        type: t('movedFromPending'),
+        // badge: countAndContentObj?.creditsMovementMovedFromPending || '0',
+        value: OrderItemEnum?.credits_movement,
       },
       {
-        type: 'Withdrawn',
-        badge: transactionData
-        ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 4)?.length?.toString()
-        : '0',
-        content: transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 4)  : [],
+        type: t('withdrawn'),
+        // badge: countAndContentObj?.creditsMovementWithdrawn || '0',
+        value: OrderItemEnum?.withdrawn,
       },
       {
-        type: 'Spend',
-        badge: '0',
-        content:  transactionData ? transactionData?.docs?.filter((obj) => obj?.data()?.item === 2) : [],
+        type: t('spend'),
+        // badge: countAndContentObj?.transactionSpend || '0',
+        value: OrderItemEnum.transaction,
       },
     ],
-    [transactionData]
+    [activeTransactionTab, walletData]
   );
 
-  const tabs = types?.map((item, index) => ({
+  const tabs = types?.map((item) => ({
     lable: () => (
       <span
         style={{
@@ -153,7 +132,11 @@ const useWalletHook = () => {
       </span>
     ),
     content: (
-      <TransactionTabContent index={index} data={item?.content} loading={transactionLoading} error={transactionError} />
+      <TransactionTabContent
+        orderItem={typeOrder[activeTransactionTab]}
+        value={item.value}
+        // onOpenToastWithMsg={onOpenToastWithMsg}
+      />
     ),
   }));
 
@@ -207,6 +190,11 @@ const useWalletHook = () => {
 
   return {
     isMobile,
+    activeTransactionTab,
+    getAllTransaction,
+    setGetAllTransaction,
+    isOpenAlert,
+    setIsOpenAlert,
     tabs,
     currentUser,
     uid,
@@ -218,6 +206,7 @@ const useWalletHook = () => {
     penaltyCredits,
     nickname,
     toastMsg,
+    setActiveTransactionTab,
     onOpenToastWithMsg,
     openToast,
     onCloseToast,

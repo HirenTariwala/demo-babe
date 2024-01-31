@@ -42,7 +42,6 @@ const useCreditHook = () => {
           setDescription(description);
           setDiscountState(promoMap[0].discount);
           setName(name);
-          console.log('isPrimium and function name ==> ', isPremium, name);
         }
         return false;
       })

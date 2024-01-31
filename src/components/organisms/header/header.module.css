@@ -2,7 +2,7 @@
   padding: 12px 20px !important;
   border: 1px solid #cccccc !important;
   width: fit-content !important;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 .loginButton {
@@ -19,8 +19,8 @@
 }
 
 .page_header_body {
-  background: #FFD443;
-  padding: 60px 240px
+  background: #ffd443;
+  padding: 60px 240px;
 }
 
 .page_header_title {
@@ -29,10 +29,9 @@
   line-height: 48px;
 }
 
-
 @media screen and (max-width: 1024px) {
   .page_header_body {
-    background: #FFD443;
+    background: #ffd443;
     padding: 60px 40px;
   }
 
@@ -44,9 +43,8 @@
 }
 
 @media screen and (max-width: 600px) {
-
   .page_header_body {
-    background: #FFD443;
+    background: #ffd443;
     padding: 40px 16px;
   }
 

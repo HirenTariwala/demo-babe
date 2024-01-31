@@ -11,6 +11,7 @@ import useMessage from '@/hooks/useMessage';
 import Box from '@/components/atoms/box';
 import Audio from '@/components/atoms/audio';
 import AuthProvider from '@/utility/AuthProvider';
+import ModalContext from '@/utility/ModalContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({ children, params }: { children: React.React
             <AuthProvider pathName={pathName}>
               <ThemeProvider>
                 <Audio />
+                <ModalContext />
                 {!pathName.includes('login') && !pathName?.includes('profile') && <Header />}
                 <Box className={!pathName.includes('login') && !pathName?.includes('profile') ? 'children' : ''}>
                   {children}

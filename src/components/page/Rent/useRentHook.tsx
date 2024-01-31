@@ -31,6 +31,8 @@ import {
   limit,
   orderBy,
   query,
+  startAfter,
+  startAt,
   where,
 } from 'firebase/firestore';
 import { useEffect, useRef, useState, memo, MouseEvent } from 'react';
@@ -41,11 +43,11 @@ import { ServiceDetailProps } from '@/props/servicesProps';
 import { COLOMBIA, MALAYSIA, PHILIPPINES, SINGAPORE, SOUTH_KOREA } from '@/keys/countries';
 import { areaLocalKey } from '@/keys/localStorageKeys';
 import { useRouter } from 'next/navigation';
-import useHeaderHook from '@/components/organisms/header/useHeaderHook';
 import Box from '@/components/atoms/box';
 import LoadingIcon from '@/components/atoms/icons/loading';
 import { useAppDispatch } from '@/store/useReduxHook';
 import { setSelectedBabe } from '@/store/reducers/babeReducer';
+import { setIsOpenProfileModal, useDrawerOpenStore } from '@/store/reducers/drawerOpenReducer';
 
 export interface IRenderComponentProps<Item> {
   /**
@@ -186,18 +188,19 @@ const EthnicityData = [
       </Typography>
     ),
     key: 'Indian',
-    value: '3',
+    value: '2',
   },
 ];
 sessionStorage.setItem('cardData', '[]');
-sessionStorage.setItem('cardDataLimit', JSON.stringify(Math.ceil(window.innerHeight / 100)));
+sessionStorage.setItem('cardDataLimit', '');
 sessionStorage.setItem('scrollTo', '0');
 
 let initLoading = true;
 // const parPage = 50;
 const useRentHook = () => {
   const dispatch = useAppDispatch();
-  const defaultSize = 100;
+  const { isOpenProfileModal } = useDrawerOpenStore();
+  const defaultSize = 50;
   const defaultLimitCount = Math.ceil(window.innerHeight / defaultSize);
 
   const router = useRouter();
@@ -214,7 +217,8 @@ const useRentHook = () => {
   ];
 
   const isMobile = useMediaQuery('(max-width:600px)');
-  const { isTablet } = useHeaderHook();
+  const isTablet = useMediaQuery('(max-width:1439px)');
+  const isTabletMini = useMediaQuery('(max-width:1023px)');
   const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
   const [filterIsOpen, setFilterIsOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<number | undefined>(0);
@@ -226,9 +230,10 @@ const useRentHook = () => {
   const cardData = sessionStorage.getItem('cardData');
   const cardDataLimit = sessionStorage.getItem('cardDataLimit');
 
-  const [items, setItems] = useState(cardData ? JSON.parse(cardData) : []);
+  const [items, setItems] = useState<Item[]>(cardData ? JSON.parse(cardData) : []);
 
   const [hasMore, setHasMore] = useState(false);
+  const [startIndex, setIndex] = useState<any>();
 
   // let parpageCount = parPage;
   // if (cardData) {
@@ -241,9 +246,7 @@ const useRentHook = () => {
   const [time, setTime] = useState<any>(null);
   const [reset, setReset] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [cardColumnCount, setCardColumnCount] = useState<number>(isMobile ? 2 : 5);
-
+  const [cardColumnCount, setCardColumnCount] = useState<number>(isMobile ? 2 : isTabletMini ? 3 : isTablet ? 4 : 5);
   const [data, setData] = useState<Item | undefined>();
   const sliderRef = useRef(null);
   const { loadingIPAddress } = useIPAddress();
@@ -305,12 +308,9 @@ const useRentHook = () => {
     }
   };
   useEffect(() => {
-    setCardColumnCount(isMobile ? 2 : 5);
-  }, [isMobile]);
+    setCardColumnCount(isMobile ? 2 : isTabletMini ? 3 : isTablet ? 4 : 5);
+  }, [isMobile, isTablet, isTabletMini]);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
   const backVideoHandler = () => {
     if (currentVideoIndex < 1) {
       return;
@@ -340,14 +340,18 @@ const useRentHook = () => {
       )
     )
       .then((snapshot) => {
-        const docs = snapshot.docs;
+        const docs = snapshot?.docs;
         const List: any = [];
-        docs.forEach((currentDocument) => {
+        docs?.forEach((currentDocument) => {
           const newItem = Helper.createItemFromDocument(currentDocument);
           if (newItem) {
             List.push(newItem);
           }
         });
+
+        if (List?.length < defaultLimitCount) {
+          setHasMore(false);
+        }
 
         setItems(List);
         setLoading(false);
@@ -364,7 +368,7 @@ const useRentHook = () => {
   };
 
   const handleDirectLocationChange = (event: SelectChangeEvent) => {
-    setActiveLocation(event.target.value);
+    setActiveLocation(event?.target?.value);
     if (isMobile) {
       setLoading(true);
       getDocs(
@@ -380,16 +384,19 @@ const useRentHook = () => {
         )
       )
         .then((snapshot) => {
-          const docs = snapshot.docs;
+          const docs = snapshot?.docs;
 
           const List: any = [];
 
-          docs.forEach((currentDocument) => {
+          docs?.forEach((currentDocument) => {
             const newItem = Helper.createItemFromDocument(currentDocument);
             if (newItem) {
               List.push(newItem);
             }
           });
+          if (List?.length < defaultLimitCount) {
+            setHasMore(false);
+          }
           setItems(List);
           setLoading(false);
         })
@@ -402,20 +409,20 @@ const useRentHook = () => {
   };
 
   const handleRecentlyChange = (event: SelectChangeEvent) => {
-    setActiveRecently(event.target.value);
+    setActiveRecently(event?.target?.value);
   };
   const handlePublicChange = (event: SelectChangeEvent) => {
-    setActivePublic(event.target.value);
+    setActivePublic(event?.target?.value);
   };
   const handleGenderChange = (event: SelectChangeEvent) => {
-    setActiveGender(event.target.value);
+    setActiveGender(event?.target?.value);
   };
   const handleEthnicityChange = (event: SelectChangeEvent) => {
-    setActiveCity(event.target.value);
+    setActiveCity(event?.target?.value);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    const text = (e.target as HTMLInputElement).value.toLowerCase();
+    const text = (e?.target as HTMLInputElement)?.value?.toLowerCase();
 
     setData(undefined);
     clearTimeout(time);
@@ -441,8 +448,8 @@ const useRentHook = () => {
           try {
             const snap = await getDocs(query(collection(db, USERS), where(nicknameKey, '==', text), limit(1)));
 
-            if (snap.docs.length !== 0) {
-              const doc = snap.docs[0];
+            if (snap?.docs?.length !== 0) {
+              const doc = snap?.docs[0];
               const item = Helper.createItemFromDocument(doc);
               setData(item);
             }
@@ -460,17 +467,17 @@ const useRentHook = () => {
     );
   };
   const handlePrev = () => {
-    if (sliderRef.current) {
+    if (sliderRef?.current) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      sliderRef.current.slickPrev();
+      sliderRef?.current.slickPrev();
     }
   };
   const handleNext = () => {
-    if (sliderRef.current) {
+    if (sliderRef?.current) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      sliderRef.current.slickNext();
+      sliderRef?.current.slickNext();
     }
   };
 
@@ -499,6 +506,9 @@ const useRentHook = () => {
             List.push(newItem);
           }
         });
+        if (List?.length < defaultLimitCount) {
+          setHasMore(false);
+        }
 
         setItems(List);
         setFilterIsOpen(false);
@@ -514,15 +524,11 @@ const useRentHook = () => {
   const fetchMoreData = (props: any, totalItems: number) => {
     const totalRowCount = Math.ceil(totalItems / cardColumnCount);
     const rowHeight = isMobile ? 365 : 420;
-    // const isAtBottom = props?.scrollTop > 0.8 * (totalRowCount * rowHeight - 350);
-    const isAtBottom = props?.scrollTop > 0.7 * (totalRowCount * rowHeight - 350);
+    const isAtBottom = props?.scrollTop > 0.5 * (totalRowCount * rowHeight - 350);
 
     if (isAtBottom) {
-      // setLimit((prev) => prev + parPage);
-      // setLimit(limitquery + parPage);
-      if (limitquery == items?.length) {
+      if (limitquery === items?.length) {
         const newLimit = limitquery + defaultLimitCount;
-
         setLimit(newLimit);
       }
     }
@@ -547,7 +553,9 @@ const useRentHook = () => {
     const count = [];
     const whereAdminTrue = where(adminKey, '==', true);
     count.push('adminKey');
-    const limitBy = limit(limitNumber);
+    const limitBy = limit(defaultLimitCount);
+    // const startIdx = startAt(startIndex);
+    const startIdx = startAfter(startIndex);
     count.push('limitBy');
     const queries: QueryConstraint[] = [whereAdminTrue];
     if (recently) {
@@ -569,6 +577,9 @@ const useRentHook = () => {
     }
 
     queries.push(limitBy);
+    if (startIndex) {
+      queries.push(startIdx);
+    }
     let isForAllCountry: boolean = true;
 
     if (category && parseInt(category) != 0) {
@@ -611,7 +622,6 @@ const useRentHook = () => {
       const whereRace = where(`${raceKey}2.${raceIndex}`, '==', true);
       queries.push(whereRace);
     }
-
     const getUserByLatest: Query<DocumentData> = query(collection(db, USERS), ...queries);
     return getUserByLatest;
   };
@@ -634,21 +644,27 @@ const useRentHook = () => {
         const documents = snapshot.docs;
         const itemList: any = [];
         // const startIndex = parPage - 50;
-
         documents.forEach((currentDocument) => {
           const newItem = Helper.createItemFromDocument(currentDocument);
           if (newItem) {
             itemList.push(newItem);
           }
         });
-        if (itemList?.length > items?.length) {
-          sessionStorage.setItem('cardData', JSON.stringify(itemList));
-          sessionStorage.setItem('cardDataLimit', JSON.stringify(limitquery));
-          setItems(itemList);
-        }
-        if (itemList?.length < limitquery) {
+        // if (itemList?.length > items?.length) {
+        //   sessionStorage.setItem('cardData', JSON.stringify(itemList));
+        //   sessionStorage.setItem('cardDataLimit', JSON.stringify(limitquery));
+        //   setItems(itemList);
+        // }
+        // if (itemList?.length < limitquery) {
+        if (itemList?.length < defaultLimitCount) {
           setHasMore(false);
+        } else {
+          const newArr = items?.concat(itemList);
+          sessionStorage.setItem('cardData', JSON.stringify(newArr));
+          sessionStorage.setItem('cardDataLimit', JSON.stringify(limitquery));
+          setItems(newArr);
         }
+        setIndex(documents?.[documents.length - 1]);
         setLoading(false);
         // setInitLoading(false);
         initLoading = false;
@@ -673,7 +689,7 @@ const useRentHook = () => {
     if (isMobile) {
       router.push(`/profile/${babeInfo?.uid}`);
     } else {
-      setOpen(true);
+      dispatch(setIsOpenProfileModal(true));
     }
   };
 
@@ -688,10 +704,11 @@ const useRentHook = () => {
           id={obj?.uid}
           style={{
             gap: '20px',
-            paddingLeft: columnIndex === 0 ? (isMobile ? '6px' : '10px') : isMobile ? '6px' : '10px',
-            paddingRight: columnIndex === cardColumnCount ? (isMobile ? '6px' : '12px') : isMobile ? '6px' : '10px',
-            paddingBottom: isMobile ? '12px' : '20px',
-            paddingTop: rowIndex === 0 ? (isMobile ? '12px' : '24px') : isMobile ? '12px' : '20px',
+            paddingLeft: columnIndex === 0 ? (isTabletMini ? '6px' : '10px') : isTabletMini ? '6px' : '10px',
+            paddingRight:
+              columnIndex === cardColumnCount ? (isTabletMini ? '6px' : '12px') : isTabletMini ? '6px' : '10px',
+            paddingBottom: isTabletMini ? '12px' : '20px',
+            paddingTop: rowIndex === 0 ? (isTabletMini ? '12px' : '24px') : isTabletMini ? '12px' : '20px',
             ...style,
           }}
         >
@@ -703,7 +720,7 @@ const useRentHook = () => {
               // id={obj?.uid}
               babeData={obj}
               onClickHandler={onClickBabeCard}
-              size={isMobile ? 'small' : 'medium'}
+              size={isTabletMini ? 'small' : 'medium'}
               category={activeCategoryId}
               categoryTitle={categoryTitle}
               categoryObj={categoryObj}
@@ -716,13 +733,12 @@ const useRentHook = () => {
             <Box
               sx={{
                 padding: '50px',
-                // width: '95vw',
                 maxWidth: '1440px',
-                width: '100vw',
+                width: '100%',
                 textAlign: 'center',
                 color: 'black',
                 position: 'fixed',
-                left: '0%',
+                left: isTabletMini ? '-25px' : '0%',
               }}
             >
               {hasMore ? <LoadingIcon /> : 'No More Profile'}
@@ -740,6 +756,7 @@ const useRentHook = () => {
   return {
     isMobile,
     isTablet,
+    isTabletMini,
     loading,
     initLoading,
     cardColumnCount,
@@ -767,12 +784,10 @@ const useRentHook = () => {
     nickname,
     data,
     regionState: activeLocation ? [activeLocation] : getRegionState,
-    open,
+    isOpenProfileModal,
     showScrollToTop,
     scrollToTop,
-    setOpen,
     onClickBabeCard,
-    handleClose,
     handleTabChange,
     onOpenFilter,
     onCloseFilter,

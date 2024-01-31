@@ -33,7 +33,6 @@ import { db } from '@/credentials/firebase';
 import { useRouter } from 'next/navigation';
 import { messenger, nsfw, payment, sex } from '@/keys/filters';
 import { MessageEnum } from '@/enum/myEnum';
-import { Helper } from '@/utility/helper';
 import { getRecipientUID } from '@/components/page/Profile/util/helper';
 import { Snackbar } from '@mui/material';
 import InputBar from './InputBar';
@@ -47,10 +46,12 @@ interface InputSectionProps {
   setInputSectionOffset?: (value: number) => void;
   replyInfo?: any;
   setReplyInfo?: (value: any) => void;
-  onInput?: (e: any) => void;
   sendMessageCallBack?: () => void;
   requestNewOrder: () => void;
   onFocus: () => void;
+  openUnVerifiedModalHandler: () => void;
+  onLockChat: () => void;
+  lockUnlockChatLoading: boolean;
 }
 
 const InputSection = ({
@@ -58,10 +59,12 @@ const InputSection = ({
   myBlock,
   otherBlock,
   conversation,
-  onInput,
   sendMessageCallBack,
   requestNewOrder,
   onFocus,
+  openUnVerifiedModalHandler,
+  onLockChat,
+  lockUnlockChatLoading,
 }: InputSectionProps) => {
   const { currentUser } = useUserStore();
   const router = useRouter();
@@ -250,24 +253,6 @@ const InputSection = ({
     setInputValue(inputElement.value);
   };
 
-  const onKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e?.key === 'Backspace' && e?.currentTarget?.value === ' ') {
-      e.preventDefault();
-      return;
-    }
-
-    if (isDisabled) return;
-
-    if (Helper.isMobileCheck2()) {
-      console.log('I Am Empty Block');
-    } else {
-      if (e?.key === 'Enter' && !e?.shiftKey) {
-        e.preventDefault();
-        sendMessage(false);
-      }
-    }
-  };
-
   const unBlockClick = () => {
     const recipientUID = getRecipientUID(uid, conversation);
 
@@ -283,12 +268,16 @@ const InputSection = ({
   return (
     <Box
       sx={{
-        position: 'absolute',
-        bottom: 15,
-        width: '100%',
-        maxWidth: '623px',
-        borderTop: '1px solid #999',
-        zIndex: 999,
+        // position: 'absolute',
+        // position: 'static',
+        position: 'fixed',
+        // bottom: 15,
+        bottom: 0,
+        // width: '100%',
+        width: '-webkit-fill-available;',
+        // maxWidth: '623px',
+        borderTop: !isDisabled ? 'none' : '1px solid #999',
+        // zIndex: 999,
         background: '#fff',
       }}
     >
@@ -297,14 +286,14 @@ const InputSection = ({
         chatRoomId={conversation?.id}
         disabled={isDisabled}
         myBlock={myBlock}
-        onInput={onInput}
-        inputValue={inputValue}
         onChange={onChangeInput}
         unBlockClick={unBlockClick}
-        onKeyUp={onKeyUp}
         sendMessage={() => sendMessage(false)}
         requestNewOrder={requestNewOrder}
         onFocus={onFocus}
+        openUnVerifiedModalHandler={openUnVerifiedModalHandler}
+        onLockChat={onLockChat}
+        lockUnlockChatLoading={lockUnlockChatLoading}
       />
 
       <Snackbar

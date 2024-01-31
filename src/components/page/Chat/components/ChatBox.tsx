@@ -33,12 +33,20 @@ import ChatHeader from './ChatHeader';
 import Alert from '@/components/atoms/alert';
 import Typography from '@/components/atoms/typography';
 import ChatView from './ChatView';
+import { useMediaQuery } from '@mui/material';
+import styles from '../chat.module.css';
+import { setIsOpenProfileModal } from '@/store/reducers/drawerOpenReducer';
+import { lockChat } from '@/utility/CloudFunctionTrigger';
+import LockUnlockChatDialog from './Dialog/LockUnlockChatDialog';
+import UnVerifiedModal from '../../Wallet/components/Withdrawn/UnVerifiedModal';
+import Toast from '@/components/molecules/toast';
 
 interface IChatBox {
   loading?: boolean;
 }
 
 const ChatBox = ({ loading }: IChatBox) => {
+  const isMobile = useMediaQuery('(max-width:600px)');
   const dispatch = useAppDispatch();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
@@ -46,7 +54,11 @@ const ChatBox = ({ loading }: IChatBox) => {
   // const isChatBox = window.location.href.getQueryStringValue('cri') ? true : false;
   const isChatBox = false;
   const { currentUser } = useUserStore();
-  const [uid] = [currentUser?.uid];
+  const [uid, isVerified, rejectedReasonAfter] = [
+    currentUser?.uid,
+    currentUser?.verified,
+    currentUser?.rejectedReasonAfter,
+  ];
   const selectedConversation = useSelectedConversationStore();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const users = Object.keys(selectedConversation?.info ?? {});
@@ -60,9 +72,24 @@ const ChatBox = ({ loading }: IChatBox) => {
   const [online, setOnline] = useState<Timestamp | undefined>(undefined);
   const { loading: isUserDataLoading, data: userData } = useGetUserData(otherUid);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showProfile, setShowProfile] = useState<boolean>(false);
+
   const [openAlert, setAlert] = useState<boolean>(true);
   const [apiRevalidate, setApiRevalidate] = useState<number>(0);
+
+  const [isOpenLockUnlockChat, setIsOpenLockUnlockChat] = useState<boolean>(false);
+  const [lockUnlockChatLoading, setLockUnlockChatLoading] = useState<boolean>(false);
+
+  const [isOpenUnVerifiedModal, setIsOpenUnVerifiedModal] = useState<boolean>(false);
+  const [openToast, setOpenToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const onCloseToast = () => {
+    setOpenToast(false);
+  };
+  const onOpenToastWithMsg = (msg: string) => {
+    setToastMsg(msg);
+    setOpenToast(true);
+  };
 
   useEffect(() => {
     if (!selectedConversation && chatUUID) {
@@ -175,51 +202,64 @@ const ChatBox = ({ loading }: IChatBox) => {
     }
   }, [userData, selectedConversation]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // const closeModal = () => {
-  //   setShowProfile(false);
-  // };
-
   const profileClick = () => {
-    // if (size?.width < widthToOpenModal) {
-    //   // data
-    //   const item = userData?.data();
-    //   router.push(`/page/Profile?uid=${userData?.id}&private=false`, { ...item, extras: selectedConversation });
-    //   // history.push(`/page/Profile?uid=${data?.id}`)
-    // } else {
-    //   setShowProfile(true);
-    // }
-    setShowProfile(true);
+    dispatch(setIsOpenProfileModal(true));
   };
 
   const onCloseAlert = () => {
     setAlert(false);
   };
 
-  // if (!selectedConversation || !users.includes(uid || '')) {
-  //   return (
-  //     <Box width={'100%'} height={'100%'} display={'flex'} justifyContent={'center'} alignItems={'center'}>
-  //       <LoadingIcon />
-  //     </Box>
-  //   );
-  // } else {
-  //   return <Box>hello</Box>;
-  // }
-
   const revalidate = () => {
     setApiRevalidate((prev) => prev + 1);
   };
 
+  const onLockChat = async () => {
+    if (!chatUUID) return;
+    if (!isVerified) {
+      // TODO:
+      // setIsOpenUnVerifiedModal(true);
+      // return;
+    }
+    if (selectedConversation?.hasOrder || false) {
+      setLockUnlockChatLoading(true);
+      try {
+        await lockChat(chatUUID);
+        // Successfully locked the chat
+      } catch (error) {
+        console.log('chat Lock-Unlock Error==> ', error);
+        // error occur;
+      } finally {
+        revalidate();
+        setLockUnlockChatLoading(false);
+      }
+    } else {
+      setIsOpenLockUnlockChat(true);
+    }
+  };
+  const handlerCloseLockUnlockChat = () => {
+    setIsOpenLockUnlockChat(false);
+  };
+  const openUnVerifiedModalHandler = () => {
+    setIsOpenUnVerifiedModal(true);
+  };
+
   return (
     <Box
-      // display="flex"
-      // justifyContent="center"
-      // alignItems="center"
       bgcolor="white"
       width="100%"
       height="100%"
+      minWidth={isMobile ? '100%' : '630px'}
       onClick={onCloseAlert}
     >
-      <Box bgcolor="white" maxWidth={isChatBox ? maxWidth : 'auto'} height="100%">
+      <Toast alertMessage={toastMsg} onClose={onCloseToast} open={openToast} />
+      <Box
+        bgcolor="white"
+        maxWidth={isChatBox ? maxWidth : 'auto'}
+        height="100%"
+        position="relative"
+        className={styles.chatView}
+      >
         <ChatHeader
           senderUUID={selectedConversation?.sender}
           myBlock={selectedConversation?.block?.includes(currentUser?.uid ?? '-') ?? false}
@@ -231,20 +271,12 @@ const ChatBox = ({ loading }: IChatBox) => {
           profileClick={profileClick}
           hasOrder={selectedConversation?.hasOrder || false}
           revalidate={revalidate}
+          onLockChat={onLockChat}
+          lockUnlockChatLoading={lockUnlockChatLoading}
         />
 
         {openAlert && (
-          <Alert
-            onClose={onCloseAlert}
-            style={{
-              width: '100%',
-              position: 'absolute',
-              top: '77px',
-              zIndex: 1,
-              maxWidth: '620px',
-            }}
-            severity="warning"
-          >
+          <Alert onClose={onCloseAlert} className={styles.alertMsg} severity="warning">
             <Typography
               variant="caption"
               color="inherit"
@@ -269,10 +301,30 @@ const ChatBox = ({ loading }: IChatBox) => {
             otherBlock={selectedConversation?.block?.includes(otherUid ?? '-') ?? false}
             requestNewOrder={profileClick}
             onFocus={() => setAlert(false)}
-            //isDisabled={selectedConversation.hasOrder ? false : currentUser?.isAdmin ? false : true }
+            onLockChat={onLockChat}
+            lockUnlockChatLoading={lockUnlockChatLoading}
+            openUnVerifiedModalHandler={openUnVerifiedModalHandler}
           />
         )}
       </Box>
+      {chatUUID && (
+        <LockUnlockChatDialog
+          chatRoomID={chatUUID}
+          isOpen={isOpenLockUnlockChat}
+          onCloseHandler={handlerCloseLockUnlockChat}
+          revalidate={revalidate}
+        />
+      )}
+      {isOpenUnVerifiedModal && (
+        <UnVerifiedModal
+          onOpenToastWithMsg={onOpenToastWithMsg}
+          open={isOpenUnVerifiedModal}
+          onClose={() => setIsOpenUnVerifiedModal(false)}
+          myUID={uid}
+          verified={isVerified}
+          rejectedReasonAfter={rejectedReasonAfter}
+        />
+      )}
     </Box>
   );
 };

@@ -59,8 +59,9 @@ const Tabs = ({ tabsData, tabBottomPadding, resetTab, mainClass, tabsLabel, onTa
         {...props}
         value={value}
         onChange={handleChange}
+        variant="scrollable"
         scrollButtons="auto"
-        allowScrollButtonsMobile
+        // allowScrollButtonsMobile
         className={mainClass ? styles[mainClass] : ''}
       >
         {tabsData?.map((tab: any, index: number) => (

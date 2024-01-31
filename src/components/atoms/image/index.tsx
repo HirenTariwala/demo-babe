@@ -1,5 +1,5 @@
 'use client';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import Image, { ImageProps } from 'next/image';
 import { SkeletonCardView } from '@/components/page/Rent/components/SkeletonCardView';
 
@@ -13,20 +13,14 @@ interface IImage extends ImageProps {
 const NextImage = memo(({ src, alt, skeletonRadius, ...props }: IImage) => {
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 200);
-  }, []);
   return (
     <>
-      {(loading || !src) && <SkeletonCardView radius={skeletonRadius} />}
-
+      {loading && <SkeletonCardView radius={skeletonRadius} />}
       {src && (
         <Image
           src={src}
           alt={alt}
-          onLoadingComplete={() => {
+          onLoad={() => {
             setLoading(false);
           }}
           {...props}

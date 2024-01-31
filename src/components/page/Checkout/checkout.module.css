@@ -1,0 +1,46 @@
+.checkoutBox {
+  padding: 58px 40px;
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
+  height: calc(100vh - 76px);
+  background: linear-gradient(293deg, rgba(255, 242, 194, 0.17) 0%, #fff7f2 100%, rgba(255, 247, 242, 0.72) 100%);
+}
+.checkoutCard {
+  backdrop-filter: blur(20px) !important;
+  width: 100%;
+  max-width: 636px;
+  padding: 40px 32px 36px 32px !important;
+  height: fit-content;
+  /* height: 100%; */
+  border-radius: 24px !important;
+  box-shadow: 0px 4px 40px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  overflow: auto !important;
+}
+.checkoutCardLoading {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 593px;
+}
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}
+@media (max-width: 600px) {
+  .checkoutBox {
+    padding: 24px 16px;
+  }
+  .checkoutCard {
+    padding: 24px 16px !important;
+  }
+}

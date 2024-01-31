@@ -12,15 +12,17 @@ import { ServiceHelper } from '@/utility/serviceHelper';
 import { useDispatch } from 'react-redux';
 import { setSelectedServices } from '@/store/reducers/serviceReducer';
 import { useSeletedBabeStore } from '@/store/reducers/babeReducer';
+import { ServiceTypeEnum } from '@/props/servicesProps';
 
 interface ITabContent {
   activeTab: number;
   data: any;
   isMobile: boolean;
+  serviceType: ServiceTypeEnum | undefined;
   setActiveTab: (arg: number) => void;
 }
 
-const TabContent = ({ activeTab, setActiveTab, data, isMobile }: ITabContent) => {
+const TabContent = ({ activeTab, setActiveTab, data, isMobile,serviceType }: ITabContent) => {
   const { selectedBabe } = useSeletedBabeStore();
   const emeets = selectedBabe?.emeets;
   const dispatch = useDispatch();
@@ -29,18 +31,18 @@ const TabContent = ({ activeTab, setActiveTab, data, isMobile }: ITabContent) =>
   const temp = servicesKeyId?.map((key) => data[key]);
   const handleTabChange = (e: number) => {
     setActiveTab(e);
-    dispatch(setSelectedServices(temp[e]));
+    dispatch(setSelectedServices({...temp[e], serviceType:serviceType}));
   };
 
   const suffix = temp[activeTab]?.suffix ?? ServiceHelper.getDefaultSuffix(parseInt(servicesKeyId[activeTab]));
 
   useEffect(() => {
-    dispatch(setSelectedServices(temp[0]));
+    dispatch(setSelectedServices({...temp[0],serviceType:serviceType}));
   }, []);
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
-      {temp?.[activeTab]?.image?.includes('EMEET') && (
+      {serviceType === ServiceTypeEnum.eMeet && (
         <Box display="flex" alignItems="center" gap={2}>
           <CheckBox
             label={
@@ -100,7 +102,7 @@ const TabContent = ({ activeTab, setActiveTab, data, isMobile }: ITabContent) =>
       <Box
         display={'flex'}
         gap={4}
-        mt={temp?.[activeTab]?.image?.includes('EMEET') ? 'unset' : 3}
+        mt={serviceType === ServiceTypeEnum.eMeet ? 'unset' : 3}
         sx={{
           width: '100%',
           overflowX: 'auto',

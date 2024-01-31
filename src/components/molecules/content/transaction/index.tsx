@@ -11,7 +11,7 @@ const TransactionAmount = ({ color, fontSize, fontWeight, amount, ...props }: IT
   return (
     <Box display="flex" alignItems="center" gap={2} {...props}>
       <Typography variant="h4" component="span" color={color} fontWeight={fontWeight} fontSize={fontSize}>
-        {amount > 0 ? `${(amount / 100).toFixed(2)}` : `${amount}.00`}
+        {amount ? `${(amount / 100).toFixed(2)}` : `${amount}.00`}
       </Typography>
       <PriceLogo size={24} />
     </Box>

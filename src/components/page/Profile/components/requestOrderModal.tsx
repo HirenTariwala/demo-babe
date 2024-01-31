@@ -12,7 +12,7 @@ import Dropdown from '@/components/molecules/dropdown';
 import Price from '@/components/molecules/price';
 import Stepper from '@/components/molecules/stepper';
 import { ServiceHelper } from '@/utility/serviceHelper';
-import { SelectChangeEvent } from '@mui/material';
+import { SelectChangeEvent, useMediaQuery } from '@mui/material';
 import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
@@ -38,26 +38,30 @@ import {
   getCabFarePrice,
   getExistingConvo,
   getRestrictions,
+  // isExistsValue,
   senderSendNewConversation,
   serviceCheck,
 } from '../util/helper';
 import Toast from '@/components/molecules/toast';
 import { ServiceTypeEnum } from '@/props/servicesProps';
-import { messenger, nsfw, payment, sendTelegramNotificationToAdmin, sex } from '@/keys/filters';
+// import { messenger, nsfw, payment, sendTelegramNotificationToAdmin, sex } from '@/keys/filters';
 import { CountryLookUpTable } from '@/common/utils/data';
+import { setIsOpenProfileModal } from '@/store/reducers/drawerOpenReducer';
 
 interface IRequestOrderModal {
-  state?: any,
+  state?: any;
   uid?: string;
   isOpen: boolean;
-  isMobile: boolean;
-  isTablet: boolean;
-  setOpen: ((arg: boolean) => void) | undefined;
 }
 
 const placesLibrary = ['places'];
 
-const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IRequestOrderModal) => {
+// const sexWithNsfwArray = sex?.concat(nsfw);
+// const paymentWithMessengerArray = payment?.concat(messenger);
+
+const RequestOrderModal = ({ state, isOpen }: IRequestOrderModal) => {
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:1024px)');
   const { selectedBabe } = useSeletedBabeStore();
   const [searchResult, setSearchResult] = useState('');
   const [value, setValue] = useState('0');
@@ -71,7 +75,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
   const dispatch = useDispatch();
   const selectedServiceData = useSelectedServicesStore();
   const { services } = useServicesStore();
-  
+
   const temp = services.find((service) => service.title === selectedServiceData.title);
 
   const serviceObj = {
@@ -93,28 +97,26 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
       ? ` for ${count} Game${count > 1 ? 's' : ''}`
       : '';
 
-  const areAllFieldsFilled = temp?.serviceType === ServiceTypeEnum.meetup ? !(info && selectedLocation) : !(info);
+  const areAllFieldsFilled = temp?.serviceType === ServiceTypeEnum.meetup ? !(info && selectedLocation) : !info;
 
   const userStore = useUserStore();
   const currentUser = userStore?.currentUser;
 
   const currentConversation = useConversationStore();
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  const finalPrice = count * selectedServiceData?.price + getCabFarePrice(value);
+  const finalPrice = count * (selectedServiceData?.price || 0) + getCabFarePrice(value);
 
   useEffect(() => {
-    setCount(serviceCheck(selectedServiceData?.image) ? 1 : 2);
+    setCount(serviceCheck(selectedServiceData?.serviceType) ? 1 : 2);
   }, [selectedServiceData]);
 
   const onPlaceChanged = () => {
     if (searchResult != null) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-expect-error
-      const place = searchResult.getPlace();
-      const name = place.name;
-      
+      const place = searchResult?.getPlace();
+      const name = place?.name;
+
       setSelectedLocation(name);
     } else {
       alert('Please enter text');
@@ -162,50 +164,40 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
 
   const onRequestHandler = async () => {
     if (!currentUser?.uid) return;
-    if (!selectedLocation) {
-      return;
-    }
-    
-      const arrays1 = sex.concat(nsfw)
-      if (arrays1.some((word) => { 
-          return info?.toLowerCase().includes(word)})) {
-              return
-      }
-    
-      const arrays2 = payment.concat(messenger)
-      if (arrays2.some((word) => { 
-      return info?.toLowerCase().includes(word)})) {
-          return
-      }
-  
-  let selected = ""
-  if (sex.some((word) => { 
-      selected = word
-      return info?.toLowerCase().includes(word) })) {
 
-      const chatLink = `${window.location.origin}/Profile?uid=${currentUser?.uid}` 
-      sendTelegramNotificationToAdmin(
-          `${chatLink} doing obvious NSFW request! [${selected}\n\n${info}]`)
-      return                
-  }
+    if (
+      !(temp?.serviceType === ServiceTypeEnum?.eMeet || temp?.serviceType === ServiceTypeEnum?.games) &&
+      !selectedLocation
+    )
+      return;
+
+    // if (isExistsValue(sexWithNsfwArray, info)) return;
+
+    // if (isExistsValue(paymentWithMessengerArray, info)) return;
+
+    // const selected = isExistsValue(sex, info);
+
+    // if (selected) {
+    //   const chatLink = `${window?.location?.origin}/Profile?uid=${currentUser?.uid}`;
+    //   sendTelegramNotificationToAdmin(`${chatLink} doing obvious NSFW request! [${selected}\n\n${info}]`);
+    //   return;
+    // }
+
     const header = 'ORDER REQUEST\n';
     const orderDate = `Date: ${dayjs(date).format('ddd, DD MMM')}\n`;
-
     const orderTime = `Time: ${dayjs(time).format('h:mm A')}${toValue}\n`;
-
     const venue = `Venue: ${selectedLocation}\n`;
-    const activity = `Activity: ${selectedServiceData.title}\n`;
+    const activity = `Activity: ${selectedServiceData?.title}\n`;
     const cabFare = `Cab fare: ${value ? `+${value} Credits` : '-'}\n`;
     const orderInfo = `Info: ${info ? info : '-'}\n`;
-
-    const orderFinalPrice = `\n\nFINAL PRICE: ${(finalPrice/100).toFixed(2)} Credit`;
+    const orderFinalPrice = `\n\nFINAL PRICE: ${(finalPrice / 100).toFixed(2)} Credit`;
 
     const msg = `${header}${orderDate}${orderTime}${venue}${activity}${cabFare}${orderInfo}${orderFinalPrice}`;
     const eMsg = `${header}${orderDate}${orderTime}${activity}${orderInfo}${orderFinalPrice}`;
-    const fMsg = temp?.serviceType === ServiceTypeEnum.meetup ? msg : eMsg;
+    const fMsg = temp?.serviceType === ServiceTypeEnum?.meetup ? msg : eMsg;
 
     const serviceMap: { [key: string]: any } = {
-      price: finalPrice * 100,
+      price: finalPrice,
       clientUID: currentUser?.uid,
       babeUID: selectedBabe?.uid,
       origin: window.location.origin,
@@ -217,8 +209,11 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
       serviceDetails: serviceObj,
     };
     if (currentUser?.teleId) serviceMap.clientTeleID = currentUser?.teleId;
+
     if (currentUser?.APNSToken) serviceMap.clientToken = currentUser?.APNSToken;
+
     const newConversation = httpsCallable(functions, newConversationV2Function);
+
     const extra = senderSendNewConversation(
       currentUser?.uid || '',
       selectedBabe?.uid || '',
@@ -228,60 +223,59 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
       selectedBabe?.mobileUrl || '',
       fMsg
     );
+
     const map: { [key: string]: any } = {
       recipientUid: selectedBabe?.uid,
       content: fMsg,
       extra: extra,
     };
+
     const msgMap: { [key: string]: any } = {
       sen: currentUser?.uid,
       ctn: fMsg,
       ty: MessageEnum.order,
     };
-    if (serviceMap.clientNickname) {
-      msgMap.nick = serviceMap.clientNickname;
-    }
-    if (selectedBabe?.clubName && selectedBabe?.clubState && selectedBabe?.clubName !== 'rentbabe') {
+
+    if (serviceMap?.clientNickname) msgMap.nick = serviceMap?.clientNickname;
+
+    if (selectedBabe?.clubName && selectedBabe?.clubState && selectedBabe?.clubName !== 'rentbabe')
       msgMap[clubKey] = {
         name: selectedBabe?.clubName,
         state: selectedBabe?.clubState,
       };
-    }
-    if (serviceMap.clientProfileImage) {
-      msgMap[mobileUrlKey] = serviceMap.clientProfileImage;
-    }
+
+    if (serviceMap?.clientProfileImage) msgMap[mobileUrlKey] = serviceMap?.clientProfileImage;
+
     if (selectedBabe?.teleId) msgMap[teleIdKey] = selectedBabe?.teleId;
+
     if (selectedBabe?.APNSToken) msgMap[APNSTokenKey] = selectedBabe?.APNSToken;
-    if (serviceMap) {
-      msgMap.order = serviceMap;
-    }
+
+    if (serviceMap) msgMap.order = serviceMap;
+
     map.msg = msgMap;
+
     try {
       setLoading(true);
       const res = await newConversation(map);
-      const data = res.data as any;
+      const data = res?.data as any;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const result = data.result as string | null | undefined;
+      const result = data?.result as string | null | undefined;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const chatRoomId = data.chatRoomId as string | null | undefined;
+      const chatRoomId = data?.chatRoomId as string | null | undefined;
+
       setLoading(false);
       setToast(true);
       dispatch(setRequestModalOpen(false));
-      // onSuccess(chatRoomId, result);
     } catch (error) {
       setLoading(false);
-      console.log(error);
-      // onSuccess(null, `Unexpected error ${error}`);
+      console.log('Request Order Modal Error ==> ', error);
     }
   };
 
   const emeetsArr = selectedBabe?.emeets?.pref?.concat(selectedBabe?.emeets?.app || []);
 
   const timejs = dayjs(time);
-  const today = dayjs(date)
-    .set('hour', timejs.hour())
-    .set('minute', timejs.minute())
-    .set('second', timejs.second());
+  const today = dayjs(date).set('hour', timejs.hour()).set('minute', timejs.minute()).set('second', timejs.second());
 
   if (!isLoaded) {
     return <div>Loading...</div>;
@@ -293,7 +287,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
         maxWidth="sm"
         onClose={() => dispatch(setRequestModalOpen(false))}
         footer={
-          <Box display="flex" justifyContent={"flex-end"} flexDirection="column" gap={5} p={4}>
+          <Box display="flex" justifyContent={'flex-end'} flexDirection="column" gap={5} p={4}>
             <Box display="flex" flexDirection="column" alignItems="flex-end">
               <Typography variant="subtitle2" component="span" color="#999">
                 Total price
@@ -336,9 +330,9 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
           '.MuiDialogContent-root': {
             position: 'relative',
           },
-          '.MuiDialogActions-root':{
-            justifyContent: isMobile ? "center" : "flex-end"
-          }
+          '.MuiDialogActions-root': {
+            justifyContent: isMobile ? 'center' : 'flex-end',
+          },
         }}
         open={isOpen}
       >
@@ -346,7 +340,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
           startIcon={<BackIcon />}
           sx={{ width: 'fit-content', fontSize: '14px', fontWeight: 700, padding: '6px 0px' }}
           onClick={() => {
-            if (setOpen) setOpen(true);
+            dispatch(setIsOpenProfileModal(true));
             dispatch(setRequestModalOpen(false));
           }}
         >
@@ -358,7 +352,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
             Request order
           </Typography>
           <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-            {selectedServiceData?.image?.includes('EMEET') &&
+            {selectedServiceData?.serviceType === ServiceTypeEnum.eMeet &&
               emeetsArr?.map((item, index) => {
                 let name = item;
                 if (name === 'text') {
@@ -423,7 +417,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
                 />
               </Box>
               <Stepper
-                text={!serviceCheck(selectedServiceData?.image) ? `Minimum ${2} units` : undefined}
+                text={!serviceCheck(selectedServiceData?.serviceType) ? `Minimum ${2} units` : undefined}
                 setCount={setCount}
                 count={count || 1}
               />
@@ -434,7 +428,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
               Please fill in the given fields
             </Typography>
           )}
-          {!serviceCheck(selectedServiceData?.image) && (
+          {!serviceCheck(selectedServiceData?.serviceType) && (
             <Box display="flex" flexDirection="column" gap={2}>
               <Typography variant="subtitle2" component="span">
                 Search a Cafe/bistro/bar
@@ -442,9 +436,11 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
               <Autocomplete
                 onPlaceChanged={onPlaceChanged}
                 onLoad={onLoad}
-                options={{ types: getRestrictions(selectedServiceData?.id), fields: ['name'], componentRestrictions: {country: 
-                  CountryLookUpTable[state] || 
-                  "sg"} }}
+                options={{
+                  types: getRestrictions(selectedServiceData?.id),
+                  fields: ['name'],
+                  componentRestrictions: { country: CountryLookUpTable[state] || 'sg' },
+                }}
               >
                 <Input
                   fullWidth
@@ -534,7 +530,7 @@ const RequestOrderModal = ({ state,isMobile, isTablet, isOpen, setOpen }: IReque
               }}
             />
           </Box>
-          {!serviceCheck(selectedServiceData?.image) && (
+          {!serviceCheck(selectedServiceData?.serviceType) && (
             <Box display="flex" flexDirection="column" gap={2}>
               <Typography variant="subtitle2" component="span">
                 Cab fare

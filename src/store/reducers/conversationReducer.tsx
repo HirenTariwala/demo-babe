@@ -57,16 +57,20 @@ export interface IcurrentConvo {
 }
 
 let jsonObj = undefined;
+let count = '0';
 try {
-  const store = sessionStorage.getItem(selectedConversationLocalKey) ?? '';
-  jsonObj = JSON.parse(store) ?? undefined;
+  if (typeof window !== 'undefined') {
+    const store = sessionStorage.getItem(selectedConversationLocalKey) ?? '';
+    jsonObj = JSON.parse(store) ?? undefined;
+    count = localStorage.getItem(notifyLocalKey) ?? '0';
+  }
 } catch (err) {
   console.error(err);
 }
 
 const initialState: IcurrentConvo = {
   currentConvo: {
-    notification: parseInt(localStorage.getItem(notifyLocalKey) ?? '0'),
+    notification: parseInt(count),
     data: undefined,
   },
   selectedConversation: {

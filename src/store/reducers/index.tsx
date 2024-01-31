@@ -10,6 +10,7 @@ import servicesReducer, { IService } from './serviceReducer';
 import audioReducer, { AudioType } from './audioReducer';
 import conversationsReducer, { IcurrentConvo } from './conversationReducer';
 import babeReducer, { IBabe } from './babeReducer';
+import drawerOpenReducer from './drawerOpenReducer';
 // import clubAdminReducer, { ClubAdminState } from './club-admin-reducer';
 // import audioReducer from './audio-reducer';
 // import selectedUserReducer from './selected-user-reducer';
@@ -55,6 +56,8 @@ export const combinedReducer = combineReducers({
   audio: persistReducer<AudioType>(audioPersistConfig, audioReducer),
   conversations: persistReducer<IcurrentConvo>(conversationsPersistConfig, conversationsReducer),
   babe: persistReducer<IBabe>(babePersistConfig, babeReducer),
+
+  drawerOpen: drawerOpenReducer,
   // clubAdmin: persistReducer<ClubAdminState>(clubAdminPersistConfig, clubAdminReducer),
   // audio: audioReducer,
   // selectedUser: selectedUserReducer,

@@ -75,6 +75,7 @@ import {
   isOnlineKey,
   USERS,
   sortByRatingsKey,
+  isgIdKey,
 } from '../keys/firestoreKeys';
 import { ServiceDetailProps, ServicesProps, ServiceTypeEnum } from '../props/servicesProps';
 import { defaultProfileImages } from './profileHelper';
@@ -585,6 +586,7 @@ export const Helper = {
 
     const isAdmin = doc.get(adminKey) as boolean;
     const isgAccessToken = doc.get(isgAccessTokenKey) as string;
+    const isgUid = doc.get(isgIdKey)
 
     const availability = doc.get(availabilityLocalKey) as string;
 
@@ -695,6 +697,7 @@ export const Helper = {
       height: undefined,
       mHeight: myPersonalHeight,
       isgToken: isgAccessToken,
+      isgUid:isgUid,
       age: Number.NaN,
       videoVerification,
       geoEncodings,

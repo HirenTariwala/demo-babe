@@ -6,6 +6,8 @@ export enum OrderItemEnum {
   credits_movement = 4,
   loyalty_points = 5,
   agency_incentive = 6,
+  earned=7,
+  withdrawn=8
 }
 
 export enum OrderStatusEnum {
