@@ -56,7 +56,7 @@ export const getCabFarePrice = (cabfare: any) => {
 };
 
 export const serviceCheck = (value: number | undefined) => {   
-    return [ServiceTypeEnum.eMeet,ServiceTypeEnum.games].includes(value);
+    return [ServiceTypeEnum.eMeet,ServiceTypeEnum.games].includes(value as number);
   
 };
 

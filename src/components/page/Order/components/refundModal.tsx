@@ -40,7 +40,7 @@ interface IRefundOrderModal {
   orderDetails: any;
   myUid: string | undefined | null;
   setOpen: (arg: boolean) => void | undefined;
-  setIsOpenRefundRequestSubmittedDialog: (arg: boolean) => void;
+  setIsOpenRefundRequestSubmittedDialog?: (arg: boolean) => void;
 }
 
 const RefundModal = ({
@@ -50,7 +50,7 @@ const RefundModal = ({
   orderId,
   orderDetails,
   myUid,
-  setIsOpenRefundRequestSubmittedDialog,
+  // setIsOpenRefundRequestSubmittedDialog,
   setOpen,
 }: IRefundOrderModal) => {
   const [reason, setReason] = useState('');
@@ -128,7 +128,7 @@ const RefundModal = ({
         reason: reason,
       });
       setLoadingSubmit(false);
-      setIsOpenRefundRequestSubmittedDialog(true);
+      // setIsOpenRefundRequestSubmittedDialog(true);
     } catch (error) {
       // openAlert(`${error}`.replace("FirebaseError: ", ""))
     }
